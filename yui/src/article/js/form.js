@@ -175,6 +175,24 @@ Y.extend(FORM, Y.Base,
             },100);
         },
 
+        handlePostToGroupsToggle: function(e) {
+            var formNode = e.currentTarget.ancestor('form');
+            var selectNode = formNode.one('#menugroupinfo');
+            if (e.currentTarget.get('checked')) {
+                selectNode.set('disabled', 'disabled');
+            } else {
+                selectNode.set('disabled', '');
+            }
+        },
+
+        handleTimeToggle: function(e) {
+            if (e.currentTarget.get('checked')) {
+                e.currentTarget.ancestor('.fdate_selector').all('select').set('disabled', '');
+            } else {
+                e.currentTarget.ancestor('.fdate_selector').all('select').set('disabled', 'disabled');
+            }
+        },
+
         /**
          * Displays the reply form for a discussion
          * or for a post.
@@ -234,9 +252,17 @@ Y.extend(FORM, Y.Base,
             wrapperNode.all('button').setAttribute('disabled', 'disabled');
             this._copyMessage(wrapperNode);
 
+            // Make sure form has draftid for processing images.
             var fileinputs = wrapperNode.all('form input[type=file]');
+            var draftid = Y.one('#hiddenadvancededitordraftid');
+            if (draftid) {
+                var clonedraftid = draftid.cloneNode();
+                clonedraftid.id = 'hiddenadvancededitordraftidclone';
+                wrapperNode.one('form input').insert(clonedraftid, 'before');
+            }
 
             this.get('io').submitForm(wrapperNode.one('form'), function(data) {
+                // TODO - yuiformsubmit won't work here as the data will already have been sent at this point. The form is the data, the data variable is what comes back
                 data.yuiformsubmit = 1; // So we can detect and class this as an AJAX post later!
                 if (data.errors === true) {
                     Y.log('Form failed to validate', 'info', 'Form');
@@ -299,6 +325,9 @@ Y.extend(FORM, Y.Base,
         handleCancelForm: function(e) {
             e.preventDefault();
 
+            // Put date fields back to original place in DOM.
+            this.restoreDateFields();
+
             // Put editor back to its original place in DOM.
             M.mod_hsuforum.restoreEditor();
 
@@ -306,9 +335,21 @@ Y.extend(FORM, Y.Base,
             if (node) {
                 node.removeClass(CSS.POST_EDIT)
                     .removeClass(CSS.DISCUSSION_EDIT);
+                e.target.ancestor(SELECTORS.FORM_REPLY_WRAPPER).remove(true);
+            } else {
+                node = e.target.ancestor(SELECTORS.ADD_DISCUSSION_TARGET);
+                e.target.ancestor(SELECTORS.FORM_REPLY_WRAPPER).remove(true);
+                if (node) {
+                    // This is a discussion we were adding and are now cancelling, return.
+                    return;
+                } else {
+                    // We couldn't find a discussion or post target, this is an error, log + return.
+                    Y.log('Failed to get post or discussion target on form cancel.', 'error');
+                    return;
+                }
             }
-            e.target.ancestor(SELECTORS.FORM_REPLY_WRAPPER).remove(true);
 
+            // Handle post form cancel.
             this.fire(EVENTS.FORM_CANCELED, {
                 discussionid: node.getData('discussionid'),
                 postid: node.getData('postid')
@@ -332,6 +373,10 @@ Y.extend(FORM, Y.Base,
             var wrapperNode = e.currentTarget.ancestor(SELECTORS.FORM_REPLY_WRAPPER);
 
             this._submitReplyForm(wrapperNode, function(data) {
+
+                // Put date fields back to original place in DOM.
+                this.restoreDateFields();
+
                 switch (data.eventaction) {
                     case 'postupdated':
                         this.fire(EVENTS.POST_UPDATED, data);
@@ -363,6 +408,127 @@ Y.extend(FORM, Y.Base,
         },
 
         /**
+         * Set individual date restriction field
+         *
+         * @param {string} field
+         * @param {bool} enabled
+         * @param {int} timeuts
+         */
+        setDateField: function(field, enabled, timeuts) {
+            var dt = new Date(timeuts * 1000),
+                dd = dt.getDate(),
+                mm = dt.getMonth()+1,
+                yyyy = dt.getFullYear();
+
+            if (enabled) {
+                Y.one('#id_time' + field + '_enabled').set('checked', 'checked');
+            } else {
+                Y.one('#id_time' + field + '_enabled').removeAttribute('checked');
+            }
+            Y.one('#id_time'+field+'_day').set('value', dd);
+            Y.one('#id_time'+field+'_month').set('value', mm);
+            Y.one('#id_time'+field+'_year').set('value', yyyy);
+
+            this.setDateFieldsClassState();
+        },
+
+        /**
+         * Reset individual date field.
+         * @param field
+         */
+        resetDateField: function(field) {
+            if (!Y.one('#discussion_dateform fieldset')) {
+                return;
+            }
+
+            var nowuts = Math.floor(Date.now() / 1000);
+
+            this.setDateField(field, false, nowuts);
+        },
+
+        /**
+         * Reset values of date fields to today's date and remove enabled status if required.
+         */
+        resetDateFields: function() {
+            var fields = ['start', 'end'];
+
+            for (var f in fields) {
+                this.resetDateField(fields[f]);
+            }
+        },
+
+        /**
+         * Apply disabled state if necessary.
+         */
+        setDateFieldsClassState: function() {
+            var datefs = Y.one('fieldset.dateform_fieldset');
+            if (!datefs) {
+                return;
+            }
+            // Set initial toggle state for date fields.
+            datefs.all('.fdate_selector').each(function(el){
+                if (el.one('input').get('checked')) {
+                    el.all('select').set('disabled', '');
+                } else {
+                    el.all('select').set('disabled', 'disabled');
+                }
+            });
+        },
+
+        /**
+         * Add date fields to current date form target.
+         */
+        applyDateFields: function() {
+
+            var datefs = Y.one('#discussion_dateform fieldset');
+            if (!datefs) {
+                return;
+            }
+            datefs.addClass('dateform_fieldset');
+            datefs.removeClass('hidden');
+            // Remove legend if present
+            if (datefs.one('legend')) {
+                datefs.one('legend').remove();
+            }
+
+            Y.one('.dateformtarget').append(datefs);
+            // Stop calendar button from routing.
+            Y.all('.dateformtarget .fitem_fdate_selector a').addClass('disable-router');
+
+            this.setDateFieldsClassState();
+        },
+
+        /**
+         * Set date fields.
+         *
+         * @param int startuts
+         * @param int enduts
+         */
+        setDateFields: function(startuts, enduts) {
+            if (startuts == 0) {
+                this.resetDateField('start');
+            } else {
+                this.setDateField('start', true, startuts);
+            }
+            if (enduts == 0) {
+                this.resetDateField('end');
+            } else {
+                this.setDateField('end', true, enduts);
+            }
+        },
+
+        /**
+         * Put date fields back to where they were.
+         *
+         * @method restoreDateFields
+         */
+        restoreDateFields: function () {
+            if (Y.one('#discussion_dateform')) {
+                Y.one('#discussion_dateform').append(Y.one('.dateform_fieldset'));
+            }
+        },
+
+        /**
          * Show the add discussion form
          *
          * @method showAddDiscussionForm
@@ -374,6 +540,8 @@ Y.extend(FORM, Y.Base,
                 .one(SELECTORS.INPUT_SUBJECT)
                 .focus();
 
+            this.resetDateFields();
+            this.applyDateFields();
             this.attachFormWarnings();
         },
 
@@ -389,9 +557,12 @@ Y.extend(FORM, Y.Base,
                 postNode.one(SELECTORS.EDITABLE_MESSAGE).focus();
                 return;
             }
+            var self = this;
+            var draftid = Y.one('#hiddenadvancededitordraftid');
             this.get('io').send({
                 discussionid: postNode.getData('discussionid'),
                 postid: postNode.getData('postid'),
+                draftid: draftid ? draftid.get('value') : 0,
                 action: 'edit_post_form'
             }, function(data) {
                 postNode.prepend(data.html);
@@ -402,6 +573,11 @@ Y.extend(FORM, Y.Base,
                     postNode.addClass(CSS.POST_EDIT);
                 }
                 postNode.one(SELECTORS.EDITABLE_MESSAGE).focus();
+
+                if (data.isdiscussion) {
+                    self.applyDateFields();
+                    self.setDateFields(data.timestart, data.timeend);
+                }
 
                 this.attachFormWarnings();
             }, this);

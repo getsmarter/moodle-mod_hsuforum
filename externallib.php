@@ -39,7 +39,7 @@ class mod_hsuforum_external extends external_api {
         return new external_function_parameters (
             array(
                 'courseids' => new external_multiple_structure(new external_value(PARAM_INT, 'course ID',
-                        '', VALUE_REQUIRED, '', NULL_NOT_ALLOWED), 'Array of Course IDs', VALUE_DEFAULT, array()),
+                        VALUE_REQUIRED, '', NULL_NOT_ALLOWED), 'Array of Course IDs', VALUE_DEFAULT, array()),
             )
         );
     }
@@ -61,57 +61,42 @@ class mod_hsuforum_external extends external_api {
         $params = self::validate_parameters(self::get_forums_by_courses_parameters(), array('courseids' => $courseids));
 
         if (empty($params['courseids'])) {
-            // Get all the courses the user can view.
-            $courseids = array_keys(enrol_get_my_courses());
-        } else {
-            $courseids = $params['courseids'];
+            $params['courseids'] = array_keys(enrol_get_my_courses());
         }
 
         // Array to store the forums to return.
         $arrforums = array();
+        $warnings = array();
 
         // Ensure there are courseids to loop through.
-        if (!empty($courseids)) {
-            // Array of the courses we are going to retrieve the forums from.
-            $dbcourses = array();
-            // Mod info for courses.
-            $modinfocourses = array();
-            // Go through the courseids and return the forums.
-            foreach ($courseids as $courseid) {
-                // Check the user can function in this context.
-                try {
-                    $context = context_course::instance($courseid);
-                    self::validate_context($context);
-                    $modinfocourses[$courseid] = get_fast_modinfo($courseid);
-                    $dbcourses[$courseid] = $modinfocourses[$courseid]->get_course();
+        if (!empty($params['courseids'])) {
 
-                } catch (Exception $e) {
+            list($courses, $warnings) = external_util::validate_courses($params['courseids']);
+
+            // Get the forums in this course. This function checks users visibility permissions.
+            $forums = get_all_instances_in_courses("hsuforum", $courses);
+            foreach ($forums as $forum) {
+
+                $course = $courses[$forum->course];
+                $cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id);
+                $context = context_module::instance($cm->id);
+
+                // Skip forums we are not allowed to see discussions.
+                if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
                     continue;
                 }
-            }
-            // Get the forums in this course. This function checks users visibility permissions.
-            if ($forums = get_all_instances_in_courses("hsuforum", $dbcourses)) {
-                foreach ($forums as $forum) {
 
-                    $course = $dbcourses[$forum->course];
-                    $cm = $modinfocourses[$course->id]->get_cm($forum->coursemodule);
-                    $context = context_module::instance($cm->id);
+                $forum->name = external_format_string($forum->name, $context->id);
+                // Format the intro before being returning using the format setting.
+                list($forum->intro, $forum->introformat) = external_format_text($forum->intro, $forum->introformat,
+                                                                                $context->id, 'mod_hsuforum', 'intro', 0);
+                // Discussions count. This function does static request cache.
+                $forum->numdiscussions = hsuforum_count_discussions($forum, $cm, $course);
+                $forum->cmid = $forum->coursemodule;
+                $forum->cancreatediscussions = hsuforum_user_can_post_discussion($forum, null, -1, $cm, $context);
 
-                    // Skip forums we are not allowed to see discussions.
-                    if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
-                        continue;
-                    }
-
-                    // Format the intro before being returning using the format setting.
-                    list($forum->intro, $forum->introformat) = external_format_text($forum->intro, $forum->introformat,
-                                                                                    $context->id, 'mod_hsuforum', 'intro', 0);
-                    // Discussions count. This function does static request cache.
-                    $forum->numdiscussions = hsuforum_count_discussions($forum, $cm, $course);
-                    $forum->cmid = $forum->coursemodule;
-
-                    // Add the forum to the array to return.
-                    $arrforums[$forum->id] = $forum;
-                }
+                // Add the forum to the array to return.
+                $arrforums[$forum->id] = $forum;
             }
         }
         return $arrforums;
@@ -128,9 +113,9 @@ class mod_hsuforum_external extends external_api {
             new external_single_structure(
                 array(
                     'id' => new external_value(PARAM_INT, 'Forum id'),
-                    'course' => new external_value(PARAM_TEXT, 'Course id'),
+                    'course' => new external_value(PARAM_INT, 'Course id'),
                     'type' => new external_value(PARAM_TEXT, 'The forum type'),
-                    'name' => new external_value(PARAM_TEXT, 'Forum name'),
+                    'name' => new external_value(PARAM_RAW, 'Forum name'),
                     'intro' => new external_value(PARAM_RAW, 'The forum intro'),
                     'introformat' => new external_format_value('intro'),
                     'assessed' => new external_value(PARAM_INT, 'Aggregate type'),
@@ -149,8 +134,16 @@ class mod_hsuforum_external extends external_api {
                     'completiondiscussions' => new external_value(PARAM_INT, 'Student must create discussions'),
                     'completionreplies' => new external_value(PARAM_INT, 'Student must post replies'),
                     'completionposts' => new external_value(PARAM_INT, 'Student must post discussions or replies'),
-                    'cmid' => new external_value(PARAM_INT, 'Course module id')
-                ), 'forum'
+                    'cmid' => new external_value(PARAM_INT, 'Course module id'),
+                    'showrecent' => new external_value(PARAM_INT, 'Show recent posts on course page'),
+                    'showsubstantive' => new external_value(PARAM_INT, 'Show toggle to mark posts as substantive'),
+                    'showbookmark' => new external_value(PARAM_INT, 'Show toggle to bookmark posts'),
+                    'allowprivatereplies' => new external_value(PARAM_INT, 'Allow private replies'),
+                    'anonymous' => new external_value(PARAM_INT, 'Allow anonymous posts'),
+                    'gradetype' => new external_value(PARAM_INT, 'Gradetype'),
+                    'numdiscussions' => new external_value(PARAM_INT, 'Number of discussions'),
+                    'cancreatediscussions' => new external_value(PARAM_BOOL, 'If the user can create discussions', VALUE_OPTIONAL),
+                ), 'hsuforum'
             )
         );
     }
@@ -165,7 +158,7 @@ class mod_hsuforum_external extends external_api {
         return new external_function_parameters (
             array(
                 'forumids' => new external_multiple_structure(new external_value(PARAM_INT, 'forum ID',
-                        '', VALUE_REQUIRED, '', NULL_NOT_ALLOWED), 'Array of Forum IDs', VALUE_REQUIRED),
+                        VALUE_REQUIRED, '', NULL_NOT_ALLOWED), 'Array of Forum IDs', VALUE_REQUIRED),
                 'limitfrom' => new external_value(PARAM_INT, 'limit from', VALUE_DEFAULT, 0),
                 'limitnum' => new external_value(PARAM_INT, 'limit number', VALUE_DEFAULT, 0)
             )
@@ -354,8 +347,9 @@ class mod_hsuforum_external extends external_api {
      * @since Moodle 2.7
      */
     public static function get_forum_discussion_posts($discussionid) {
-        global $CFG, $DB, $USER;
+        global $CFG, $DB, $USER, $PAGE;
 
+        $posts = array();
         $warnings = array();
 
         // Validate the parameter.
@@ -396,9 +390,9 @@ class mod_hsuforum_external extends external_api {
         // We will add this field in the response.
         $canreply = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
 
-        $posts = hsuforum_get_all_discussion_posts($discussion->id);
+        $allposts = hsuforum_get_all_discussion_posts($discussion->id);
 
-        foreach ($posts as $pid => $post) {
+        foreach ($allposts as $pid => $post) {
 
             if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
                 $warning = array();
@@ -413,23 +407,23 @@ class mod_hsuforum_external extends external_api {
             // Function hsuforum_get_all_discussion_posts adds postread field.
             // Note that the value returned can be a boolean or an integer. The WS expects a boolean.
             if (empty($post->postread)) {
-                $posts[$pid]->postread = false;
+                $post->postread = false;
             } else {
-                $posts[$pid]->postread = true;
+                $post->postread = true;
             }
 
-            $posts[$pid]->canreply = $canreply;
-            if (!empty($posts[$pid]->children)) {
-                $posts[$pid]->children = array_keys($posts[$pid]->children);
+            $post->canreply = $canreply;
+            if (!empty($post->children)) {
+                $post->children = array_keys($post->children);
             } else {
-                $posts[$pid]->children = array();
+                $post->children = array();
             }
 
             $user = new stdclass();
             $user = username_load_fields_from_object($user, $post);
-            $posts[$pid]->userfullname = fullname($user, $canviewfullname);
+            $allposts[$pid]->userfullname = fullname($user, $canviewfullname);
 
-            $posts[$pid] = (array) $post;
+            $posts[] = $post;
         }
 
         $result = array();
@@ -471,6 +465,698 @@ class mod_hsuforum_external extends external_api {
                             ), 'post'
                         )
                     ),
+                'warnings' => new external_warnings()
+            )
+        );
+    }
+
+    /**
+     * Describes the parameters for get_forum_discussions_paginated.
+     *
+     * @return external_external_function_parameters
+     * @since Moodle 2.8
+     */
+    public static function get_forum_discussions_paginated_parameters() {
+        return new external_function_parameters (
+            array(
+                'forumid' => new external_value(PARAM_INT, 'hsuforum instance id', VALUE_REQUIRED),
+                'sortby' => new external_value(PARAM_ALPHA,
+                    'sort by this element: id, timemodified, timestart or timeend', VALUE_DEFAULT, 'timemodified'),
+                'sortdirection' => new external_value(PARAM_ALPHA, 'sort direction: ASC or DESC', VALUE_DEFAULT, 'DESC'),
+                'page' => new external_value(PARAM_INT, 'current page', VALUE_DEFAULT, -1),
+                'perpage' => new external_value(PARAM_INT, 'items per page', VALUE_DEFAULT, 0),
+            )
+        );
+    }
+
+    /**
+     * Returns a list of forum discussions optionally sorted and paginated.
+     *
+     * @param int $forumid the forum instance id
+     * @param string $sortby sort by this element (id, timemodified, timestart or timeend)
+     * @param string $sortdirection sort direction: ASC or DESC
+     * @param int $page page number
+     * @param int $perpage items per page
+     *
+     * @return array the forum discussion details including warnings
+     * @since Moodle 2.8
+     */
+    public static function get_forum_discussions_paginated($forumid, $sortby = 'timemodified', $sortdirection = 'DESC',
+                                                    $page = -1, $perpage = 0) {
+        global $CFG, $DB, $USER, $PAGE;
+
+        require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
+
+        $warnings = array();
+        $discussions = array();
+
+        $params = self::validate_parameters(self::get_forum_discussions_paginated_parameters(),
+            array(
+                'forumid' => $forumid,
+                'sortby' => $sortby,
+                'sortdirection' => $sortdirection,
+                'page' => $page,
+                'perpage' => $perpage
+            )
+        );
+
+        // Compact/extract functions are not recommended.
+        $forumid        = $params['forumid'];
+        $sortby         = $params['sortby'];
+        $sortdirection  = $params['sortdirection'];
+        $page           = $params['page'];
+        $perpage        = $params['perpage'];
+
+        $sortallowedvalues = array('id', 'timemodified', 'timestart', 'timeend');
+        if (!in_array($sortby, $sortallowedvalues)) {
+            throw new invalid_parameter_exception('Invalid value for sortby parameter (value: ' . $sortby . '),' .
+                'allowed values are: ' . implode(',', $sortallowedvalues));
+        }
+
+        $sortdirection = strtoupper($sortdirection);
+        $directionallowedvalues = array('ASC', 'DESC');
+        if (!in_array($sortdirection, $directionallowedvalues)) {
+            throw new invalid_parameter_exception('Invalid value for sortdirection parameter (value: ' . $sortdirection . '),' .
+                'allowed values are: ' . implode(',', $directionallowedvalues));
+        }
+
+        $forum = $DB->get_record('hsuforum', array('id' => $forumid), '*', MUST_EXIST);
+        $course = $DB->get_record('course', array('id' => $forum->course), '*', MUST_EXIST);
+        $cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id, false, MUST_EXIST);
+
+        // Validate the module context. It checks everything that affects the module visibility (including groupings, etc..).
+        $modcontext = context_module::instance($cm->id);
+        self::validate_context($modcontext);
+
+        // Check they have the view forum capability.
+        require_capability('mod/hsuforum:viewdiscussion', $modcontext, null, true, 'noviewdiscussionspermission', 'hsuforum');
+
+        $sort = 'd.' . $sortby . ' ' . $sortdirection;
+        $alldiscussions = hsuforum_get_discussions($cm, $sort, true, -1, -1, true, $page, $perpage, HSUFORUM_POSTS_ALL_USER_GROUPS);
+
+        if ($alldiscussions) {
+            $canviewfullname = has_capability('moodle/site:viewfullnames', $modcontext);
+
+            // Get the unreads array, this takes a forum id and returns data for all discussions.
+            $unreads = hsuforum_get_discussions_unread($cm);
+
+            // The forum function returns the replies for all the discussions in a given forum.
+            $replies = hsuforum_count_discussion_replies($forumid, $sort, -1, $page, $perpage);
+
+            foreach ($alldiscussions as $discussion) {
+
+                // This function checks for qanda forums.
+                // Note that the hsuforum_get_discussions returns as id the post id, not the discussion id so we need to do this.
+                $discussionrec = clone $discussion;
+                $discussionrec->id = $discussion->discussion;
+                if (!hsuforum_user_can_see_discussion($forum, $discussionrec, $modcontext)) {
+                    $warning = array();
+                    // Function hsuforum_get_discussions returns forum_posts ids not forum_discussions ones.
+                    $warning['item'] = 'post';
+                    $warning['itemid'] = $discussion->id;
+                    $warning['warningcode'] = '1';
+                    $warning['message'] = 'You can\'t see this discussion';
+                    $warnings[] = $warning;
+                    continue;
+                }
+
+                $discussion->numunread = 0;
+                if (isset($unreads[$discussion->discussion])) {
+                    $discussion->numunread = (int) $unreads[$discussion->discussion];
+                }
+
+                $discussion->numreplies = 0;
+                if (!empty($replies[$discussion->discussion])) {
+                    $discussion->numreplies = (int) $replies[$discussion->discussion]->replies;
+                }
+
+                $picturefields = explode(',', user_picture::fields());
+
+                // Load user objects from the results of the query.
+                $user = new stdclass();
+                $user->id = $discussion->userid;
+                $user = username_load_fields_from_object($user, $discussion, null, $picturefields);
+                // Preserve the id, it can be modified by username_load_fields_from_object.
+                $user->id = $discussion->userid;
+                $discussion->userfullname = fullname($user, $canviewfullname);
+
+                $userpicture = new user_picture($user);
+                $userpicture->size = 1; // Size f1.
+                $discussion->userpictureurl = $userpicture->get_url($PAGE)->out(false);
+
+                $usermodified = new stdclass();
+                $usermodified->id = $discussion->usermodified;
+                $usermodified = username_load_fields_from_object($usermodified, $discussion, 'um', $picturefields);
+                // Preserve the id (it can be overwritten due to the prefixed $picturefields).
+                $usermodified->id = $discussion->usermodified;
+                $discussion->usermodifiedfullname = fullname($usermodified, $canviewfullname);
+
+                $userpicture = new user_picture($usermodified);
+                $userpicture->size = 1; // Size f1.
+                $discussion->usermodifiedpictureurl = $userpicture->get_url($PAGE)->out(false);
+
+                // Rewrite embedded images URLs.
+                list($discussion->message, $discussion->messageformat) =
+                    external_format_text($discussion->message, $discussion->messageformat,
+                                            $modcontext->id, 'mod_hsuforum', 'post', $discussion->id);
+
+                // List attachments.
+                if (!empty($discussion->attachment)) {
+                    $discussion->attachments = array();
+
+                    $fs = get_file_storage();
+                    if ($files = $fs->get_area_files($modcontext->id, 'mod_hsuforum', 'attachment',
+                                                        $discussion->id, "filename", false)) {
+                        foreach ($files as $file) {
+                            $filename = $file->get_filename();
+
+                            $discussion->attachments[] = array(
+                                'filename' => $filename,
+                                'mimetype' => $file->get_mimetype(),
+                                'fileurl'  => file_encode_url($CFG->wwwroot.'/webservice/pluginfile.php',
+                                                '/'.$modcontext->id.'/mod_hsuforum/attachment/'.$discussion->id.'/'.$filename)
+                            );
+                        }
+                    }
+                }
+
+                $discussions[] = $discussion;
+            }
+        }
+
+        $result = array();
+        $result['discussions'] = $discussions;
+        $result['warnings'] = $warnings;
+        return $result;
+
+    }
+
+    /**
+     * Describes the get_forum_discussions_paginated return value.
+     *
+     * @return external_single_structure
+     * @since Moodle 2.8
+     */
+    public static function get_forum_discussions_paginated_returns() {
+        return new external_single_structure(
+            array(
+                'discussions' => new external_multiple_structure(
+                        new external_single_structure(
+                            array(
+                                'id' => new external_value(PARAM_INT, 'Post id'),
+                                'name' => new external_value(PARAM_TEXT, 'Discussion name'),
+                                'groupid' => new external_value(PARAM_INT, 'Group id'),
+                                'timemodified' => new external_value(PARAM_INT, 'Time modified'),
+                                'usermodified' => new external_value(PARAM_INT, 'The id of the user who last modified'),
+                                'timestart' => new external_value(PARAM_INT, 'Time discussion can start'),
+                                'timeend' => new external_value(PARAM_INT, 'Time discussion ends'),
+                                'discussion' => new external_value(PARAM_INT, 'Discussion id'),
+                                'parent' => new external_value(PARAM_INT, 'Parent id'),
+                                'userid' => new external_value(PARAM_INT, 'User who started the discussion id'),
+                                'created' => new external_value(PARAM_INT, 'Creation time'),
+                                'modified' => new external_value(PARAM_INT, 'Time modified'),
+                                'mailed' => new external_value(PARAM_INT, 'Mailed?'),
+                                'subject' => new external_value(PARAM_TEXT, 'The post subject'),
+                                'message' => new external_value(PARAM_RAW, 'The post message'),
+                                'messageformat' => new external_format_value('message'),
+                                'messagetrust' => new external_value(PARAM_INT, 'Can we trust?'),
+                                'attachment' => new external_value(PARAM_RAW, 'Has attachments?'),
+                                'attachments' => new external_multiple_structure(
+                                    new external_single_structure(
+                                        array (
+                                            'filename' => new external_value(PARAM_FILE, 'file name'),
+                                            'mimetype' => new external_value(PARAM_RAW, 'mime type'),
+                                            'fileurl'  => new external_value(PARAM_URL, 'file download url')
+                                        )
+                                    ), 'attachments', VALUE_OPTIONAL
+                                ),
+                                'totalscore' => new external_value(PARAM_INT, 'The post message total score'),
+                                'mailnow' => new external_value(PARAM_INT, 'Mail now?'),
+                                'userfullname' => new external_value(PARAM_TEXT, 'Post author full name'),
+                                'usermodifiedfullname' => new external_value(PARAM_TEXT, 'Post modifier full name'),
+                                'userpictureurl' => new external_value(PARAM_URL, 'Post author picture.'),
+                                'usermodifiedpictureurl' => new external_value(PARAM_URL, 'Post modifier picture.'),
+                                'numreplies' => new external_value(PARAM_TEXT, 'The number of replies in the discussion'),
+                                'numunread' => new external_value(PARAM_INT, 'The number of unread discussions.')
+                            ), 'post'
+                        )
+                    ),
+                'warnings' => new external_warnings()
+            )
+        );
+    }
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     * @since Moodle 2.9
+     */
+    public static function view_forum_parameters() {
+        return new external_function_parameters(
+            array(
+                'forumid' => new external_value(PARAM_INT, 'forum instance id')
+            )
+        );
+    }
+
+    /**
+     * Trigger the course module viewed event and update the module completion status.
+     *
+     * @param int $forumid the forum instance id
+     * @return array of warnings and status result
+     * @since Moodle 2.9
+     * @throws moodle_exception
+     */
+    public static function view_forum($forumid) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
+
+        $params = self::validate_parameters(self::view_forum_parameters(),
+                                            array(
+                                                'forumid' => $forumid
+                                            ));
+        $warnings = array();
+        $discussions = array();
+
+        // Request and permission validation.
+        $forum = $DB->get_record('hsuforum', array('id' => $params['forumid']), 'id', MUST_EXIST);
+        list($course, $cm) = get_course_and_cm_from_instance($forum, 'hsuforum');
+
+        $context = context_module::instance($cm->id);
+        self::validate_context($context);
+
+        require_capability('mod/hsuforum:viewdiscussion', $context, null, true, 'noviewdiscussionspermission', 'forum');
+
+        // Call the hsuforum/lib API.
+        hsuforum_view($forum, $course, $cm, $context);
+
+        $result = array();
+        $result['status'] = true;
+        $result['warnings'] = $warnings;
+        return $result;
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     * @since Moodle 2.9
+     */
+    public static function view_forum_returns() {
+        return new external_single_structure(
+            array(
+                'status' => new external_value(PARAM_BOOL, 'status: true if success'),
+                'warnings' => new external_warnings()
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     * @since Moodle 2.9
+     */
+    public static function view_forum_discussion_parameters() {
+        return new external_function_parameters(
+            array(
+                'discussionid' => new external_value(PARAM_INT, 'discussion id')
+            )
+        );
+    }
+
+    /**
+     * Trigger the discussion viewed event.
+     *
+     * @param int $discussionid the discussion id
+     * @return array of warnings and status result
+     * @since Moodle 2.9
+     * @throws moodle_exception
+     */
+    public static function view_forum_discussion($discussionid) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
+
+        $params = self::validate_parameters(self::view_forum_discussion_parameters(),
+                                            array(
+                                                'discussionid' => $discussionid
+                                            ));
+        $warnings = array();
+
+        $discussion = $DB->get_record('hsuforum_discussions', array('id' => $params['discussionid']), '*', MUST_EXIST);
+        $forum = $DB->get_record('hsuforum', array('id' => $discussion->forum), '*', MUST_EXIST);
+        list($course, $cm) = get_course_and_cm_from_instance($forum, 'hsuforum');
+
+        // Validate the module context. It checks everything that affects the module visibility (including groupings, etc..).
+        $modcontext = context_module::instance($cm->id);
+        self::validate_context($modcontext);
+
+        require_capability('mod/hsuforum:viewdiscussion', $modcontext, null, true, 'noviewdiscussionspermission', 'forum');
+
+        // Call the hsuforum/lib API.
+        hsuforum_discussion_view($modcontext, $forum, $discussion);
+
+        $result = array();
+        $result['status'] = true;
+        $result['warnings'] = $warnings;
+        return $result;
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     * @since Moodle 2.9
+     */
+    public static function view_forum_discussion_returns() {
+        return new external_single_structure(
+            array(
+                'status' => new external_value(PARAM_BOOL, 'status: true if success'),
+                'warnings' => new external_warnings()
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     * @since Moodle 3.0
+     */
+    public static function add_discussion_post_parameters() {
+        return new external_function_parameters(
+            array(
+                'postid' => new external_value(PARAM_INT, 'the post id we are going to reply to
+                                                (can be the initial discussion post'),
+                'subject' => new external_value(PARAM_TEXT, 'new post subject'),
+                'message' => new external_value(PARAM_RAW, 'new post message (only html format allowed)'),
+                'options' => new external_multiple_structure (
+                    new external_single_structure(
+                        array(
+                            'name' => new external_value(PARAM_ALPHANUM,
+                                        'The allowed keys (value format) are:
+                                        discussionsubscribe (bool); subscribe to the discussion?, default to true
+                            '),
+                            'value' => new external_value(PARAM_RAW, 'the value of the option,
+                                                            this param is validated in the external function.'
+                        )
+                    )
+                ), 'Options', VALUE_DEFAULT, array())
+            )
+        );
+    }
+
+    /**
+     * Create new posts into an existing discussion.
+     *
+     * @param int $postid the post id we are going to reply to
+     * @param string $subject new post subject
+     * @param string $message new post message (only html format allowed)
+     * @param array $options optional settings
+     * @return array of warnings and the new post id
+     * @since Moodle 3.0
+     * @throws moodle_exception
+     */
+    public static function add_discussion_post($postid, $subject, $message, $options = array()) {
+        global $DB, $CFG, $USER;
+        require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
+
+        $params = self::validate_parameters(self::add_discussion_post_parameters(),
+                                            array(
+                                                'postid' => $postid,
+                                                'subject' => $subject,
+                                                'message' => $message,
+                                                'options' => $options
+                                            ));
+        // Validate options.
+        $options = array(
+            'discussionsubscribe' => true
+        );
+        foreach ($params['options'] as $option) {
+            $name = trim($option['name']);
+            switch ($name) {
+                case 'discussionsubscribe':
+                    $value = clean_param($option['value'], PARAM_BOOL);
+                    break;
+                default:
+                    throw new moodle_exception('errorinvalidparam', 'webservice', '', $name);
+            }
+            $options[$name] = $value;
+        }
+
+        $warnings = array();
+
+        if (!$parent = hsuforum_get_post_full($params['postid'])) {
+            throw new moodle_exception('invalidparentpostid', 'forum');
+        }
+
+        if (!$discussion = $DB->get_record("hsuforum_discussions", array("id" => $parent->discussion))) {
+            throw new moodle_exception('notpartofdiscussion', 'forum');
+        }
+
+        // Request and permission validation.
+        $forum = $DB->get_record('hsuforum', array('id' => $discussion->forum), '*', MUST_EXIST);
+        list($course, $cm) = get_course_and_cm_from_instance($forum, 'hsuforum');
+
+        $context = context_module::instance($cm->id);
+        self::validate_context($context);
+
+        if (!hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $context)) {
+            throw new moodle_exception('nopostforum', 'forum');
+        }
+
+        $thresholdwarning = hsuforum_check_throttling($forum, $cm);
+        hsuforum_check_blocking_threshold($thresholdwarning);
+
+        // Create the post.
+        $post = new stdClass();
+        $post->discussion = $discussion->id;
+        $post->parent = $parent->id;
+        $post->subject = $params['subject'];
+        $post->message = $params['message'];
+        $post->messageformat = FORMAT_HTML;   // Force formatting for now.
+        $post->messagetrust = trusttext_trusted($context);
+        $post->itemid = 0;
+        $post->reveal = 0;
+        $post->flags = 0;
+        $post->privatereply = 0;
+
+        if ($postid = hsuforum_add_new_post($post, null)) {
+
+            $post->id = $postid;
+
+            // Trigger events and completion.
+            $params = array(
+                'context' => $context,
+                'objectid' => $post->id,
+                'other' => array(
+                    'discussionid' => $discussion->id,
+                    'forumid' => $forum->id,
+                    'forumtype' => $forum->type,
+                )
+            );
+            $event = \mod_hsuforum\event\post_created::create($params);
+            $event->add_record_snapshot('hsuforum_posts', $post);
+            $event->add_record_snapshot('hsuforum_discussions', $discussion);
+            $event->trigger();
+
+            // Update completion state.
+            $completion = new completion_info($course);
+            if ($completion->is_enabled($cm) &&
+                    ($forum->completionreplies || $forum->completionposts)) {
+                $completion->update_state($cm, COMPLETION_COMPLETE);
+            }
+
+            $settings = new stdClass();
+            $settings->discussionsubscribe = $options['discussionsubscribe'];
+            hsuforum_post_subscription($settings, $forum, $discussion);
+        } else {
+            throw new moodle_exception('couldnotadd', 'forum');
+        }
+
+        $result = array();
+        $result['postid'] = $postid;
+        $result['warnings'] = $warnings;
+        return $result;
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     * @since Moodle 3.0
+     */
+    public static function add_discussion_post_returns() {
+        return new external_single_structure(
+            array(
+                'postid' => new external_value(PARAM_INT, 'new post id'),
+                'warnings' => new external_warnings()
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     * @since Moodle 3.0
+     */
+    public static function add_discussion_parameters() {
+        return new external_function_parameters(
+            array(
+                'forumid' => new external_value(PARAM_INT, 'Forum instance ID'),
+                'subject' => new external_value(PARAM_TEXT, 'New Discussion subject'),
+                'message' => new external_value(PARAM_RAW, 'New Discussion message (only html format allowed)'),
+                'groupid' => new external_value(PARAM_INT, 'The group, default to -1', VALUE_DEFAULT, -1),
+                'options' => new external_multiple_structure (
+                    new external_single_structure(
+                        array(
+                            'name' => new external_value(PARAM_ALPHANUM,
+                                        'The allowed keys (value format) are:
+                                        discussionsubscribe (bool); subscribe to the discussion?, default to true
+                            '),
+                            'value' => new external_value(PARAM_RAW, 'The value of the option,
+                                                            This param is validated in the external function.'
+                        )
+                    )
+                ), 'Options', VALUE_DEFAULT, array())
+            )
+        );
+    }
+
+    /**
+     * Add a new discussion into an existing forum.
+     *
+     * @param int $forumid the forum instance id
+     * @param string $subject new discussion subject
+     * @param string $message new discussion message (only html format allowed)
+     * @param int $groupid the user course group
+     * @param array $options optional settings
+     * @return array of warnings and the new discussion id
+     * @since Moodle 3.0
+     * @throws moodle_exception
+     */
+    public static function add_discussion($forumid, $subject, $message, $groupid = -1, $options = array()) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
+
+        $params = self::validate_parameters(self::add_discussion_parameters(),
+                                            array(
+                                                'forumid' => $forumid,
+                                                'subject' => $subject,
+                                                'message' => $message,
+                                                'groupid' => $groupid,
+                                                'options' => $options
+                                            ));
+        // Validate options.
+        $options = array(
+            'discussionsubscribe' => true
+        );
+        foreach ($params['options'] as $option) {
+            $name = trim($option['name']);
+            switch ($name) {
+                case 'discussionsubscribe':
+                    $value = clean_param($option['value'], PARAM_BOOL);
+                    break;
+                default:
+                    throw new moodle_exception('errorinvalidparam', 'webservice', '', $name);
+            }
+            $options[$name] = $value;
+        }
+
+        $warnings = array();
+
+        // Request and permission validation.
+        $forum = $DB->get_record('hsuforum', array('id' => $params['forumid']), '*', MUST_EXIST);
+        list($course, $cm) = get_course_and_cm_from_instance($forum, 'hsuforum');
+
+        $context = context_module::instance($cm->id);
+        self::validate_context($context);
+
+        // Normalize group.
+        if (!groups_get_activity_groupmode($cm)) {
+            // Groups not supported, force to -1.
+            $groupid = -1;
+        } else {
+            // Check if we receive the default or and empty value for groupid,
+            // in this case, get the group for the user in the activity.
+            if ($groupid === -1 or empty($params['groupid'])) {
+                $groupid = groups_get_activity_group($cm);
+            } else {
+                // Here we rely in the group passed, hsuforum_user_can_post_discussion will validate the group.
+                $groupid = $params['groupid'];
+            }
+        }
+
+        if (!hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $context)) {
+            throw new moodle_exception('cannotcreatediscussion', 'forum');
+        }
+
+        $thresholdwarning = hsuforum_check_throttling($forum, $cm);
+        hsuforum_check_blocking_threshold($thresholdwarning);
+
+        // Create the discussion.
+        $discussion = new stdClass();
+        $discussion->course = $course->id;
+        $discussion->forum = $forum->id;
+        $discussion->message = $params['message'];
+        $discussion->messageformat = FORMAT_HTML;   // Force formatting for now.
+        $discussion->messagetrust = trusttext_trusted($context);
+        $discussion->itemid = 0;
+        $discussion->groupid = $groupid;
+        $discussion->mailnow = 0;
+        $discussion->subject = $params['subject'];
+        $discussion->name = $discussion->subject;
+        $discussion->timestart = 0;
+        $discussion->timeend = 0;
+        $discussion->reveal = 0;
+
+        if ($discussionid = hsuforum_add_discussion($discussion)) {
+
+            $discussion->id = $discussionid;
+
+            // Trigger events and completion.
+
+            $params = array(
+                'context' => $context,
+                'objectid' => $discussion->id,
+                'other' => array(
+                    'forumid' => $forum->id,
+                )
+            );
+            $event = \mod_hsuforum\event\discussion_created::create($params);
+            $event->add_record_snapshot('hsuforum_discussions', $discussion);
+            $event->trigger();
+
+            $completion = new completion_info($course);
+            if ($completion->is_enabled($cm) &&
+                    ($forum->completiondiscussions || $forum->completionposts)) {
+                $completion->update_state($cm, COMPLETION_COMPLETE);
+            }
+
+            $settings = new stdClass();
+            $settings->discussionsubscribe = $options['discussionsubscribe'];
+            hsuforum_post_subscription($settings, $forum, $discussion);
+        } else {
+            throw new moodle_exception('couldnotadd', 'forum');
+        }
+
+        $result = array();
+        $result['discussionid'] = $discussionid;
+        $result['warnings'] = $warnings;
+        return $result;
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     * @since Moodle 3.0
+     */
+    public static function add_discussion_returns() {
+        return new external_single_structure(
+            array(
+                'discussionid' => new external_value(PARAM_INT, 'New Discussion ID'),
                 'warnings' => new external_warnings()
             )
         );
