@@ -31,6 +31,7 @@ use mod_hsuforum\response\json_response;
 use mod_hsuforum\service\discussion_service;
 use mod_hsuforum\service\form_service;
 use mod_hsuforum\service\post_service;
+use mod_hsuforum\local;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -150,6 +151,9 @@ class edit_controller extends controller_abstract {
             $message       = required_param('message', PARAM_RAW_TRIMMED);
             $reveal        = optional_param('reveal', 0, PARAM_BOOL);
             $messageformat = required_param('messageformat', PARAM_INT);
+            $posttomygroups = optional_param('posttomygroups', 0, PARAM_BOOL);
+
+            list($timestart, $timeend) = local::get_form_discussion_times();
 
             $forum   = $PAGE->activityrecord;
             $cm      = $PAGE->cm;
@@ -159,16 +163,20 @@ class edit_controller extends controller_abstract {
             if (empty($groupid)) {
                 $groupid = -1;
             }
-            return $this->discussionservice->handle_add_discussion($course, $cm, $forum, $context, array(
+            $options = array(
                 'subject'       => $subject,
                 'name'          => $subject,
                 'groupid'       => $groupid,
                 'message'       => $message,
                 'messageformat' => $messageformat,
                 'reveal'        => $reveal,
-            ));
+                'timestart'     => $timestart,
+                'timeend'       => $timeend,
+            );
+            return $this->discussionservice->handle_add_discussion($course, $cm, $forum, $context, $options, $posttomygroups);
         } catch (\Exception $e) {
-            return new json_response($e);
+            $retobj = (object) ['errors' => $e];
+            return new json_response($retobj);
         }
     }
 
@@ -192,6 +200,8 @@ class edit_controller extends controller_abstract {
             $reveal        = optional_param('reveal', 0, PARAM_BOOL);
             $message       = required_param('message', PARAM_RAW_TRIMMED);
             $messageformat = required_param('messageformat', PARAM_INT);
+
+            list($timestart, $timeend) = local::get_form_discussion_times();
 
             $forum   = $PAGE->activityrecord;
             $cm      = $PAGE->cm;
@@ -218,6 +228,8 @@ class edit_controller extends controller_abstract {
                 'messageformat' => $messageformat,
                 'reveal'        => $reveal,
                 'privatereply'  => $privatereply,
+                'timestart'     => $timestart,
+                'timeend'       => $timeend
             ));
         } catch (\Exception $e) {
             return new json_response($e);
@@ -243,12 +255,20 @@ class edit_controller extends controller_abstract {
             $PAGE->activityrecord, $PAGE->context, $discussion, $post
         );
 
+        $draftid = required_param('draftid', PARAM_INT);
+
         if (!empty($post->parent)) {
-            $html = $this->formservice->edit_post_form($PAGE->cm, $post);
+            $html = $this->formservice->edit_post_form($PAGE->cm, $post, $draftid);
+            return new json_response(['html' => $html]);
         } else {
-            $html = $this->formservice->edit_discussion_form($PAGE->cm, $discussion, $post);
+            $html = $this->formservice->edit_discussion_form($PAGE->cm, $discussion, $post, $draftid);
+            return new json_response([
+                'html'          => $html,
+                'isdiscussion'  => true,
+                'timestart'     => $discussion->timestart,
+                'timeend'       => $discussion->timeend
+            ]);
         }
-        return new json_response(array('html' => $html));
     }
 
     /**

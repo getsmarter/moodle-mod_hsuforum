@@ -708,6 +708,20 @@ function xmldb_hsuforum_upgrade($oldversion) {
     }
 
 
+    // Moodle v2.9.0 release upgrade line.
+    // Put any upgrade step following this.
+
+    if ($oldversion < 2016012600) {
+        // Groupid = 0 is never valid.
+        $DB->set_field('hsuforum_discussions', 'groupid', -1, array('groupid' => 0));
+
+        // Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2016012600, 'hsuforum');
+    }
+
+    // Moodle v3.0.0 release upgrade line.
+    // Put any upgrade step following this.
+
     return true;
 }
 

@@ -50,7 +50,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
-        $this->add_intro_editor(true, get_string('forumintro', 'hsuforum'));
+        $this->standard_intro_elements(get_string('forumintro', 'hsuforum'));
 
         if (empty($config->hiderecentposts)) {
             // Display recent posts on course page?
@@ -144,6 +144,9 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             $choices[2] = get_string('posts', 'hsuforum');
             $mform->addElement('select', 'rsstype', get_string('rsstype'), $choices);
             $mform->addHelpButton('rsstype', 'rsstype', 'hsuforum');
+            if (isset($config->rsstype)) {
+                $mform->setDefault('rsstype', $config->rsstype);
+            }
 
             $choices = array();
             $choices[0] = '0';
@@ -162,6 +165,9 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             $mform->addElement('select', 'rssarticles', get_string('rssarticles'), $choices);
             $mform->addHelpButton('rssarticles', 'rssarticles', 'hsuforum');
             $mform->disabledIf('rssarticles', 'rsstype', 'eq', '0');
+            if (isset($config->rssarticles)) {
+                $mform->setDefault('rssarticles', $config->rssarticles);
+            }
         }
 
 //-------------------------------------------------------------------------------
@@ -218,6 +224,8 @@ class mod_hsuforum_mod_form extends moodleform_mod {
                 $mform->disabledIf('advancedgradingmethod_'.$areaname, 'gradetype', 'neq', HSUFORUM_GRADETYPE_MANUAL);
             }
         }
+        $mform->disabledIf('gradepass', 'gradetype', 'neq', HSUFORUM_GRADETYPE_MANUAL);
+
         $key = array_search('scale', $mform->_dependencies['assessed']['eq'][0]);
         if ($key !== false) {
             unset($mform->_dependencies['assessed']['eq'][0][$key]);
@@ -352,7 +360,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
                 $errors['completionusegrade'] = get_string('completionusegradeerror', 'hsuforum');
             }
         }
-        if ($data['gradetype'] == HSUFORUM_GRADETYPE_MANUAL
+        if (($data['gradetype'] == HSUFORUM_GRADETYPE_MANUAL || $data['gradetype'] == HSUFORUM_GRADETYPE_RATING)
                 && $data['scale'] == 0) {
             $errors['scale'] = get_string('modgradeerrorbadpoint', 'grades', get_config('core', 'gradepointmax'));
         }

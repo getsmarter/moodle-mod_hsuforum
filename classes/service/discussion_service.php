@@ -28,6 +28,7 @@ use mod_hsuforum\attachments;
 use mod_hsuforum\event\discussion_created;
 use mod_hsuforum\response\json_response;
 use mod_hsuforum\upload_file;
+use mod_hsuforum\local;
 use moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
@@ -66,31 +67,44 @@ class discussion_service {
      * @param array $options These override default post values, EG: set the post message with this
      * @return json_response
      */
-    public function handle_add_discussion($course, $cm, $forum, $context, array $options) {
+    public function handle_add_discussion($course, $cm, $forum, $context, array $options, $posttomygroups = false) {
         global $PAGE, $OUTPUT;
 
         $uploader = new upload_file(
             new attachments($forum, $context), \mod_hsuforum_post_form::attachment_options($forum)
         );
 
-        $discussion = $this->create_discussion_object($forum, $context, $options);
-        $errors = $this->validate_discussion($cm, $forum, $context, $discussion, $uploader);
-
-        if (!empty($errors)) {
-            /** @var \mod_hsuforum_renderer $renderer */
-            $renderer = $PAGE->get_renderer('mod_hsuforum');
-
-            return new json_response((object) array(
-                'errors' => true,
-                'html'   => $renderer->validation_errors($errors),
-            ));
+        if (!empty($posttomygroups)) {
+            $allowedgroups = groups_get_activity_allowed_groups($cm);
+            foreach ($allowedgroups as $groupid => $group) {
+                if (hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $context)) {
+                    $groupstopostto[] = $groupid;
+                }
+            }
+        } else {
+            $groupstopostto[] = $options['groupid'];
         }
-        $this->save_discussion($discussion, $uploader);
-        $this->trigger_discussion_created($course, $context, $cm, $forum, $discussion);
+
+        /** @var \mod_hsuforum_renderer $renderer */
+        $renderer = $PAGE->get_renderer('mod_hsuforum');
+
+        foreach ($groupstopostto as $groupid) {
+            $options['groupid'] = $groupid;
+
+            $discussion = $this->create_discussion_object($forum, $context, $options);
+            $errors = $this->validate_discussion($cm, $forum, $context, $discussion, $uploader);
+
+            if (!empty($errors)) {
+                return new json_response((object) array(
+                    'errors' => true,
+                    'html'   => $renderer->validation_errors($errors),
+                ));
+            }
+            $this->save_discussion($discussion, $uploader);
+            $this->trigger_discussion_created($course, $context, $cm, $forum, $discussion);
+        }
 
         $message = get_string('postaddedsuccess', 'hsuforum');
-
-        $renderer = $PAGE->get_renderer('mod_hsuforum');
 
         return new json_response((object) array(
             'eventaction'      => 'discussioncreated',
@@ -142,10 +156,18 @@ class discussion_service {
      * @param upload_file $uploader
      * @return moodle_exception[]
      */
-    public function validate_discussion($cm, $forum, $context, $discussion, upload_file $uploader) {
+    public function validate_discussion($cm, $forum, $context, $discussion, upload_file $uploader, $posttomygroups = false) {
         $errors = array();
         if (!hsuforum_user_can_post_discussion($forum, $discussion->groupid, -1, $cm, $context)) {
             $errors[] = new \moodle_exception('nopostforum', 'hsuforum');
+        }
+
+        if (!empty($posttomygroups)) {
+            try {
+                require_capability('mod/hsuforum:canposttomygroups', $context);
+            } catch (\Exception $e) {
+                $errors[] = $e;
+            }
         }
 
         $thresholdwarning = hsuforum_check_throttling($forum, $cm);
@@ -160,6 +182,14 @@ class discussion_service {
         if (hsuforum_str_empty($discussion->message)) {
             $errors[] = new \moodle_exception('messageisrequired', 'hsuforum');
         }
+
+        // Check restriction times.
+        list ($start, $end) = local::get_form_discussion_times();
+
+        if ($start && $end && $start > $end) {
+            $errors[] = new \moodle_exception('errortimestartgreater', 'hsuforum');
+        }
+
         if ($uploader->was_file_uploaded()) {
             try {
                 $uploader->validate_files();
@@ -178,6 +208,7 @@ class discussion_service {
      */
     public function save_discussion($discussion, upload_file $uploader) {
         $message        = '';
+
         $discussion->id = hsuforum_add_discussion($discussion, null, $message);
 
         $file = $uploader->process_file_upload($discussion->firstpost);

@@ -26,6 +26,8 @@
  */
 
     use mod_hsuforum\local;
+    use mod_hsuforum\renderables\discussion_dateform;
+    use mod_hsuforum\renderables\advanced_editor;
 
     require_once('../../config.php');
     require_once(__DIR__.'/lib/discussion/sort.php');
@@ -150,18 +152,12 @@
             hsuforum_rss_delete_file($forum);
             hsuforum_rss_delete_file($forumto);
 
-            redirect($return.'&moved=-1&sesskey='.sesskey());
+            redirect($return.'&move=-1&sesskey='.sesskey());
         }
     }
 
-    $params = array(
-        'context' => $modcontext,
-        'objectid' => $discussion->id,
-    );
-    $event = \mod_hsuforum\event\discussion_viewed::create($params);
-    $event->add_record_snapshot('hsuforum_discussions', $discussion);
-    $event->add_record_snapshot('hsuforum', $forum);
-    $event->trigger();
+    // Trigger discussion viewed event.
+    hsuforum_discussion_view($modcontext, $forum, $discussion);
 
     unset($SESSION->fromdiscussion);
 
@@ -202,6 +198,8 @@
     $PAGE->set_title("$course->shortname: $discussion->name");
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
+
+    echo $renderer->render(new discussion_dateform($modcontext, $discussion));
 
     if ($forum->type != 'single') {
          echo "<h2><a href='$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id'>&#171; ".format_string($forum->name)."</a></h2>";
@@ -248,7 +246,7 @@
     }
 
     if ($move == -1 and confirm_sesskey()) {
-        echo $OUTPUT->notification(get_string('discussionmoved', 'hsuforum', format_string($forum->name,true)));
+        echo $OUTPUT->notification(get_string('discussionmoved', 'hsuforum', format_string($forum->name,true)), 'notifysuccess');
     }
 
     $canrate = \mod_hsuforum\local::cached_has_capability('mod/hsuforum:rate', $modcontext);
@@ -303,7 +301,7 @@
     if (!empty($forummenu)) {
         echo '<div class="movediscussionoption">';
         $select = new url_select($forummenu, '',
-            array(''=>get_string("movethisdiscussionto", "hsuforum")),
+            array('/mod/hsuforum/discuss.php?d=' . $discussion->id => get_string("movethisdiscussionto", "hsuforum")),
             'forummenu');
         echo $OUTPUT->render($select);
         echo "</div>";
@@ -328,10 +326,10 @@
         }
     }
 
-    $neighbours = hsuforum_get_discussion_neighbours($cm, $discussion);
+    $neighbours = hsuforum_get_discussion_neighbours($cm, $discussion, $forum);
     echo $renderer->discussion_navigation($neighbours['prev'], $neighbours['next']);
     echo "</div>";
 
-echo $renderer->advanced_editor();
+echo $renderer->render(new advanced_editor($modcontext));
 
 echo $OUTPUT->footer();
