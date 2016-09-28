@@ -45,6 +45,7 @@ class hsuforum_lib_discussion_sort implements Serializable {
         // 'firstname' => 'u.firstname %dir%, d.timemodified %dir%',
         // 'lastname'  => 'u.lastname %dir%, d.timemodified %dir%',
         'subscribe' => 'sd.id %dir%, d.timemodified %dir%',
+        'like' => 'likes %dir%',
     );
 
     /**
