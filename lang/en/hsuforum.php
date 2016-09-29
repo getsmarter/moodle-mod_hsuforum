@@ -554,6 +554,7 @@ $string['discussionsortkey:lastreply'] = 'Recent';
 $string['discussionsortkey:created'] = 'Creation date';
 $string['discussionsortkey:replies'] = 'Most active';
 $string['discussionsortkey:subscribe'] = 'Subscribed';
+$string['discussionsortkey:like'] = 'Most likes';
 
 $string['nextdiscussionx'] = '({$a}) Next >';
 $string['prevdiscussionx'] = '< Previous ({$a})';

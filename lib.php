@@ -2910,6 +2910,18 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
                            $allnames, u.email, u.picture, u.imagealt $umfields";
     }
 
+    if ($forumsort == 'likes DESC' || $forumsort == 'likes ASC') {
+        $sortbylikes = ' LEFT JOIN (SELECT d.*, COUNT(d.id) AS likes
+                                        FROM {hsuforum_discussions} d
+                                            LEFT OUTER JOIN {hsuforum_actions} a ON d.firstpost = a.postid
+                                            WHERE forum = ?
+                                            GROUP BY d.firstpost
+                                    ) likes ON d.id = likes.id';
+        $params[] = $cm->instance;
+    } else {
+        $sortbylikes ='';
+    }
+
     $sql = "SELECT $selectsql
               FROM {hsuforum_discussions} d
                    JOIN {hsuforum_posts} p ON p.discussion = d.id
@@ -2928,6 +2940,7 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
                    $tracksql
                    $subscribesql
                    $umtable
+                   $sortbylikes
              WHERE d.forum = ? AND p.parent = 0
                    $timelimit $groupselect
           ORDER BY $forumsort";
