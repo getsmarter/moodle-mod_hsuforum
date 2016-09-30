@@ -842,3 +842,9 @@ FUN WITH FORMS
     height: 1em;
     margin-top: 0.1em;
 }
+
+/* Custom CSS */
+
+.singleselect select {
+    margin-bottom: 10px;
+}
