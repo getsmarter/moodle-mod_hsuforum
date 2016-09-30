@@ -2827,6 +2827,18 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
         $limitnum  = 0;
     }
 
+    if ($forumsort == 'likes DESC' || $forumsort == 'likes ASC') {
+        $sortbylikes = ' LEFT JOIN (SELECT d.*, COUNT(d.id) AS likes
+                                        FROM {hsuforum_discussions} d
+                                            LEFT OUTER JOIN {hsuforum_actions} a ON d.firstpost = a.postid
+                                            WHERE forum = ?
+                                            GROUP BY d.firstpost
+                                    ) likes ON d.id = likes.id';
+        $params[] = $cm->instance;
+    } else {
+        $sortbylikes ='';
+    }
+
     $groupmode    = groups_get_activity_groupmode($cm);
 
     if ($groupmode) {
@@ -2908,18 +2920,6 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
         $selectsql = "$postdata, d.name, d.timemodified, d.usermodified, d.groupid, d.timestart, d.timeend, d.assessed,
                            d.firstpost, extra.replies, lastpost.postid lastpostid,$trackselect$subscribeselect
                            $allnames, u.email, u.picture, u.imagealt $umfields";
-    }
-
-    if ($forumsort == 'likes DESC' || $forumsort == 'likes ASC') {
-        $sortbylikes = ' LEFT JOIN (SELECT d.*, COUNT(d.id) AS likes
-                                        FROM {hsuforum_discussions} d
-                                            LEFT OUTER JOIN {hsuforum_actions} a ON d.firstpost = a.postid
-                                            WHERE forum = ?
-                                            GROUP BY d.firstpost
-                                    ) likes ON d.id = likes.id';
-        $params[] = $cm->instance;
-    } else {
-        $sortbylikes ='';
     }
 
     $sql = "SELECT $selectsql
