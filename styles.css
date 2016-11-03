@@ -57,6 +57,10 @@
     display: block;
 }
 
+.pinned img{
+    padding: 3px;
+}
+
 .forumtype-blog .hsuforum-replycount,
 .forumtype-blog .hsuforum-unreadcount,
 .forumtype-blog .hsuforum-thread-title + .hsuforum-thread-meta {

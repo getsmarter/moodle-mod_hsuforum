@@ -54,6 +54,8 @@ if (!defined('HSUFORUM_CRON_USER_CACHE')) {
  * HSUFORUM_POSTS_ALL_USER_GROUPS - All the posts in groups where the user is enrolled.
  */
 define('HSUFORUM_POSTS_ALL_USER_GROUPS', -2);
+define('HSUFORUM_DISCUSSION_PINNED', 1);
+define('HSUFORUM_DISCUSSION_UNPINNED', 0);
 
 /// STANDARD FUNCTIONS ///////////////////////////////////////////////////////////
 
@@ -2917,7 +2919,7 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
         $selectsql = $forumselect;
     } else {
         $allnames  = get_all_user_name_fields(true, 'u');
-        $selectsql = "$postdata, d.name, d.timemodified, d.usermodified, d.groupid, d.timestart, d.timeend, d.assessed,
+        $selectsql = "$postdata, d.name, d.timemodified, d.usermodified, d.groupid, d.timestart, d.timeend, d.assessed, d.pinned,
                            d.firstpost, extra.replies, lastpost.postid lastpostid,$trackselect$subscribeselect
                            $allnames, u.email, u.picture, u.imagealt $umfields";
     }
@@ -3028,7 +3030,7 @@ function hsuforum_get_discussion_neighbours($cm, $discussion, $forum) {
         $params['discid1'] = $discussion->id;
         $params['discid2'] = $discussion->id;
 
-        $sql = "SELECT d.id, d.name, d.timemodified, d.groupid, d.timestart, d.timeend
+        $sql = "SELECT d.id, d.name, d.timemodified, d.groupid, d.timestart, d.timeend, d.pinned
                   FROM {hsuforum_discussions} d
                   JOIN {hsuforum_posts} p ON d.firstpost = p.id
                  WHERE d.forum = :forumid
@@ -3108,7 +3110,7 @@ function hsuforum_get_discussion_neighbours($cm, $discussion, $forum) {
  * @param string $prefix The prefix being used for the discussion table.
  * @return string
  */
-function hsuforum_get_default_sort_order($desc = true, $compare = 'd.timemodified', $prefix = 'd') {
+function hsuforum_get_default_sort_order($desc = true, $compare = 'd.timemodified', $prefix = 'd', $pinned = true) {
     global $CFG;
 
     $config = get_config('hsuforum');
@@ -3119,6 +3121,12 @@ function hsuforum_get_default_sort_order($desc = true, $compare = 'd.timemodifie
 
     $dir = $desc ? 'DESC' : 'ASC';
 
+    if ($pinned == true) {
+        $pinned = "{$prefix}pinned DESC,";
+    } else {
+        $pinned = '';
+    }
+
     $sort = "{$prefix}timemodified";
     if (!empty($config->enabletimedposts)) {
         $sort = "CASE WHEN {$compare} < {$prefix}timestart
@@ -3126,7 +3134,7 @@ function hsuforum_get_default_sort_order($desc = true, $compare = 'd.timemodifie
                  ELSE {$compare}
                  END";
     }
-    return "$sort $dir";
+    return "$pinned $sort $dir";
 }
 
 /**
@@ -4172,6 +4180,9 @@ function hsuforum_update_post($post, $mform, &$message, \mod_hsuforum\upload_fil
         $discussion->name      = $post->subject;
         $discussion->timestart = $post->timestart;
         $discussion->timeend   = $post->timeend;
+        if (isset($post->pinned)) {
+            $discussion->pinned = $post->pinned;
+        }
     }
 
     $draftid = file_get_submitted_draft_itemid('hiddenadvancededitor');
@@ -7829,6 +7840,7 @@ function hsuforum_extract_discussion($post, $forum) {
         'forum'        => $forum->id,
         'name'         => $post->name,
         'firstpost'    => $post->firstpost,
+        'pinned'       => $post->pinned,
         'userid'       => $post->userid,
         'groupid'      => $post->groupid,
         'timemodified' => $post->timemodified,
@@ -8311,6 +8323,54 @@ function hsuforum_discussion_view($modcontext, $forum, $discussion) {
     $event = \mod_hsuforum\event\discussion_viewed::create($params);
     $event->add_record_snapshot('hsuforum_discussions', $discussion);
     $event->add_record_snapshot('hsuforum', $forum);
+    $event->trigger();
+}
+
+/**
+ * Set the discussion to pinned and trigger the discussion pinned event
+ *
+ * @param  stdClass $modcontext module context object
+ * @param  stdClass $forum      forum object
+ * @param  stdClass $discussion discussion object
+ * @since Moodle 3.1
+ */
+function hsuforum_discussion_pin($modcontext, $forum, $discussion) {
+    global $DB;
+
+    $DB->set_field('hsuforum_discussions', 'pinned', FORUM_DISCUSSION_PINNED, array('id' => $discussion->id));
+
+    $params = array(
+        'context' => $modcontext,
+        'objectid' => $discussion->id,
+        'other' => array('forumid' => $forum->id)
+    );
+
+    $event = \mod_hsuforum\event\discussion_pinned::create($params);
+    $event->add_record_snapshot('hsuforum_discussions', $discussion);
+    $event->trigger();
+}
+
+/**
+ * Set discussion to unpinned and trigger the discussion unpin event
+ *
+ * @param  stdClass $modcontext module context object
+ * @param  stdClass $forum      forum object
+ * @param  stdClass $discussion discussion object
+ * @since Moodle 3.1
+ */
+function hsuforum_discussion_unpin($modcontext, $forum, $discussion) {
+    global $DB;
+
+    $DB->set_field('hsuforum_discussions', 'pinned', FORUM_DISCUSSION_UNPINNED, array('id' => $discussion->id));
+
+    $params = array(
+        'context' => $modcontext,
+        'objectid' => $discussion->id,
+        'other' => array('forumid' => $forum->id)
+    );
+
+    $event = \mod_hsuforum\event\discussion_unpinned::create($params);
+    $event->add_record_snapshot('hsuforum_discussions', $discussion);
     $event->trigger();
 }
 

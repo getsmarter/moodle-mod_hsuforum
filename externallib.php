@@ -216,7 +216,7 @@ class mod_hsuforum_external extends external_api {
 
             require_capability('mod/hsuforum:viewdiscussion', $modcontext);
 
-            $order = 'timemodified DESC';
+            $order = 'pinned DESC, timemodified DESC';
             if ($discussions = hsuforum_get_discussions($cm, $order, true, [$limitfrom, $limitnum])) {
 
                 // Check if they can view full names.
@@ -551,8 +551,9 @@ class mod_hsuforum_external extends external_api {
         // Check they have the view forum capability.
         require_capability('mod/hsuforum:viewdiscussion', $modcontext, null, true, 'noviewdiscussionspermission', 'hsuforum');
 
-        $sort = 'd.' . $sortby . ' ' . $sortdirection;
+        $sort = 'd.pinned DESC' . $sortby . ' ' . $sortdirection;
         $alldiscussions = hsuforum_get_discussions($cm, $sort, true, -1, -1, true, $page, $perpage, HSUFORUM_POSTS_ALL_USER_GROUPS);
+
 
         if ($alldiscussions) {
             $canviewfullname = has_capability('moodle/site:viewfullnames', $modcontext);
@@ -697,7 +698,8 @@ class mod_hsuforum_external extends external_api {
                                 'userpictureurl' => new external_value(PARAM_URL, 'Post author picture.'),
                                 'usermodifiedpictureurl' => new external_value(PARAM_URL, 'Post modifier picture.'),
                                 'numreplies' => new external_value(PARAM_TEXT, 'The number of replies in the discussion'),
-                                'numunread' => new external_value(PARAM_INT, 'The number of unread discussions.')
+                                'numunread' => new external_value(PARAM_INT, 'The number of unread discussions.'),
+                                'pinned' => new external_value(PARAM_BOOL, 'Is the discussion pinned')
                             ), 'post'
                         )
                     ),
@@ -1014,6 +1016,7 @@ class mod_hsuforum_external extends external_api {
                             'name' => new external_value(PARAM_ALPHANUM,
                                         'The allowed keys (value format) are:
                                         discussionsubscribe (bool); subscribe to the discussion?, default to true
+                                        discussionpinned    (bool); is the discussion pinned, default to false
                             '),
                             'value' => new external_value(PARAM_RAW, 'The value of the option,
                                                             This param is validated in the external function.'
@@ -1050,12 +1053,16 @@ class mod_hsuforum_external extends external_api {
                                             ));
         // Validate options.
         $options = array(
-            'discussionsubscribe' => true
+            'discussionsubscribe' => true,
+            'discussionpinned' => false
         );
         foreach ($params['options'] as $option) {
             $name = trim($option['name']);
             switch ($name) {
                 case 'discussionsubscribe':
+                    $value = clean_param($option['value'], PARAM_BOOL);
+                    break;
+                case 'discussionpinned':
                     $value = clean_param($option['value'], PARAM_BOOL);
                     break;
                 default:
@@ -1110,6 +1117,12 @@ class mod_hsuforum_external extends external_api {
         $discussion->timestart = 0;
         $discussion->timeend = 0;
         $discussion->reveal = 0;
+
+        if (has_capability('mod/hsuforum:pindiscussions', $context) && $options['discussionpinned']) {
+            $discussion->pinned = HSUFORUM_DISCUSSION_PINNED;
+        } else {
+            $discussion->pinned = HSUFORUM_DISCUSSION_UNPINNED;
+        }
 
         if ($discussionid = hsuforum_add_discussion($discussion)) {
 

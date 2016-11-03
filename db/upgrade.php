@@ -722,6 +722,20 @@ function xmldb_hsuforum_upgrade($oldversion) {
     // Moodle v3.0.0 release upgrade line.
     // Put any upgrade step following this.
 
+    if ($oldversion < 2016110200) {
+
+        // Add support for pinned discussions.
+        $table = new xmldb_table('hsuforum_discussions');
+        $field = new xmldb_field('pinned', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'timeend');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // hsuforum savepoint reached.
+        upgrade_mod_savepoint(true, 2016110200, 'hsuforum');
+    }
+
     return true;
 }
 
