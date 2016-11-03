@@ -202,7 +202,7 @@ class hsuforum_lib_discussion_sort implements Serializable {
      */
     public function get_sort_sql() {
         $sortopts = $this->get_keyopts();
-        return str_replace('%dir%', $this->get_direction(), $sortopts[$this->get_key()]);
+        return 'd.pinned DESC, '.str_replace('%dir%', $this->get_direction(), $sortopts[$this->get_key()]);
     }
 
     /**

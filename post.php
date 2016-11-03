@@ -603,6 +603,9 @@ $mform_post->set_data(array(        'attachments'=>$draftitemid,
                             (isset($discussion->timeend)?array(
                                     'timeend'=>$discussion->timeend):
                                 array())+
+                            (isset($discussion->pinned) ? array(
+                                     'pinned' => $discussion->pinned) :
+                                array()) +
 
                             (isset($post->groupid)?array(
                                     'groupid'=>$post->groupid):
@@ -659,6 +662,16 @@ if ($fromform = $mform_post->get_data()) {
             }
 
             $DB->set_field('hsuforum_discussions' ,'groupid' , $fromform->groupinfo, array('firstpost' => $fromform->id));
+        }
+
+        if (!$fromform->parent) {
+            if (has_capability('mod/hsuforum:pindiscussions', $modcontext)) {
+                // Can change pinned if we have capability.
+                $fromform->pinned = !empty($fromform->pinned) ? HSUFORUM_DISCUSSION_PINNED : HSUFORUM_DISCUSSION_UNPINNED;
+            } else {
+                // We don't have the capability to change so keep to previous value.
+                unset($fromform->pinned);
+            }
         }
 
         $updatepost = $fromform; //realpost
@@ -808,6 +821,12 @@ if ($fromform = $mform_post->get_data()) {
         }
         $discussion->timestart = $fromform->timestart;
         $discussion->timeend = $fromform->timeend;
+
+        if (has_capability('mod/hsuforum:pindiscussions', $modcontext) && !empty($fromform->pinned)) {
+            $discussion->pinned = HSUFORUM_DISCUSSION_PINNED;
+        } else {
+            $discussion->pinned = HSUFORUM_DISCUSSION_UNPINNED;
+        }
 
         $allowedgroups = array();
         $groupstopostto = array();

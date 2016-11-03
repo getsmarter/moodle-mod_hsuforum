@@ -49,6 +49,7 @@
     $mark   = optional_param('mark', '', PARAM_ALPHA);       // Used for tracking read posts if user initiated.
     $postid = optional_param('postid', 0, PARAM_INT);        // Used for tracking read posts if user initiated.
     $warned = optional_param('warned', 0, PARAM_INT);
+    $pin    = optional_param('pin', -1, PARAM_INT);          // If set, pin or unpin this discussion.
 
     $config = get_config('hsuforum');
 
@@ -156,6 +157,29 @@
         }
     }
 
+    // Pin or unpin discussion if requested.
+    if ($pin !== -1 && confirm_sesskey()) {
+        require_capability('mod/hsuforum:pindiscussions', $modcontext);
+
+        $params = array('context' => $modcontext, 'objectid' => $discussion->id, 'other' => array('forumid' => $forum->id));
+
+        switch ($pin) {
+            case HSUFORUM_DISCUSSION_PINNED:
+                // Pin the discussion and trigger discussion pinned event.
+                hsuforum_discussion_pin($modcontext, $forum, $discussion);
+                break;
+            case HSUFORUM_DISCUSSION_UNPINNED:
+                // Unpin the discussion and trigger discussion unpinned event.
+                hsuforum_discussion_unpin($modcontext, $forum, $discussion);
+                break;
+            default:
+                echo $OUTPUT->notification("Invalid value when attempting to pin/unpin discussion");
+                break;
+        }
+
+        redirect(new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id)));
+    }
+
     // Trigger discussion viewed event.
     hsuforum_discussion_view($modcontext, $forum, $discussion);
 
@@ -205,6 +229,18 @@
          echo "<h2><a href='$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id'>&#171; ".format_string($forum->name)."</a></h2>";
     }
      echo $renderer->svg_sprite();
+
+    if (has_capability('mod/hsuforum:pindiscussions', $modcontext)) {
+        if ($discussion->pinned == HSUFORUM_DISCUSSION_PINNED) {
+            $pinlink = HSUFORUM_DISCUSSION_UNPINNED;
+            $pintext = get_string('discussionunpin', 'forum');
+        } else {
+            $pinlink = HSUFORUM_DISCUSSION_PINNED;
+            $pintext = get_string('discussionpin', 'forum');
+        }
+        $button = new single_button(new moodle_url('discuss.php', array('pin' => $pinlink, 'd' => $discussion->id)), $pintext, 'post');
+        echo html_writer::tag('div', $OUTPUT->render($button), array('class' => 'discussioncontrol pindiscussion'));
+    }
 
 
 /// Check to see if groups are being used in this forum

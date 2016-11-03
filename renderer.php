@@ -349,6 +349,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->revealed   = false;
         $data->rawcreated = $post->created;
         $data->rawmodified = $discussion->timemodified;
+        $data->pinned     = $discussion->pinned;
 
         if ($forum->anonymous
                 && $postuser->id === $USER->id
@@ -501,10 +502,15 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         global $PAGE;
 
         $replies = '';
+        $pinned = '';
         if(!empty($d->replies)) {
             $xreplies = hsuforum_xreplies($d->replies);
             $replies = "<span class='hsuforum-replycount'>$xreplies</span>";
         }
+        if ($d->pinned != 0) {
+            $pinned = '<span class="pinned"><img src="pix/i/pinned.png" alt="pinned" /></span>';
+        }
+
         if (!empty($d->userurl)) {
             $byuser = html_writer::link($d->userurl, $d->fullname);
         } else {
@@ -547,6 +553,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 .$unread
                 .$participants
                 .$latestpost
+                .$pinned
                 .'<div class="hsuforum-thread-flags">'."{$d->subscribe} $d->postflags $d->timed</div>"
             .'</div>';
 

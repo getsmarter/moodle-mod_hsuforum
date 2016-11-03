@@ -555,6 +555,12 @@ $string['discussionsortkey:created'] = 'Creation date';
 $string['discussionsortkey:replies'] = 'Most active';
 $string['discussionsortkey:subscribe'] = 'Subscribed';
 $string['discussionsortkey:like'] = 'Most likes';
+$string['discussionsortkey:pinned'] = 'Pinned';
+$string['discussionpin'] = 'Pin';
+$string['discussionpinned'] = 'Pinned';
+$string['discussionpinned_help'] = 'Pinned discussions will appear at the top of a forum.';
+$string['discussionunpin'] = 'Unpin';
+$string['eventdiscussionunpinned'] = 'Discussion unpinned';
 
 $string['nextdiscussionx'] = '({$a}) Next >';
 $string['prevdiscussionx'] = '< Previous ({$a})';
