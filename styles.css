@@ -3,6 +3,10 @@
     border-bottom:1px solid #ccc;
 }
 
+.pinned {
+    float: right;
+}
+
 #page-local-joulegrader-view .hsuforum-post-pubdate:after {
     content: attr(title);
     padding-left: 1em;
