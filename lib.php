@@ -2829,7 +2829,7 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
         $limitnum  = 0;
     }
 
-    if ($forumsort == 'likes DESC' || $forumsort == 'likes ASC') {
+    if (strpos($forumsort,'likes DESC') || strpos($forumsort,'likes ASC')) {
         $sortbylikes = ' LEFT JOIN (SELECT d.*, COUNT(d.id) AS likes
                                         FROM {hsuforum_discussions} d
                                             LEFT OUTER JOIN {hsuforum_actions} a ON d.firstpost = a.postid
