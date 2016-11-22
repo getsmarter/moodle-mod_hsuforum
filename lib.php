@@ -8337,7 +8337,7 @@ function hsuforum_discussion_view($modcontext, $forum, $discussion) {
 function hsuforum_discussion_pin($modcontext, $forum, $discussion) {
     global $DB;
 
-    $DB->set_field('hsuforum_discussions', 'pinned', FORUM_DISCUSSION_PINNED, array('id' => $discussion->id));
+    $DB->set_field('hsuforum_discussions', 'pinned', HSUFORUM_DISCUSSION_PINNED, array('id' => $discussion->id));
 
     $params = array(
         'context' => $modcontext,
@@ -8361,7 +8361,7 @@ function hsuforum_discussion_pin($modcontext, $forum, $discussion) {
 function hsuforum_discussion_unpin($modcontext, $forum, $discussion) {
     global $DB;
 
-    $DB->set_field('hsuforum_discussions', 'pinned', FORUM_DISCUSSION_UNPINNED, array('id' => $discussion->id));
+    $DB->set_field('hsuforum_discussions', 'pinned', HSUFORUM_DISCUSSION_UNPINNED, array('id' => $discussion->id));
 
     $params = array(
         'context' => $modcontext,
