@@ -509,7 +509,7 @@ FUN WITH FORMS
     .hsuforum-thread-header,
     .hsuforum-thread-title{
         float:left;
-        width:76.4%;
+        width: 100%;
     }
 
     .hsuforum-thread-meta{
