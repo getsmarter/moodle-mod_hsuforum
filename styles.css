@@ -505,11 +505,8 @@ FUN WITH FORMS
         float:left;
     }
 
-
-    .hsuforum-thread-header,
     .hsuforum-thread-title{
-        float:left;
-        width: 100%;
+        width: 76.4%;
     }
 
     .hsuforum-thread-meta{
@@ -855,4 +852,9 @@ FUN WITH FORMS
 
 .singleselect select {
     margin-bottom: 10px;
+}
+
+.hsuforum-thread-header{
+    float:left;
+    width:100%;
 }
