@@ -556,6 +556,7 @@ FUN WITH FORMS
     }
     .hsuforum-search {
         text-align:right;
+        float: right;
     }
     /* search on discuss page only for single simple discussion */
     #page-mod-hsuforum-discuss .hsuforum-search {
@@ -616,6 +617,11 @@ FUN WITH FORMS
     #region-main .snap-activity.modtype_hsuforum .snap-media-object{
         width:50%;
         float:left;
+    }
+
+    .hsuforum-search{
+        width: 50%;
+        float:right;
     }
 }
 
