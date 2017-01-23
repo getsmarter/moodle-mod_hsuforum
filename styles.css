@@ -496,6 +496,7 @@ FUN WITH FORMS
 @media all and (min-width: 35em) {
     #page-mod-hsuforum-view .groupselector{
         text-align:right;
+        padding-right: 10px;
     }
 
     /* GRID ME UP */
@@ -556,6 +557,7 @@ FUN WITH FORMS
     }
     .hsuforum-search {
         text-align:right;
+        float: right;
     }
     /* search on discuss page only for single simple discussion */
     #page-mod-hsuforum-discuss .hsuforum-search {
@@ -563,6 +565,7 @@ FUN WITH FORMS
     }
     #hsuforum-filter-options {
         text-align:right;
+        clear: both;
     }
     .hsuforum-discussion-sort {
         display:inline-block;
@@ -574,7 +577,6 @@ FUN WITH FORMS
     .hsuforum-parent-post-link{
         float:left;
     }
-
 
 
 
@@ -619,6 +621,14 @@ FUN WITH FORMS
     }
 }
 
+.hsuforum-search{
+    width: 50%;
+    float: right;
+}
+
+.hsuforum-search form {
+    clear: both;
+}
 
 
 /* small screen */
