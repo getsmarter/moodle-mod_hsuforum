@@ -776,7 +776,7 @@ HTML;
         </div>
         <div role="region" class='hsuforum-tools' aria-label='$options'>
             <div class="hsuforum-postflagging">$p->postflags</div>
-            $p->tools
+            <ul>$p->tools</ul>
         </div>
         $postreplies
     </div>
@@ -1753,14 +1753,14 @@ HTML;
         if ($canreply and empty($post->privatereply)) {
             $postuser   = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
             $replytitle = get_string('replybuttontitle', 'hsuforum', strip_tags($postuser->fullname));
-            $commands['reply'] = html_writer::link(
+            $commands['reply'] = '<li>'.html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)),
                 get_string('reply', 'hsuforum'),
                 array(
                     'title' => $replytitle,
                     'class' => 'hsuforum-reply-link btn btn-default',
                 )
-            );
+            ).'</li>';
         }
 
         // Hack for allow to edit news posts those are not displayed yet until they are displayed
@@ -1769,28 +1769,28 @@ HTML;
             $age = 0;
         }
         if (($ownpost && $age < $CFG->maxeditingtime) || local::cached_has_capability('mod/hsuforum:editanypost', context_module::instance($cm->id))) {
-            $commands['edit'] = html_writer::link(
+            $commands['edit'] = '<li>'.html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('edit' => $post->id)),
                 get_string('edit', 'hsuforum')
-            );
+            ).'</li>';
         }
 
         if (($ownpost && $age < $CFG->maxeditingtime && local::cached_has_capability('mod/hsuforum:deleteownpost', context_module::instance($cm->id))) || local::cached_has_capability('mod/hsuforum:deleteanypost', context_module::instance($cm->id))) {
-            $commands['delete'] = html_writer::link(
+            $commands['delete'] = '<li>'.html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('delete' => $post->id)),
                 get_string('delete', 'hsuforum')
-            );
+            ).'</li>';
         }
 
         if (local::cached_has_capability('mod/hsuforum:splitdiscussions', context_module::instance($cm->id))
                 && $post->parent
                 && !$post->privatereply
                 && $forum->type != 'single') {
-            $commands['split'] = html_writer::link(
+            $commands['split'] = '<li>'.html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('prune' => $post->id)),
                 get_string('prune', 'hsuforum'),
                 array('title' => get_string('pruneheading', 'hsuforum'))
-            );
+            ).'</li>';
         }
 
 
@@ -1806,13 +1806,13 @@ HTML;
             }
             $porfoliohtml = $button->to_html(PORTFOLIO_ADD_TEXT_LINK);
             if (!empty($porfoliohtml)) {
-                $commands['portfolio'] = $porfoliohtml;
+                $commands['portfolio'] = '<li>'.$porfoliohtml.'</li>';
             }
         }
 
         $rating = $this->post_rating($post);
         if (!empty($rating)) {
-            $commands['rating'] = $rating;
+            $commands['rating'] = '<li>'.$rating.'</li>';
         }
 
         return $commands;
