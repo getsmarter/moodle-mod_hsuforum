@@ -270,7 +270,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @return string
      */
     public function discussion($cm, $discussion, $post, $fullthread, array $posts = array(), $canreply = null) {
-        global $DB, $PAGE, $USER;
+        global $CFG, $DB, $PAGE, $USER;
 
         $forum = hsuforum_get_cm_forum($cm);
         $postuser = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
@@ -337,11 +337,36 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 }
             }
         }
+
+        $toolsarray = $this->post_get_commands($post, $discussion, $cm, $canreply);
+        $toolstring = '';
+        $toolsbuttons = '';
+        $toolsmenu = '';
+        $toolsmenuoptions = '';
+
+        foreach ($toolsarray as $tools) {
+            if (!is_array($tools)) {
+                $toolsbuttons .= $tools;
+            } else {
+                $toolsmenuoptions .= implode(' ', $tools);
+            }
+        }
+
+        if ($toolsmenuoptions != '') {
+            $toolsmenu .= '<div class="dropdown inline">
+                            <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="hsuforumpostdropdownmenubutton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-h"></i></button>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">';
+            $toolsmenu .= $toolsmenuoptions;
+            $toolsmenu .= '</div></div>';
+        }
+
+
+
         $data->group      = $group;
         $data->imagesrc   = $postuser->user_picture->get_url($this->page)->out();
         $data->userurl    = $this->get_post_user_url($cm, $postuser);
         $data->viewurl    = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id));
-        $data->tools      = implode(' ', $this->post_get_commands($post, $discussion, $cm, $canreply));
+        $data->tools      = $toolsbuttons.$toolsmenu;
         $data->postflags  = implode(' ',$this->post_get_flags($post, $cm, $discussion->id));
         $data->subscribe  = '';
         $data->posts      = '';
@@ -364,6 +389,47 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         } else {
             $data->replyform = '';
         }
+
+        $filter = optional_param('filter', 0, PARAM_CLEAN);
+        $sort = optional_param('sort', 0 , PARAM_CLEAN);
+        $filterandsortreset = optional_param('filterandsortreset', 0 , PARAM_CLEAN);
+
+        if ($filterandsortreset) {
+            $url = new moodle_url('/mod/hsuforum/discuss.php', array('d'=>$data->id));
+            redirect($url);
+        }
+
+        $filterandsort = "<form method='get' action='' class='hsuforum-post-filterandsort form-inline'>
+                    <legend class='accesshide'>".get_string('sortdiscussions', 'hsuforum')."</legend>
+                    <input type='hidden' name='d' value='{$data->id}'>
+                    <div class='form-group'>
+                        <label for='id_filter' class=''>Filter:</label>
+                        <select class='custom-select' name='filter' id='id_filter'>
+                            <option value='0'>".get_string('filterdefault','hsuforum')."</option>
+                            <option ".($filter == 3 ? 'selected' : '')." value='3'>".get_string('filtertutorreplies','hsuforum')."</option>
+                        </select>
+                    </div>
+                    <div class='form-group'>
+                        <label for='id_sort' class=''> + Sort:</label>
+                        <select class='custom-select' name='sort' id='id_sort'>
+                            <option value='0'>".get_string('sortdefault','hsuforum')."</option>
+                            <option ".($sort == 1 ? 'selected' : '')." value='1'>".get_string('sortnewestfirst','hsuforum')."</option>
+                            <option ".($sort == 2 ? 'selected' : '')." value='2'>".get_string('sortmostreplies','hsuforum')."</option>
+                            <option ".($sort == 3 ? 'selected' : '')." value='3'>".get_string('sortmostlikes','hsuforum')."</option>
+                        </select>
+                    </div>
+                    <input type='submit' value='Apply'>";
+
+        if ($filter > 0 || $sort > 0) {
+            $filterandsort .= "<input type='submit' name='filterandsortreset' value='Reset'>
+                    </form>";
+        }
+
+        $filterandsort .= "</form>";
+                    
+        $data->filterandsort = $filterandsort;
+
+        $posts = $this->filter_sort_posts($posts, $filter, $sort, $course);
 
         if ($fullthread) {
             $data->posts = $this->posts($cm, $discussion, $posts, $canreply);
@@ -433,6 +499,25 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         } else if (!is_array($commands)){
             throw new coding_exception('$commands must be false, empty or populated array');
         }
+
+        $toolsarray = $commands;
+        $toolstring = '';
+        $toolsbuttons = '';
+        $toolsmenu = '<div class="dropdown inline">
+                        <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="hsuforumpostdropdownmenubutton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-h"></i></button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">';
+
+
+        foreach ($toolsarray as $tools) {
+            if (!is_array($tools)) {
+                $toolsbuttons .= $tools;
+            } else {
+                $toolsmenu .= implode(' ', $tools);
+            }
+        }
+
+        $toolsmenu .= '</div></div>';
+
         $postuser = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
         $postuser->user_picture->size = 100;
 
@@ -453,7 +538,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->isreply        = false;
         $data->parentfullname = '';
         $data->parentuserurl  = '';
-        $data->tools          = implode(' ', $commands);
+        $data->tools          = $toolsbuttons.$toolsmenu;
         $data->postflags      = implode(' ',$this->post_get_flags($post, $cm, $discussion->id, false));
         $data->depth          = $depth;
         $data->revealed       = false;
@@ -643,7 +728,6 @@ HTML;
                 hsuforum_mark_post_read($USER->id, $parent, $forum->id);
             }
         }
-        $output  = "<h5 role='heading' aria-level='5'>".hsuforum_xreplies($count)."</h5>";
         if (!empty($count)) {
             $output .= "<ol class='hsuforum-thread-replies-list'>".$items."</ol>";
         }
@@ -1160,7 +1244,7 @@ HTML;
         $sortform = "<form method='get' action='$url' class='hsuforum-discussion-sort'>
                     <legend class='accesshide'>".get_string('sortdiscussions', 'hsuforum')."</legend>
                     <input type='hidden' name='id' value='{$cm->id}'>
-                    <label for='dsortkey' class='accesshide'>".get_string('orderdiscussionsby', 'hsuforum')."</label>
+                    <label for='dsortkey' class=''>Sort:</label>
                     $sortselect
                     <input type='submit' value='".get_string('sortdiscussionsby', 'hsuforum')."'>
                     </form>";
@@ -1755,7 +1839,7 @@ HTML;
             $replytitle = get_string('replybuttontitle', 'hsuforum', strip_tags($postuser->fullname));
             $commands['reply'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)),
-                get_string('reply', 'hsuforum'),
+                '<i class="fa fa-reply"></i> <div class="hsuforumdropdownmenuitem">'.get_string('reply', 'hsuforum').'</div>',
                 array(
                     'title' => $replytitle,
                     'class' => 'hsuforum-reply-link btn btn-default',
@@ -1769,16 +1853,22 @@ HTML;
             $age = 0;
         }
         if (($ownpost && $age < $CFG->maxeditingtime) || local::cached_has_capability('mod/hsuforum:editanypost', context_module::instance($cm->id))) {
-            $commands['edit'] = html_writer::link(
+            $commands['menu']['edit'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('edit' => $post->id)),
-                get_string('edit', 'hsuforum')
+                '<i class="fa fa-pencil"></i> '.get_string('edit', 'hsuforum'),
+                array(
+                    'class' => 'dropdown-item'
+                )
             );
         }
 
         if (($ownpost && $age < $CFG->maxeditingtime && local::cached_has_capability('mod/hsuforum:deleteownpost', context_module::instance($cm->id))) || local::cached_has_capability('mod/hsuforum:deleteanypost', context_module::instance($cm->id))) {
-            $commands['delete'] = html_writer::link(
+            $commands['menu']['delete'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('delete' => $post->id)),
-                get_string('delete', 'hsuforum')
+                '<i class="fa fa-trash"></i> '.get_string('delete', 'hsuforum'),
+                array(
+                    'class' => 'dropdown-item'
+                )
             );
         }
 
@@ -1786,10 +1876,13 @@ HTML;
                 && $post->parent
                 && !$post->privatereply
                 && $forum->type != 'single') {
-            $commands['split'] = html_writer::link(
+            $commands['menu']['split'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('prune' => $post->id)),
-                get_string('prune', 'hsuforum'),
-                array('title' => get_string('pruneheading', 'hsuforum'))
+                '<i class="fa fa-plus-square"></i> '.get_string('prune', 'hsuforum'),
+                array(
+                    'title' => get_string('pruneheading', 'hsuforum'),
+                    'class' => 'dropdown-item'
+                )
             );
         }
 
@@ -1892,5 +1985,107 @@ HTML;
            <polygon  points="3.5,9.8 96.7,9.8 50.2,44.5 	"/>
         </g>
         </svg>';
+    }
+
+    public function filter_sort_posts($posts, $filter, $sort, $course) {
+        global $DB, $USER;
+        if ($filter == 1) {
+            $unreadpostchildren = array();
+
+            foreach ($posts as $post) {
+                if ($post->postread == null || $post->parent == 0) {
+                    $unreadpostchildren[$post->id] = $post;
+                }
+                foreach ($post->children as $childpost) {
+                    if ($childpost->postread == null) {
+                        $unreadpostchildren[$post->id] = $post;
+                    }
+                }
+            }
+
+            if (!empty($unreadpostchildren)) {
+                $posts = $unreadpostchildren;
+            }
+        } elseif ($filter == 2) {
+            $myposts = array();
+
+            foreach ($posts as $post) {
+                if ($post->parent == 0) {
+                    $myposts[$post->id] = $post;
+                    continue;
+                }
+
+                if ($post->userid == $USER->id) {
+                    $myposts[$post->id] = $post;
+
+                    $this->addallparentposts($post, $posts, $myposts);
+                }
+
+            }
+
+            if (!empty($myposts)) {
+                $posts = $myposts;
+            }
+            
+        } elseif ($filter == 3) {
+            $tutorposts = array();
+            $roletutor = $DB->get_record('role', array('shortname' => 'tutor'));
+            $rolehtutor = $DB->get_record('role', array('shortname' => 'headtutor'));
+
+            if ($roletutor || $rolehtutor) {
+                $context = $DB->get_record('context', array('instanceid' => $course->id, 'contextlevel' => '50'));
+                if ($context) {
+                    $roleassigntutor = $DB->get_record('role_assignments', array('contextid' => $context->id, 'roleid' => $roletutor->id));
+                    $roleassignheadtutor = $DB->get_record('role_assignments', array('contextid' => $context->id, 'roleid' => $rolehtutor->id));
+                    if ($roleassigntutor || $roleassignheadtutor) {
+                        foreach ($posts as $post) {
+                            if ($post->parent == 0) {
+                                $tutorposts[$post->id] = $post;
+                                continue;
+                            }
+
+                            if ($post->userid == $roleassigntutor->userid || $post->userid == $roleassignheadtutor->userid) {
+                                $tutorposts[$post->id] = $post;
+
+                                $this->addallparentposts($post, $posts, $tutorposts);
+                            }
+                        }
+
+                        if (!empty($tutorposts)) {
+                            $posts = $tutorposts;
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($sort == 1) {
+            $posts = array_reverse($posts, true);
+        } else if ($sort == 2) {
+            uasort($posts, function ($a, $b) {
+                return $b->children <=> $a->children;
+            });
+        } else if ($sort == 3) {
+            uasort($posts, function ($a, $b) {
+                global $DB;
+                $alikes = sizeof($DB->get_records('hsuforum_actions', array('postid' => $a->id, 'action' => 'like')));
+                $blikes = sizeof($DB->get_records('hsuforum_actions', array('postid' => $b->id, 'action' => 'like')));
+                return $blikes <=> $alikes;
+            });
+        }
+
+        return $posts;
+    }
+
+    function addallparentposts(&$post, &$posts, &$postsarray){
+
+        if (!(array_key_exists($post->parent, $postsarray))) {
+            $postsarray[$post->parent] = $posts[$post->parent];
+        }
+        if (!(isset($post))) {
+            return;
+        }
+
+        $this->addallparentposts($posts[$post->parent], $posts, $postsarray);
     }
 }
