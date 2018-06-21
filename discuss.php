@@ -226,7 +226,7 @@
     echo $renderer->render(new discussion_dateform($modcontext, $discussion));
 
     if ($forum->type != 'single') {
-         echo "<h2><a href='$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id'>&#171; ".format_string($forum->name)."</a></h2>";
+         echo "<h2 class='hsuforum_heading'><a href='$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id'><i class='fa fa-chevron-left'></i> Back to topics list</a></h2>";
     }
      echo $renderer->svg_sprite();
 

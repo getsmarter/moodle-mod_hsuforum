@@ -669,3 +669,12 @@ $string['confighiderecentposts'] = 'Set to yes to stop the display of recent for
 
 // Deprecated since Moodle 3.0.
 $string['subscribersto'] = 'Subscribers to "{$a->name}"';
+
+$string['filterdefault'] = 'All posts (Default)';
+$string['filtertutorreplies'] = 'Tutor replies';
+$string['sortdefault'] = 'Oldest first (Default)';
+$string['sortnewestfirst'] = 'Newest first';
+$string['sortmostreplies'] = 'Replies: Most to Least';
+$string['sortmostlikes'] = 'Likes: Most to Least';
+
+$string['posttimeago'] = 'Posted {$a}';

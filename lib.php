@@ -3597,7 +3597,6 @@ function hsuforum_search_form($course, $forumid=null, $search='') {
     $output  = '<div class="hsuforum-search">';
     $output .= '<form action="'.$CFG->wwwroot.'/mod/hsuforum/search.php">';
     $output .= '<fieldset class="invisiblefieldset">';
-    $output .= '<label class="accesshide" for="search" >'.get_string('search', 'hsuforum').'</label>';
     $output .= '<input id="search" name="search" type="search" placeholder="'.get_string('search', 'hsuforum').'" value="'.s($search, true).'"/>';
     $output .= '<input id="searchforums" value="'.get_string('searchforums', 'hsuforum').'" type="submit" />';
     $output .= '<input name="id" type="hidden" value="'.$course->id.'" />';
@@ -5510,13 +5509,16 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
     if ($groupselect || $sortselect) {
         echo "<div id='hsuforum-filter-options'>";
+        if ($groupselect && strpos($groupselect, '<form') !== false) {
+            echo'<label style="margin-right:5px" for="selectgroup" >Filter:</label>';
+        }
         echo $groupselect;
         echo $sortselect;
         echo "</div>";
     }
 
     echo "</div><!-- end hsuforum-menu -->";
-
+    echo "<hr>";
 
     // When there are no threads, return;
     if (!$discussions) {
