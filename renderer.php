@@ -2035,8 +2035,8 @@ HTML;
             if ($roletutor || $rolehtutor) {
                 $context = $DB->get_record('context', array('instanceid' => $course->id, 'contextlevel' => '50'));
                 if ($context) {
-                    $roleassigntutor = $DB->get_record('role_assignments', array('contextid' => $context->id, 'roleid' => $roletutor->id));
-                    $roleassignheadtutor = $DB->get_record('role_assignments', array('contextid' => $context->id, 'roleid' => $rolehtutor->id));
+                    $roleassigntutor = $DB->get_records('role_assignments', array('contextid' => $context->id, 'roleid' => $roletutor->id), '', 'userid');
+                    $roleassignheadtutor = $DB->get_records('role_assignments', array('contextid' => $context->id, 'roleid' => $rolehtutor->id), '', 'userid');
                     if ($roleassigntutor || $roleassignheadtutor) {
                         foreach ($posts as $post) {
                             if ($post->parent == 0) {
