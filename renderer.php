@@ -2044,7 +2044,8 @@ HTML;
                                 continue;
                             }
 
-                            if ($post->userid == $roleassigntutor->userid || $post->userid == $roleassignheadtutor->userid) {
+                            if (isset($roleassigntutor[$post->userid]) || isset($roleassignheadtutor[$post->userid])) {
+
                                 $tutorposts[$post->id] = $post;
 
                                 $this->addallparentposts($post, $posts, $tutorposts);
