@@ -406,6 +406,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                         <label for='id_filter' class=''>Filter:</label>
                         <select class='custom-select' name='filter' id='id_filter'>
                             <option value='0'>".get_string('filterdefault','hsuforum')."</option>
+                            <option ".($filter == 2 ? 'selected' : '')." value='2'>".get_string('filtermyreplies','hsuforum')."</option>
                             <option ".($filter == 3 ? 'selected' : '')." value='3'>".get_string('filtertutorreplies','hsuforum')."</option>
                         </select>
                     </div>
@@ -2017,16 +2018,13 @@ HTML;
 
                 if ($post->userid == $USER->id) {
                     $myposts[$post->id] = $post;
-
                     $this->addallparentposts($post, $posts, $myposts);
                 }
-
             }
 
             if (!empty($myposts)) {
                 $posts = $myposts;
             }
-            
         } elseif ($filter == 3) {
             $tutorposts = array();
             $roletutor = $DB->get_record('role', array('shortname' => 'tutor'));
