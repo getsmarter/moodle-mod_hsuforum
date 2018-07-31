@@ -672,6 +672,7 @@ $string['subscribersto'] = 'Subscribers to "{$a->name}"';
 
 $string['filterdefault'] = 'All posts (Default)';
 $string['filtertutorreplies'] = 'Tutor replies';
+$string['filtermyreplies'] = 'My replies';
 $string['sortdefault'] = 'Oldest first (Default)';
 $string['sortnewestfirst'] = 'Newest first';
 $string['sortmostreplies'] = 'Replies: Most to Least';
