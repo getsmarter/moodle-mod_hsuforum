@@ -2009,7 +2009,6 @@ HTML;
             }
         } elseif ($filter == 2) {
             $myposts = array();
-            $parents = array();
 
             foreach ($posts as $post) {
                 if ($post->parent == 0) {
@@ -2019,9 +2018,6 @@ HTML;
 
                 if ($post->userid == $USER->id) {
                     $myposts[$post->id] = $post;
-                    if (!array_key_exists($post->parent, $parents)) {
-                        $parents[$post->parent] = $post->parent;
-                    }
                     $this->addallparentpostsmyreplies($post, $posts, $myposts);
                 }
             }
@@ -2115,6 +2111,7 @@ HTML;
         }
 
         $this->addallchildposts($post->parent, $posts, $postsarray);
+        $this->addallchildposts($post->id, $posts, $postsarray);
 
         $this->addallparentposts($posts[$post->parent], $posts, $postsarray);
 
