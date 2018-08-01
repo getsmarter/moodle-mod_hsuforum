@@ -1982,8 +1982,8 @@ HTML;
             <polygon points="88.7,93.2 50.7,58.6 12.4,93.2 12.4,7.8 88.7,7.8 "/>
         </g>
         <g id="subscribe">
-	       <polygon  enable-background="new    " points="96.7,84.3 3.5,84.3 3.5,14.8 50.1,49.6 96.7,14.8 	"/>
-           <polygon  points="3.5,9.8 96.7,9.8 50.2,44.5 	"/>
+           <polygon  enable-background="new    " points="96.7,84.3 3.5,84.3 3.5,14.8 50.1,49.6 96.7,14.8    "/>
+           <polygon  points="3.5,9.8 96.7,9.8 50.2,44.5     "/>
         </g>
         </svg>';
     }
@@ -2009,6 +2009,7 @@ HTML;
             }
         } elseif ($filter == 2) {
             $myposts = array();
+            $parents = array();
 
             foreach ($posts as $post) {
                 if ($post->parent == 0) {
@@ -2018,10 +2019,12 @@ HTML;
 
                 if ($post->userid == $USER->id) {
                     $myposts[$post->id] = $post;
-                    $this->addallparentposts($post, $posts, $myposts);
+                    if (!array_key_exists($post->parent, $parents)) {
+                        $parents[$post->parent] = $post->parent;
+                    }
+                    $this->addallparentpostsmyreplies($post, $posts, $myposts);
                 }
             }
-
             if (!empty($myposts)) {
                 $posts = $myposts;
             }
@@ -2087,4 +2090,36 @@ HTML;
 
         $this->addallparentposts($posts[$post->parent], $posts, $postsarray);
     }
+
+    function addallchildposts($postparentid, &$posts, &$postsarray) {
+
+        if (!isset($postparentid) || $postparentid == 0) {
+            return;
+        }
+
+        $parentpost = $posts[$postparentid];
+
+        foreach ($parentpost->children as $post) {
+            if (!(array_key_exists($post->id, $postsarray)) && $parentpost->parent != '0') {
+                $postsarray[$post->id] = $post;
+            }
+        }
+
+        $this->addallchildposts($parentpost->parent, $posts, $postsarray);
+    }
+
+    function addallparentpostsmyreplies(&$post, &$posts, &$postsarray){
+
+        if (!(isset($post))) {
+            return;
+        }
+
+        $this->addallchildposts($post->parent, $posts, $postsarray);
+
+        $this->addallparentposts($posts[$post->parent], $posts, $postsarray);
+
+        if (!(array_key_exists($post->parent, $postsarray))) {
+            $postsarray[$post->parent] = $posts[$post->parent];
+        }
+    }    
 }
