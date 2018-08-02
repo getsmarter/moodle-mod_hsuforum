@@ -730,7 +730,7 @@ HTML;
             }
         }
         if (!empty($count)) {
-            $output .= "<ol class='hsuforum-thread-replies-list'>".$items."</ol>";
+            $output = "<ol class='hsuforum-thread-replies-list'>".$items."</ol>";
         }
         return "<div class='hsuforum-thread-replies'>".$output."</div>";
     }
@@ -2109,10 +2109,9 @@ HTML;
         if (!(isset($post))) {
             return;
         }
-
-        $this->addallchildposts($post->parent, $posts, $postsarray);
+        
         $this->addallchildposts($post->id, $posts, $postsarray);
-
+        $this->addallchildposts($post->parent, $posts, $postsarray);
         $this->addallparentposts($posts[$post->parent], $posts, $postsarray);
 
         if (!(array_key_exists($post->parent, $postsarray))) {
