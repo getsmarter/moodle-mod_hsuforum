@@ -6847,7 +6847,7 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
     $discussionid = optional_param('d', 0, PARAM_INT);
     $viewingdiscussion = ($PAGE->url->compare(new moodle_url('/mod/hsuforum/discuss.php'), URL_MATCH_BASE) and $discussionid);
 
-    if (!is_guest($PAGE->cm->context)) {
+    if (!is_guest($PAGE->cm->context) && has_capability('mod/hsuforum:exportdiscussion', $PAGE->cm->context)) {
         $forumnode->add(get_string('export', 'hsuforum'), new moodle_url('/mod/hsuforum/route.php', array('contextid' => $PAGE->cm->context->id, 'action' => 'export')), navigation_node::TYPE_SETTING, null, null, new pix_icon('i/export', get_string('export', 'hsuforum')));
     }
     $forumnode->add(get_string('viewposters', 'hsuforum'), new moodle_url('/mod/hsuforum/route.php', array('contextid' => $PAGE->cm->context->id, 'action' => 'viewposters')), navigation_node::TYPE_SETTING, null, null, new pix_icon('t/preview', get_string('viewposters', 'hsuforum')));
