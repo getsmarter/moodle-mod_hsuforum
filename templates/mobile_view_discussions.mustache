@@ -1,0 +1,21 @@
+{{=<% %>=}}
+<div>
+    <ion-list>
+        <ion-list-header>
+            <p class="item-heading"><% discussioncount %> {{ 'plugin.mod_hsuforum.<% discussionlabel %>' | translate }}</p>
+        </ion-list-header>
+        <%#discussions%>
+            <ion-item>
+                <ion-avatar item-start><img src="<% profilesrc %>"></ion-avatar>
+                <h2><% name %></h2>
+                <h3>Topic by <% umfirstname %> <% umlastname %></h3>
+                    <p>
+                        <span><%^replies%>0<%/replies%><% replies %> replies</span>
+                    </p>
+                    <button ion-button core-site-plugins-new-content title="<% name %>" component="mod_hsuforum" method="view_discussion" [args]="{discussionid: <% id %>}">
+                        <h5>View discussion</h5>
+                    </button>
+            </ion-item>
+        <%/discussions%>
+    </ion-list>
+</div>

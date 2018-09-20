@@ -1,0 +1,32 @@
+{{=<% %>=}}
+<div>
+ <!-- First post -->
+    <ion-list>
+        <%#firstpost%>
+            <ion-item>
+                <ion-avatar item-start><img src="<% profilesrc %>"></ion-avatar>
+                <h2><% name %></h2>
+                <h3>Topic by <% firstname %> <% lastname %></h3>
+                    <p>
+                        <span><% replycount %> <% replylabel %></span>
+                    </p>
+                <br>
+                <p>Firstpost message: <% message %></p>
+            </ion-item>
+        <%/firstpost%>
+    </ion-list>
+
+ <!-- Replies(posts) on firstpost -->
+    <ion-list>
+        <ion-list-header>
+            <p>
+                <span><%^replycount%>0<%/replycount%> <% replylabel %> for discussion</span>
+            </p>
+        </ion-list-header>
+        <%#replies%>
+            <ion-item>
+                <p><% message %></p>
+            </ion-item>
+        <%/replies%>
+    </ion-list>
+</div>
