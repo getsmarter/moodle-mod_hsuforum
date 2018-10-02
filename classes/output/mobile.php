@@ -77,6 +77,7 @@ class mobile {
                 $discussion->profilesrc = false;
                 $postuser = hsuforum_extract_postuser($discussion, $forum, context_module::instance($cm->id));
                 if ($postuser) {
+                    $postuser->user_picture->size = 100;
                     $discussion->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
                 }
             }
@@ -111,7 +112,7 @@ class mobile {
      * @return array HTML, javascript and otherdata
      */
     public static function view_discussion($args) {
-        global $OUTPUT, $USER, $DB;
+        global $OUTPUT, $USER, $DB, $PAGE;
 
         // Check for valid discussion id
         if (!$args || !isset($args['discussionid'])) {
@@ -135,7 +136,14 @@ class mobile {
         $replies = false;
 
         $firstpostcondition = array('p.id' => $discussion->firstpost);
-        $firstpost = hsuforum_get_all_discussion_posts($discussion->id, $firstpostcondition);
+        $firstpostresult = hsuforum_get_all_discussion_posts($discussion->id, $firstpostcondition);
+
+        if ($firstpostresult) {
+            $firstpost = array_pop($firstpostresult);
+            $postuser = hsuforum_extract_postuser($firstpost, $forum, context_module::instance($cm->id));
+            $postuser->user_picture->size = 100;
+            $firstpost->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
+        }
 
         $repliescondition = array('p.parent' => $discussion->firstpost);
         $replies = hsuforum_get_all_discussion_posts($discussion->id, $repliescondition);
@@ -144,7 +152,7 @@ class mobile {
             'replies' => array_values($replies),
             'replycount' => count($replies),
             'replylabel' => count($replies) >= 2 || count($replies) == 0 ? 'replies' : 'reply',
-            'firstpost' => array_pop($firstpost),
+            'firstpost' => $firstpost,
         );
 
         return array(
