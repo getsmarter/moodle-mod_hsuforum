@@ -124,10 +124,49 @@ class mobile {
         $course     = $DB->get_record('course', array('id' => $discussion->course), '*', MUST_EXIST);
         $forum      = $DB->get_record('hsuforum', array('id' => $discussion->forum), '*', MUST_EXIST);
         $cm         = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id, false, MUST_EXIST);
+        $modcontext = context_module::instance($cm->id);
+        $postreplystatus = [];
 
-    ///validation checks
+    /// Validation checks
         // @TODO check for validation checks and or triggers as below
         // @TODO see if this event is needed for mobile app lib.php :84 and :184
+
+    /// Handle posting of a reply
+        // @TODO handle post and template form validation
+        // Check to see if posting a reply
+        if ($args && isset($args['post'])) {
+            $canreply = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
+            $postreplybody = isset($args['postreplybody']) && strlen($args['postreplybody']) ? (string) $args['postreplybody'] : false;
+            $postreplystatus[$args['parentid']] = array('status' => 'pending', 'error' => false);
+
+            if ($canreply && $postreplybody) {
+                // Saving post to db
+                $post = new \stdClass();
+                try {
+                    $post->discussion    = $discussion->id;
+                    $post->parent        = $args['parentid'];
+                    $post->userid        = $USER->id;
+                    $post->created       = time();
+                    $post->modified      = time();
+                    $post->subject       = 'RE: ' . $discussion->name;
+                    $post->message       = $postreplybody;
+                    $post->messageformat = FORMAT_HTML;
+                    $post->id = $DB->insert_record("hsuforum_posts", $post);
+                } catch (Exception $e) {
+                    $postreplystatus[$args['parentid']]['error']  = $e->getMessage();
+                    $postreplystatus[$args['parentid']]['status'] = 'failed';
+                }
+
+                // Valididate post and change status
+                if ($post && $post->id) {
+                    $postreplystatus[$args['parentid']]['status'] = 'success';
+                }
+            } else {
+                $postreplystatus[$args['parentid']]['status'] = 'failed';
+                $postreplystatus[$args['parentid']]['error'] = 'User is not permitted to post replies or reply body empty';
+            }
+        }
+
 
     /// Getting firstpost and root replies for the firstpost
         // Note there can only be one post(when user created discussion) in a discussion and then additional posts are regarged as replies(api data structure reflects this concept). Very confusing...
@@ -149,6 +188,8 @@ class mobile {
         $replies = hsuforum_get_all_discussion_posts($discussion->id, $repliescondition);
 
         $data = array(
+            'cmid' => $cm->id,
+            'discussionid' => $discussion->id,
             'replies' => array_values($replies),
             'replycount' => count($replies),
             'replylabel' => count($replies) >= 2 || count($replies) == 0 ? 'replies' : 'reply',
@@ -160,6 +201,47 @@ class mobile {
                 array(
                     'id' => 'main',
                     'html' => $OUTPUT->render_from_template('mod_hsuforum/mobile_view_discussion_posts', $data),
+                ),
+            ),
+            'javascript' => '',
+            'otherdata' => array(),
+            'files' => ''
+        );
+    }
+
+    /**
+     * Renders a given post replies
+     * @param array $args Arguments from tool_mobile_get_content WS
+     * @return array HTML, javascript and otherdata
+     */
+    public static function view_post_replies($args) {
+        global $OUTPUT, $USER, $DB, $PAGE;
+
+        // Check for valid discussion id
+        if (!$args || (!isset($args['postid']) && !isset($args['discussionid'])) ) {
+            print_r('No discussion id or post id provided');
+            // @TODO - handle ionic way to redirect back with error popup
+        }
+
+        // Setting up init variables
+        $postid = $args['postid'];
+        $discussion = $DB->get_record('hsuforum_discussions', array('id' => $args['discussionid']), '*', MUST_EXIST);
+
+        // Getting replies for the post
+        $repliescondition = array('p.parent' => $postid);
+        $replies = hsuforum_get_all_discussion_posts($discussion->id, $repliescondition);
+
+        $data = array(
+            'replies' => array_values($replies),
+            'replycount' => count($replies),
+            'replylabel' => count($replies) >= 2 || count($replies) == 0 ? 'replies' : 'reply',
+        );
+
+        return array(
+            'templates' => array(
+                array(
+                    'id' => 'main',
+                    'html' => $OUTPUT->render_from_template('mod_hsuforum/mobile_view_post_replies', $data),
                 ),
             ),
             'javascript' => '',

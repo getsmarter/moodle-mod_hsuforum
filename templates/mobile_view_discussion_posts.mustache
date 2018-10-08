@@ -1,6 +1,7 @@
 {{=<% %>=}}
+
 <div>
- <!-- First post -->
+<!-- First post -->
     <ion-list>
         <%#firstpost%>
             <ion-item>
@@ -16,7 +17,7 @@
         <%/firstpost%>
     </ion-list>
 
- <!-- Replies(posts) on firstpost -->
+<!-- Replies(posts) on firstpost -->
     <ion-list>
         <ion-list-header>
             <p>
@@ -24,9 +25,57 @@
             </p>
         </ion-list-header>
         <%#replies%>
-            <ion-item>
-                <p><% message %></p>
-            </ion-item>
+            <ion-card>
+                <ion-item>
+                    <p><% message %></p>
+                </ion-item>
+
+                <!-- Form to reply to post -->
+                <form #f="ngForm" id="postformid_<% id %>" *ngIf="CONTENT_OTHERDATA.showform_<% id %>">
+                    <ion-card>
+                        <ion-card-content>
+                            <ion-textarea
+                                item-content
+                                ngControl="content"
+                                name="postreplybody"
+                                component="mod_hsuforum"
+                                componentId="<% cmid %>">
+                            </ion-textarea>
+                        </ion-card-content>
+                    </ion-card>
+                </form>
+
+                <!-- Form submit button -->
+                <button
+                    ion-button small clear style="float: left;" type="submit" core-site-plugins-new-content 
+                    *ngIf="CONTENT_OTHERDATA.showform_<% id %>"
+                    samePage=true
+                    refreshOnSuccess=true
+                    form="postformid_<% id %>"
+                    [args]="{'discussionid':<% discussionid %>, 'post':true, 'parentid':<% id %>}"
+                    (click)="CONTENT_OTHERDATA.showform_<% id %> = true"
+                    >
+                    Submit reply
+                </button>
+
+                <!-- Button to show reply box -->
+                <button
+                    ion-button small clear style="float: left;"
+                    *ngIf="!CONTENT_OTHERDATA.showform_<% id %>"
+                    (click)="CONTENT_OTHERDATA.showform_<% id %> = !CONTENT_OTHERDATA.showform_<% id %>">
+                    Reply
+                </button>
+
+                <button
+                    ion-button small clear style="float: right;" core-site-plugins-new-content
+                    title="Replies for <% message %>"
+                    component="mod_hsuforum" 
+                    method="view_post_replies"
+                    [args]="{'postid':<% id %>, 'discussionid':<% discussionid %>}">
+                    View replies 
+                </button>
+
+            </ion-card>
         <%/replies%>
     </ion-list>
 </div>

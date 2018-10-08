@@ -1,0 +1,21 @@
+{{=<% %>=}}
+<core-format-text component="mod_ouwiki" componentId="<% cmid %>">
+    <ion-list>
+        <ion-list-header>
+            <p>
+                <span><%^replycount%>0<%/replycount%> <% replycount %> <% replylabel %> for post</span>
+            </p>
+        </ion-list-header>
+        <%#replies%>
+            <ion-card>
+                <ion-card-content>
+                        
+                        <ion-item>
+                            <p style="font-size: 11px;">Post by <% firstname %> <% lastname %></p>
+                            <h6><% message %></h6>
+                        </ion-item>
+                </ion-card-content>
+            </ion-card>
+        <%/replies%>
+    </ion-list>
+</core-format-text>
