@@ -4,6 +4,59 @@
         <ion-list-header>
             <p class="item-heading"><% discussioncount %> {{ 'plugin.mod_hsuforum.<% discussionlabel %>' | translate }}</p>
         </ion-list-header>
+        <ion-card>
+            <form #f="ngForm" id="newdiscussionform" *ngIf="CONTENT_OTHERDATA.newdiscussion">
+                <ion-label class="item-heading" style="margin-left:13px;">
+                    Add your discussion
+                </ion-label>
+                <ion-card>
+                    <ion-input
+                        item-content
+                        ngControl="content"
+                        name="discussiontitle"
+                        component="mod_hsuforum"
+                        componentId="<% cmid %>"
+                        placeholder="Your subject">
+                    </ion-input>
+                </ion-card>
+                <ion-card>
+                    <ion-textarea
+                        item-content
+                        ngControl="content"
+                        name="discussionbody"
+                        component="mod_hsuforum"
+                        componentId="<% cmid %>"
+                        placeholder="Type your post">
+                    </ion-textarea>
+                </ion-card>
+            </form>
+
+            <button
+                ion-button small clear style="float: left;width: 100%;"
+                *ngIf="!CONTENT_OTHERDATA.newdiscussion"
+                (click)="CONTENT_OTHERDATA.newdiscussion = true">
+                Add a new discussion
+            </button>
+
+            <button
+                ion-button small clear style="float: left;" type="submit" core-site-plugins-new-content 
+                *ngIf="CONTENT_OTHERDATA.newdiscussion"
+                samePage=true
+                refreshOnSuccess=true
+                form="newdiscussionform"
+                [args]="{'newdiscussion':true, 'cmid': <% cmid %>}"
+                (click)="CONTENT_OTHERDATA.newdiscussion = true"
+                >
+                Submit
+            </button>
+
+            <button
+                ion-button small clear style="float: left;"
+                *ngIf="CONTENT_OTHERDATA.newdiscussion"
+                (click)="CONTENT_OTHERDATA.newdiscussion = false">
+                Cancel
+            </button>
+        </ion-card>
         <%#discussions%>
             <ion-item>
                 <ion-avatar item-start><img src="<% profilesrc %>"></ion-avatar>

@@ -2,8 +2,8 @@
 
 <div>
 <!-- First post -->
-    <ion-list>
-        <%#firstpost%>
+    <%#firstpost%>
+        <ion-list>
             <ion-item>
                 <ion-avatar item-start><img src="<% profilesrc %>"></ion-avatar>
                 <h2><% name %></h2>
@@ -11,11 +11,49 @@
                     <p>
                         <span><% replycount %> <% replylabel %></span>
                     </p>
-                <br>
                 <p>Firstpost message: <% message %></p>
+                <!-- Button to show reply box -->
+                <button
+                    ion-button small style="float: left;"
+                    *ngIf="!CONTENT_OTHERDATA.showform_<% id %>"
+                    (click)="CONTENT_OTHERDATA.showform_<% id %> = !CONTENT_OTHERDATA.showform_<% id %>">
+                    Reply
+                </button>
             </ion-item>
-        <%/firstpost%>
-    </ion-list>
+        </ion-list>
+        <!-- Form to reply to post -->
+        <ion-card *ngIf="CONTENT_OTHERDATA.showform_<% id %>">
+            <form #f="ngForm" id="postformid_<% id %>">
+                <ion-textarea
+                    item-content
+                    ngControl="content"
+                    name="postreplybody"
+                    component="mod_hsuforum"
+                    componentId="<% cmid %>"
+                    placeholder="Type your reply...">
+                </ion-textarea>
+            </form>
+
+            <!-- Form submit button -->
+            <button
+                ion-button small clear style="float: left;" type="submit" core-site-plugins-new-content 
+                samePage=true
+                refreshOnSuccess=true
+                form="postformid_<% id %>"
+                [args]="{'discussionid':<% discussionid %>, 'post':true, 'parentid':<% id %>}"
+                (click)="CONTENT_OTHERDATA.showform_<% id %> = true"
+                >
+                Submit reply
+            </button>
+
+            <!-- Cancel button -->
+            <button
+                ion-button small clear style="float: left;"
+                (click)="CONTENT_OTHERDATA.showform_<% id %> = false">
+                Cancel
+            </button>
+        </ion-card>
+    <%/firstpost%>
 
 <!-- Replies(posts) on firstpost -->
     <ion-list>

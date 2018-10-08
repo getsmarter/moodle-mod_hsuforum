@@ -27,6 +27,7 @@ class mobile {
         $cm      = get_coursemodule_from_id('hsuforum', $args->cmid);
         $forum   = $DB->get_record('hsuforum', array('id' => $cm->instance));
         $context = context_module::instance($cm->id);
+        $course  = $DB->get_record('course', array('id' => $cm->course));
 
     /// Basic Validation checks
         /** Checks for valid course module
@@ -47,6 +48,72 @@ class mobile {
         $currentgroup = groups_get_activity_group($cm);
         // Handle add new discussion button being available on template
         $canstart = hsuforum_user_can_post_discussion($forum, $currentgroup, $groupmode, $cm, $context);
+
+        // Add new discussion if data posted
+        if ($args && isset($args->newdiscussion)) {
+            $discussiontitle = isset($args->discussiontitle) && strlen($args->discussiontitle) ? (string) $args->discussiontitle : false;
+            $discussionbody = isset($args->discussionbody) && strlen($args->discussionbody) ? (string) $args->discussionbody : false;
+            $newdiscussionstatus[0] = array('status' => 'pending', 'error' => false);
+            
+            // TODO: attachments
+            if ($canstart && $discussiontitle && $discussionbody) {
+                // Save discussion to posts table
+                $newdiscussion = new \stdClass();
+                try {
+                    $newdiscussion->discussion    = 0;
+                    $newdiscussion->parent        = 0;
+                    $newdiscussion->userid        = $USER->id;
+                    $newdiscussion->created       = time();
+                    $newdiscussion->modified      = time();
+                    $newdiscussion->subject       = $discussiontitle;
+                    $newdiscussion->message       = $discussionbody;
+                    $newdiscussion->messageformat = FORMAT_HTML;
+                    $newdiscussion->forum         = $forum->id;
+                    $newdiscussion->course        = $course->id;
+                    $newdiscussion->attachments   = null;
+                    // $newdiscussion->attachments   = isset($discussion->attachments) ? $discussion->attachments : null;
+                    $newdiscussion->id = $DB->insert_record("hsuforum_posts", $newdiscussion);
+                } catch (Exception $e) {
+                    $newdiscussionstatus[0]['error']  = $e->getMessage();
+                    $newdiscussionstatus[0]['status'] = 'failed';
+                }
+
+                //  Now save to discussions table and link to first post above
+                if ($newdiscussion->id) {
+                    try {
+                        $newdiscussion->name         = $newdiscussion->subject;
+                        $newdiscussion->firstpost    = $newdiscussion->id;
+                        $newdiscussion->timemodified = time();
+                        $newdiscussion->usermodified = $newdiscussion->userid;
+                        $newdiscussion->userid       = $USER->id;
+                        $newdiscussion->assessed     = 0;
+                        $newdiscussion->discussion = $DB->insert_record("hsuforum_discussions", $newdiscussion);
+
+                        // Finally, set the pointer on the post.
+                        $DB->set_field("hsuforum_posts", "discussion", $newdiscussion->discussion, array("id"=>$newdiscussion->id));
+
+                        hsuforum_mark_post_read($newdiscussion->userid, $newdiscussion, $newdiscussion->forum);
+
+                        // Let Moodle know that assessable content is uploaded (eg for plagiarism detection)
+                        if (!empty($cm->id)) {
+                            hsuforum_trigger_content_uploaded_event($newdiscussion, $cm, 'hsuforum_add_discussion');
+                        }
+
+                    } catch (Exception $e) {
+                        $newdiscussionstatus[0]['error']  = $e->getMessage();
+                        $newdiscussionstatus[0]['status'] = 'failed';
+                    }
+                }
+
+                // Valididate post and change status
+                if ($newdiscussion && $newdiscussion->id) {
+                    $newdiscussionstatus[0]['status'] = 'success';
+                }
+            } else {
+                $newdiscussionstatus[0]['status'] = 'failed';
+                $newdiscussionstatus[0]['error'] = 'User is not permitted to post replies or reply body empty';
+            }
+        }
 
     /// Get all the recent discussions we're allowed to see
         /**
@@ -83,7 +150,7 @@ class mobile {
             }
         }
 
-    /// Build data array to output in the template
+        // Build data array to output in the template
         $data = array(
             'cmid' => $cm->id,
             'cmname' => $cm->name,
