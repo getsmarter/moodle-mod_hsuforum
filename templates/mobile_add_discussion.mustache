@@ -1,0 +1,43 @@
+{{=<% %>=}}
+<ion-content>
+    <form #f="ngForm" id="newdiscussionform">
+        <ion-list>
+
+            <ion-item>
+                <ion-label stacked>Subject</ion-label>
+                <ion-input min="8" name="discussiontitle" type="text" [(ngModel)]="CONTENT_OTHERDATA.discussiontitle"></ion-input>
+            </ion-item>
+
+            <ion-item>
+                <ion-label stacked>Message</ion-label>
+                    <ion-textarea
+                        name="discussionbody"
+                        placeholder="Message"
+                        [(ngModel)]="CONTENT_OTHERDATA.discussionbody">
+                    </ion-textarea>
+            </ion-item>
+
+            <%#showgroupsections%>
+            <ion-item>
+                <ion-label>Group</ion-label>
+                <ion-select interface="popover" name="groupselection" [(ngModel)]="CONTENT_OTHERDATA.groupselection">
+                    <ion-option value="{{group.id}}" *ngFor="let group of CONTENT_OTHERDATA.groupsections">{{group.name}}</ion-option>
+                </ion-select>
+            </ion-item>
+            <%/showgroupsections%>
+
+            <ion-item>
+                <button ion-button full
+                    type="submit" core-site-plugins-new-content
+                    form="newdiscussionform"
+                    samePage=true
+                    goBackOnSuccess=true
+                    [args]="{cmid:<%cmid%>, groupid:CONTENT_OTHERDATA.groupselection, newdiscussionpost:true}"
+                    [disabled]="CONTENT_OTHERDATA.discussiontitle.length <= 3">
+                    <h3>POST TO FORUM</h3>
+                </button>
+            </ion-item>
+
+        </ion-list>
+    </form>
+</ion-content>

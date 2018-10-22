@@ -18,7 +18,7 @@ class mobile {
      * Returns the hsuforum discussion view for a given forum.
      * Note use as much logic and functions from view.php as possible (view.php uses renderer.php and lib.php to build view)
      * @param  array $args Arguments from tool_mobile_get_content WS
-     * @return array HTML, javascript and otherdata
+     * @return array HTML, javascript and otherdata
      */
     public static function forum_discussions_view($args) {
         global $OUTPUT, $USER, $DB, $PAGE;
@@ -38,81 +38,17 @@ class mobile {
             print_error('missingparameter');
         }
 
-    /// Decide if current user is allowed to see ALL the current discussions or not
-        /** First check the group stuff
-         * @TODO
-         * Handle group check properly later
-         * Reference lib.php line :5421 to implement when required
-         */
-        $groupmode    = groups_get_activity_groupmode($cm, $course);
-        $currentgroup = groups_get_activity_group($cm);
-        // Handle add new discussion button being available on template
-        $canstart = hsuforum_user_can_post_discussion($forum, $currentgroup, $groupmode, $cm, $context);
+    /// Group permission logic
+        $showgroupsections      = false;
+        $allowedgroups          = false;
+        $currentgroup           = groups_get_activity_group($cm);
+        $groupmode              = groups_get_activity_groupmode($cm, $course);
+        $canstart               = hsuforum_user_can_post_discussion($forum, $currentgroup, $groupmode, $cm, $context);
+        $allowedgroupswithkeyid = groups_get_activity_allowed_groups($cm);
 
-        // Add new discussion if data posted
-        if ($args && isset($args->newdiscussion)) {
-            $discussiontitle = isset($args->discussiontitle) && strlen($args->discussiontitle) ? (string) $args->discussiontitle : false;
-            $discussionbody = isset($args->discussionbody) && strlen($args->discussionbody) ? (string) $args->discussionbody : false;
-            $newdiscussionstatus[0] = array('status' => 'pending', 'error' => false);
-            
-            // TODO: attachments
-            if ($canstart && $discussiontitle && $discussionbody) {
-                // Save discussion to posts table
-                $newdiscussion = new \stdClass();
-                try {
-                    $newdiscussion->discussion    = 0;
-                    $newdiscussion->parent        = 0;
-                    $newdiscussion->userid        = $USER->id;
-                    $newdiscussion->created       = time();
-                    $newdiscussion->modified      = time();
-                    $newdiscussion->subject       = $discussiontitle;
-                    $newdiscussion->message       = $discussionbody;
-                    $newdiscussion->messageformat = FORMAT_HTML;
-                    $newdiscussion->forum         = $forum->id;
-                    $newdiscussion->course        = $course->id;
-                    $newdiscussion->attachments   = null;
-                    // $newdiscussion->attachments   = isset($discussion->attachments) ? $discussion->attachments : null;
-                    $newdiscussion->id = $DB->insert_record("hsuforum_posts", $newdiscussion);
-                } catch (Exception $e) {
-                    $newdiscussionstatus[0]['error']  = $e->getMessage();
-                    $newdiscussionstatus[0]['status'] = 'failed';
-                }
-
-                //  Now save to discussions table and link to first post above
-                if ($newdiscussion->id) {
-                    try {
-                        $newdiscussion->name         = $newdiscussion->subject;
-                        $newdiscussion->firstpost    = $newdiscussion->id;
-                        $newdiscussion->timemodified = time();
-                        $newdiscussion->usermodified = $newdiscussion->userid;
-                        $newdiscussion->userid       = $USER->id;
-                        $newdiscussion->assessed     = 0;
-                        $newdiscussion->discussion = $DB->insert_record("hsuforum_discussions", $newdiscussion);
-
-                        // Finally, set the pointer on the post.
-                        $DB->set_field("hsuforum_posts", "discussion", $newdiscussion->discussion, array("id"=>$newdiscussion->id));
-
-                        hsuforum_mark_post_read($newdiscussion->userid, $newdiscussion, $newdiscussion->forum);
-
-                        // Let Moodle know that assessable content is uploaded (eg for plagiarism detection)
-                        if (!empty($cm->id)) {
-                            hsuforum_trigger_content_uploaded_event($newdiscussion, $cm, 'hsuforum_add_discussion');
-                        }
-
-                    } catch (Exception $e) {
-                        $newdiscussionstatus[0]['error']  = $e->getMessage();
-                        $newdiscussionstatus[0]['status'] = 'failed';
-                    }
-                }
-
-                // Valididate post and change status
-                if ($newdiscussion && $newdiscussion->id) {
-                    $newdiscussionstatus[0]['status'] = 'success';
-                }
-            } else {
-                $newdiscussionstatus[0]['status'] = 'failed';
-                $newdiscussionstatus[0]['error'] = 'User is not permitted to post replies or reply body empty';
-            }
+        if (count($allowedgroupswithkeyid) && (int) $cm->groupmode > 0) {
+            $showgroupsections = true;
+            $allowedgroups = array_values($allowedgroupswithkeyid);
         }
 
     /// Get all the recent discussions we're allowed to see
@@ -131,17 +67,23 @@ class mobile {
         $discussions = false;
 
         try {
-            $discussions = hsuforum_get_discussions($cm, $sortorder, $fullpost, null, $maxdiscussions, $getuserlastmodified, $page, $perpage, -1, false);
+            $discussions = hsuforum_get_discussions($cm, $sortorder, $fullpost, null, $maxdiscussions, $getuserlastmodified, $page, $perpage, HSUFORUM_POSTS_ALL_USER_GROUPS, false);
         } catch (Exception $e) {
             // @TODO handle exceptions properly in the app context
             print_r($e->getMessage());
         }
 
-        // Get user profile pictures for a discussion - temp fix will need rework
+        // Get user profile pictures for a discussion and group names
         if ($discussions) {
             foreach ($discussions as $discussion) {
                 $postuser = false;
                 $discussion->profilesrc = false;
+                $discussion->groupname = false;
+                // Getting group names
+                if ($allowedgroupswithkeyid && array_key_exists($discussion->groupid, $allowedgroupswithkeyid)) {
+                    $discussion->groupname = $allowedgroupswithkeyid[$discussion->groupid]->name;
+                }
+                // Getting user picture
                 $postuser = hsuforum_extract_postuser($discussion, $forum, context_module::instance($cm->id));
                 if ($postuser) {
                     $postuser->user_picture->size = 100;
@@ -157,6 +99,7 @@ class mobile {
             'discussioncount' => count($discussions),
             'discussions' => array_values($discussions),
             'discussionlabel' => count($discussions) >= 2 || count($discussions) == 0 ? 'discussions' : 'discussion',
+            'showgroupsections' => $showgroupsections
         );
 
         return array(
@@ -167,7 +110,9 @@ class mobile {
                 ),
             ),
             'javascript' => '',
-            'otherdata' => '',
+            'otherdata' => array(
+                'allowedgroups' => json_encode($allowedgroups),
+            ),
             'files' => ''
         );
     }
@@ -176,7 +121,7 @@ class mobile {
      * Renders firstpost entry in the header and replies for a given discussion in a forum.
      * Note use as much logic and functions from discuss.php as possible
      * @param array $args Arguments from tool_mobile_get_content WS
-     * @return array HTML, javascript and otherdata
+     * @return array HTML, javascript and otherdata
      */
     public static function view_discussion($args) {
         global $OUTPUT, $USER, $DB, $PAGE;
@@ -274,6 +219,116 @@ class mobile {
             'otherdata' => array(),
             'files' => ''
         );
+    }
+
+    /**
+     * Handle post discussion forms
+     * @param array $args Arguments from tool_mobile_get_content WS
+     * @return array HTML, javascript and otherdata
+     */
+    public static function add_discussion($args) {
+        global $OUTPUT, $USER, $DB;
+
+        $cm                = get_coursemodule_from_id('hsuforum', $args['cmid']);
+        $forum             = $DB->get_record('hsuforum', array('id' => $cm->instance));
+        $postsuccess       = false;
+        $allowedgroups     = false;
+        $showgroupsections = false;
+
+        // Check if group mode apply and getting instance allowed groups
+        if ((int) $cm->groupmode > 0) {
+            $allowedgroups = array_values(groups_get_activity_allowed_groups($cm));
+            $showgroupsections = true;
+        }
+
+        // Add new discussion if data posted - @TODO this will need to be looked at again.
+           // Refreshing the page calls the last post against that page thus below might not work as expected
+           // Need to find a way to update the last post action to clear form flags
+        if ($args['newdiscussionpost']) {
+
+            $discussiontitle = isset($args['discussiontitle']) && strlen($args['discussiontitle']) ? (string) $args['discussiontitle'] : false;
+            $discussionbody = isset($args['discussionbody']) && strlen($args['discussionbody']) ? (string) $args['discussionbody'] : '';
+            $groupid = isset($args['groupid']) && (int) $args['groupid'] > 0 ? $args['groupid'] : -1;
+
+            if ($discussiontitle) {
+                // Save discussion to posts table
+                $newdiscussion = new \stdClass();
+                try {
+                    $newdiscussion->discussion    = 0;
+                    $newdiscussion->parent        = 0;
+                    $newdiscussion->userid        = $USER->id;
+                    $newdiscussion->created       = time();
+                    $newdiscussion->modified      = time();
+                    $newdiscussion->subject       = $discussiontitle;
+                    $newdiscussion->message       = $discussionbody;
+                    $newdiscussion->messageformat = FORMAT_HTML;
+                    $newdiscussion->forum         = $forum->id;
+                    $newdiscussion->course        = $cm->course;
+                    $newdiscussion->attachments   = null;
+                    $newdiscussion->id = $DB->insert_record("hsuforum_posts", $newdiscussion);
+                } catch (Exception $e) {
+                    print_r($e->getMessage());
+                }
+
+                //  Now save to discussions table and link to first post above
+                if ($newdiscussion->id) {
+                    try {
+                        $newdiscussion->name         = $newdiscussion->subject;
+                        $newdiscussion->firstpost    = $newdiscussion->id;
+                        $newdiscussion->timemodified = time();
+                        $newdiscussion->usermodified = $newdiscussion->userid;
+                        $newdiscussion->userid       = $USER->id;
+                        $newdiscussion->groupid      = $groupid;
+                        $newdiscussion->assessed     = 0;
+                        $newdiscussion->discussion = $DB->insert_record("hsuforum_discussions", $newdiscussion);
+
+                        // Finally, set the pointer on the post.
+                        $DB->set_field("hsuforum_posts", "discussion", $newdiscussion->discussion, array("id"=>$newdiscussion->id));
+
+                        hsuforum_mark_post_read($newdiscussion->userid, $newdiscussion, $newdiscussion->forum);
+
+                        // Let Moodle know that assessable content is uploaded (eg for plagiarism detection)
+                        if (!empty($cm->id)) {
+                            hsuforum_trigger_content_uploaded_event($newdiscussion, $cm, 'hsuforum_add_discussion');
+                        }
+                    } catch (Exception $e) {
+                        print_r($e->getMessage());
+                    }
+                }
+
+                // Valididate post and change newdiscussionpost flag to prevent duplicate form submits
+                if ($newdiscussion->discussion && $newdiscussion->id) {
+                    $postsuccess = true;
+                    // @TODO fix unsetting the post args properly
+                    unset($args['newdiscussionpost']);
+                }
+
+            } else {
+                print_r('No discussion title provided');
+            }
+        }
+
+
+        $returnarray = array(
+            'templates' => array(
+                array(
+                    'id' => 'main',
+                    'html' => $OUTPUT->render_from_template('mod_hsuforum/mobile_add_discussion', array(
+                        'cmid' => $args['cmid'], 
+                        'showgroupsections' => $showgroupsections)
+                    ),
+                ),
+            ),
+            'javascript' => '',
+            'otherdata' => array(
+                'groupsections' => $showgroupsections ? json_encode($allowedgroups) : false,
+                'groupselection' => count($allowedgroups) ? $allowedgroups[0]->id : false,
+                'discussiontitle' => '',
+            ),
+            'files' => ''
+        );
+
+        return $postsuccess ? mobile::forum_discussions_view($args) : $returnarray;
     }
 
     /**
