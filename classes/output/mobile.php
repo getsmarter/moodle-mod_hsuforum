@@ -44,11 +44,11 @@ class mobile {
         $currentgroup           = groups_get_activity_group($cm);
         $groupmode              = groups_get_activity_groupmode($cm, $course);
         $canstart               = hsuforum_user_can_post_discussion($forum, $currentgroup, $groupmode, $cm, $context);
-        $allowedgroupswithkeyid = groups_get_activity_allowed_groups($cm);
+        $allgroups              = groups_get_all_groups($cm->course, 0, $cm->groupingid);
+        $allowedgroups          = array_values(groups_get_activity_allowed_groups($cm));
 
-        if (count($allowedgroupswithkeyid) && (int) $cm->groupmode > 0) {
+        if (count($allowedgroups) && (int) $cm->groupmode > 0) {
             $showgroupsections = true;
-            $allowedgroups = array_values($allowedgroupswithkeyid);
         }
 
     /// Get all the recent discussions we're allowed to see
@@ -80,8 +80,10 @@ class mobile {
                 $discussion->profilesrc = false;
                 $discussion->groupname = false;
                 // Getting group names
-                if ($allowedgroupswithkeyid && array_key_exists($discussion->groupid, $allowedgroupswithkeyid)) {
-                    $discussion->groupname = $allowedgroupswithkeyid[$discussion->groupid]->name;
+                if ($allgroups && array_key_exists($discussion->groupid, $allgroups)) {
+                    $discussion->groupname = $allgroups[$discussion->groupid]->name;
+                } elseif ($discussion->groupid == -1) {
+                    $discussion->groupname = 'All groups';
                 }
                 // Getting user picture
                 $postuser = hsuforum_extract_postuser($discussion, $forum, context_module::instance($cm->id));
@@ -137,6 +139,7 @@ class mobile {
         $forum      = $DB->get_record('hsuforum', array('id' => $discussion->forum), '*', MUST_EXIST);
         $cm         = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id, false, MUST_EXIST);
         $modcontext = context_module::instance($cm->id);
+        $canreply   = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
         $postreplystatus = [];
 
     /// Validation checks
@@ -147,7 +150,6 @@ class mobile {
         // @TODO handle post and template form validation
         // Check to see if posting a reply
         if ($args && isset($args['post'])) {
-            $canreply = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
             $postreplybody = isset($args['postreplybody']) && strlen($args['postreplybody']) ? (string) $args['postreplybody'] : false;
             $postreplystatus[$args['parentid']] = array('status' => 'pending', 'error' => false);
 
@@ -206,6 +208,7 @@ class mobile {
             'replycount' => count($replies),
             'replylabel' => count($replies) >= 2 || count($replies) == 0 ? 'replies' : 'reply',
             'firstpost' => $firstpost,
+            'canreply' => $cm->groupmode == 0 ? true : $canreply,
         );
 
         return array(
@@ -230,6 +233,7 @@ class mobile {
         global $OUTPUT, $USER, $DB;
 
         $cm                = get_coursemodule_from_id('hsuforum', $args['cmid']);
+        $modcontext        = context_module::instance($cm->id);
         $forum             = $DB->get_record('hsuforum', array('id' => $cm->instance));
         $postsuccess       = false;
         $allowedgroups     = false;
@@ -241,6 +245,17 @@ class mobile {
             $showgroupsections = true;
         }
 
+        if ((int) $cm->groupmode == 2) {
+            $groupstopostto = [];
+            // Note: all groups are returned when in visible groups mode so we must manually filter.
+            foreach ($allowedgroups as $groupid => $group) {
+                if (hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $modcontext)) {
+                    $groupstopostto[] = $group;
+                }
+            }
+            // Replace original allowed groups with filtered one based on permissions
+            $allowedgroups = $groupstopostto;
+        }
         // Add new discussion if data posted - @TODO this will need to be looked at again.
            // Refreshing the page calls the last post against that page thus below might not work as expected
            // Need to find a way to update the last post action to clear form flags

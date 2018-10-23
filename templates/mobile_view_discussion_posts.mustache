@@ -13,15 +13,18 @@
                     </p>
                 <p>Firstpost message: <% message %></p>
                 <!-- Button to show reply box -->
+                <%#canreply%>
                 <button
                     ion-button small style="float: left;"
                     *ngIf="!CONTENT_OTHERDATA.showform_<% id %>"
                     (click)="CONTENT_OTHERDATA.showform_<% id %> = !CONTENT_OTHERDATA.showform_<% id %>">
                     Reply
                 </button>
+                <%/canreply%>
             </ion-item>
         </ion-list>
         <!-- Form to reply to post -->
+        <%#canreply%>
         <ion-card *ngIf="CONTENT_OTHERDATA.showform_<% id %>">
             <form #f="ngForm" id="postformid_<% id %>">
                 <ion-textarea
@@ -53,6 +56,7 @@
                 Cancel
             </button>
         </ion-card>
+        <%/canreply%>
     <%/firstpost%>
 
 <!-- Replies(posts) on firstpost -->
@@ -69,6 +73,7 @@
                 </ion-item>
 
                 <!-- Form to reply to post -->
+                <%#canreply%>
                 <form #f="ngForm" id="postformid_<% id %>" *ngIf="CONTENT_OTHERDATA.showform_<% id %>">
                     <ion-card>
                         <ion-card-content>
@@ -103,6 +108,7 @@
                     (click)="CONTENT_OTHERDATA.showform_<% id %> = !CONTENT_OTHERDATA.showform_<% id %>">
                     Reply
                 </button>
+                <%/canreply%>
 
                 <button
                     ion-button small clear style="float: right;" core-site-plugins-new-content
