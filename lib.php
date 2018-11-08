@@ -8411,3 +8411,93 @@ function mod_hsuforum_myprofile_navigation(core_user\output\myprofile\tree $tree
 
     return true;
 }
+
+/**
+ * Build formatted likes object with author fullname for each like.
+ * @param stdClass $post object
+ *
+ * @return stdClass $likes object
+ */
+function getpostlikes($post) {
+    global $DB, $USER;
+    $likes = false;
+
+    try {
+        $result = $DB->get_records_sql('SELECT * FROM {hsuforum_actions} WHERE postid = ?', array($post->id));
+        //  Get names for the likes
+        if (count($result)) {
+            $likes = $result;
+            foreach ($likes as &$like) {
+                $user = $DB->get_record('user', array('id' => $like->userid));
+                if ($user->id == $USER->id) {
+                    $like->likedfullname = "You";
+                } else {
+                    $like->likedfullname = $user->firstname ." ". $user->lastname;
+                }
+            }
+        }
+    } catch (Exception $e) {
+        print_r($e->getMessage);
+    }
+
+    return $likes;
+}
+
+/**
+ * Build formatted likes description for the bottom off mobile cards.
+ * @param stdClass $likes object
+ * 
+ * @return string $string formmatted description string
+ */
+function getlikedescription($likes) {
+    global $USER;
+    $string = false;
+
+    switch(true) {
+        case count($likes) == 1:
+            if ($likes[0]->userid == $USER->id) {
+                $string = "You like this";
+            } else {
+                $string = $likes[0]->likedfullname . " like this";
+            }
+            break;
+        case count($likes) == 2:
+            foreach ($likes as $key => $like) {
+                if ($like->userid == $USER->id) {
+                    $string .= "You";
+                } else if ($key == 1) {
+                    $string .= $like->likedfullname;
+                } else {
+                    $string .= $like->likedfullname . " and ";
+                }
+            }
+            $string .= " like this";
+            break;
+        case count($likes) > 2:
+            $string .= count($likes) . " people like this";
+            break;
+    }
+
+    return $string;
+}
+
+/**
+ * Check to see if an user liked a post
+ * @param int $postid
+ * @param int $userid
+ * 
+ * @return bool
+ */
+function userlikedpost($postid, $userid) {
+    global $DB;
+    $liked = false;
+
+    try {
+        $result = $DB->get_records_sql('SELECT * FROM {hsuforum_actions} WHERE postid = ? AND userid = ?', array( $postid, $userid));
+        $liked = count($result) ? true : false;
+    } catch (Exception $e) {
+        print_r($e->getMessage);
+    }
+
+    return $liked;
+}

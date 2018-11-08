@@ -181,6 +181,22 @@ class mobile {
             }
         }
 
+    /// Handle posting of a liketoggle action
+    if ($args && isset($args['liketoggle'])) {
+        $likestatus = userlikedpost($args['parentid'], $args['userid']);
+
+        if (!$likestatus) {
+            $like = new \stdClass();
+            $like->postid = $args['parentid'];
+            $like->userid = $args['userid'];
+            $like->action = "like";
+            $like->created = time();
+
+            $DB->insert_record('hsuforum_actions', $like);
+        } else {
+            $DB->delete_records('hsuforum_actions', array('postid' => $args['parentid'], 'userid' => $args['userid']));
+        }
+    }
 
     /// Getting firstpost and root replies for the firstpost
         // Note there can only be one post(when user created discussion) in a discussion and then additional posts are regarged as replies(api data structure reflects this concept). Very confusing...
@@ -191,15 +207,39 @@ class mobile {
         $firstpostcondition = array('p.id' => $discussion->firstpost);
         $firstpostresult = hsuforum_get_all_discussion_posts($discussion->id, $firstpostcondition);
 
+        // Populating firstpost with virtual props needed for template
         if ($firstpostresult) {
+            // Avatar section
             $firstpost = array_pop($firstpostresult);
             $postuser = hsuforum_extract_postuser($firstpost, $forum, context_module::instance($cm->id));
             $postuser->user_picture->size = 100;
             $firstpost->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
+            // Like section
+            $firstpost->likes = array_values(getpostlikes($firstpost));
+            $firstpost->likecount = count($firstpost->likes);
+            if ($firstpost->likecount) {
+                $firstpost->likedescription = getlikedescription($firstpost->likes);
+            }
+            $firstpost->firstpostliked = userlikedpost($firstpost->id, $USER->id) ? 'Unlike' : 'Like';
         }
 
         $repliescondition = array('p.parent' => $discussion->firstpost);
         $replies = hsuforum_get_all_discussion_posts($discussion->id, $repliescondition);
+
+        // Populating replies with virtual props needed for template
+        foreach ($replies as &$reply) {
+            // Avatar section
+            $postuser = hsuforum_extract_postuser($reply, $forum, context_module::instance($cm->id));
+            $postuser->user_picture->size = 100;
+            $reply->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
+            // Like section
+            $reply->likes = array_values(getpostlikes($reply));
+            $reply->likecount = count($reply->likes);
+            if ($reply->likecount) {
+                $reply->likedescription = getlikedescription($reply->likes);
+            }
+            $reply->liked = userlikedpost($reply->id, $USER->id) ? 'Unlike' : 'Like';
+        }
 
         $data = array(
             'cmid' => $cm->id,
