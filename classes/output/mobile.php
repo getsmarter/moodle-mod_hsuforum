@@ -258,7 +258,109 @@ class mobile {
                     'html' => $OUTPUT->render_from_template('mod_hsuforum/mobile_view_discussion_posts', $data),
                 ),
             ),
-            'javascript' => '',
+            'javascript' => '
+// Function to reset children styles
+                function reset_children_styles(elements, child_type) {
+                    return elements.querySelectorAll(child_type).forEach(function(element) {
+                        element.style.display = "block";
+                    });
+                }
+
+
+// Function to build profile link
+                function create_profile_link(text_area_text, profile_string, id, at_position_start, at_position_end) {
+                        let old_textarea_string = "";
+                        let beginning_string = "";
+                        let replace_string = "";
+                        let end_string = "";
+
+                        old_textarea_string = text_area_text;
+
+                        beginning_string = (at_position_start > 0) ? old_textarea_string.slice(0, at_position_start -1) : " ";
+// @TODO fix link here
+                        replace_string = "<a href=/user/view.php?id=" + id + ">" + profile_string + "</a>";
+                        end_string = old_textarea_string.slice(at_position_end, old_textarea_string.length);
+
+                        return beginning_string + replace_string + end_string;
+                }
+
+
+                function init() {
+// 1. Remember to add @ check event listeners to all text_areas on the screen with unique ids if nessesary
+// 2. Might only need one ul but position the ul where the textarea is (will reduce lines)
+                    let ul_active = false;
+                    let at_position_start = 0;
+                    let at_position_end = 0;
+                    let searchstring = "";
+                    let text_area = document.querySelector("#javatest");
+                    let filter_element = document.querySelector(".tribute-container");
+                    let filter_li_elements = filter_element.querySelectorAll("li");
+
+                    if (text_area) {
+                        text_area.addEventListener("input", function(e) {
+                            // 1. Check for @key being pressed to mark ul as active
+                            if (e.data == "@") {
+                                // 2. Trigger true flag for ul active (remember to bind id to this)
+                                ul_active = true;
+                                // 3. Key caret index position to determine how many chars pressed
+                                at_position_start = window.getSelection().anchorOffset;
+                            }
+
+                            if (ul_active) {
+                                filter_element.style.display = "block";
+                                at_position_end = window.getSelection().anchorOffset;
+// Filter elements
+                                // Dont filter for "shift" and "@"
+                                if (e.data != "@") {
+                                    if (filter_li_elements) {
+                                        // Handle backspace on search. Input event recognize @ as null
+                                        if (e.data == null) {
+                                            reset_children_styles(filter_element, "li");
+                                            searchstring = searchstring.substring(0, searchstring.length - 1);
+                                        } else {
+                                            searchstring += e.data;
+                                        }
+
+                                        filter_li_elements.forEach(function(element) {
+                                            let element_text = element.innerHTML.toLowerCase()
+                                            if (element_text.indexOf(searchstring) == -1) {
+                                                element.style.display = "none";
+                                            }
+                                        });
+                                    }
+                                }
+
+// Remove ul once backspace before @ or space pressed and reset params
+                                if (at_position_end < at_position_start || e.keyCode == 32) {
+                                    ul_active = false;
+                                    filter_element.style.display = "none";
+                                    searchstring = "";
+                                    reset_children_styles(filter_element, "li");
+                                }
+                            }
+                        });
+                    }
+
+// Click events for li elements
+                    if (filter_li_elements) {
+                        // Events for list items on click
+                        filter_li_elements.forEach(function(element) {
+                            element.addEventListener("touchstart", function(e) {
+
+                                text_area.innerHTML = create_profile_link(text_area.innerHTML, e.target.innerText, e.target.id, at_position_start, at_position_end);
+                // @TODO create destroy function
+                                ul_active = false;
+                                filter_element.style.display = "none";
+                                searchstring = "";
+                                reset_children_styles(filter_element, "li");
+                            });
+                        });
+                    }
+
+// END OF INIT FUNCTION
+                }
+
+            setTimeout(function() { console.log("DOM is available now"); init() });',
             'otherdata' => array(),
             'files' => ''
         );

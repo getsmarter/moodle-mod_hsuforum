@@ -1,4 +1,23 @@
 {{=<% %>=}}
+<ion-card style="display:none">
+    <ion-card-content>
+        <div 
+            id="javatest"
+            contenteditable="true" 
+            [innerHTML]=CONTENT_OTHERDATA.sectioncontent 
+            (keyup)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML">
+        </div>
+
+        <div class="tribute-container" style="display:none">
+            <ul style="list-style: none; background: #efefef; display: inline-block; padding: 2px 13px;">
+                <li id="0">Jan</li>
+                <li id="1">Rumano</li>
+            </ul>
+        </div>
+    
+    </ion-card-content>
+</ion-card>
+
 
 <ion-content class="content content-md has-refresher">
     <%#firstpost%>
