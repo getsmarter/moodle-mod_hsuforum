@@ -1,25 +1,11 @@
 {{=<% %>=}}
-<ion-card>
-    <ion-card-content>
-        <div 
-            id="javatest"
-            contenteditable="true" 
-            [innerHTML]=CONTENT_OTHERDATA.sectioncontent 
-            (keyup)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML">
-        </div>
-
-        <div class="tribute-container" style="display:none">
-            <ul style="list-style: none; background: #efefef; display: inline-block; padding: 2px 13px;">
-                <li id="0">Jan</li>
-                <li id="1">Rumano</li>
-            </ul>
-        </div>
-    
-    </ion-card-content>
-</ion-card>
-
-
 <ion-content class="content content-md has-refresher">
+<ion-card class="tribute-container" style="position:absolute; z-index:10; display:none; width:unset;">
+    <ul style="list-style: none; background: #efefef; display: inline-block; padding: 2px 13px; margin:0;">
+        <li id="0">Jan</li>
+        <li id="1">Rumano</li>
+    </ul>
+</ion-card>
     <%#firstpost%>
         <ion-card>
             <ion-card-header no-padding text-wrap class="card-header card-header-md">
@@ -38,7 +24,7 @@
                 <ion-col>
                     <%#canreply%>
                         <button
-                            ion-button small clear
+                            ion-button small clear class="js_reply"
                             (click)="CONTENT_OTHERDATA.showform_<% id %> = !CONTENT_OTHERDATA.showform_<% id %>">
                             <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
                             <span>Reply</span>
@@ -72,6 +58,7 @@
                 <%#canreply%>
                 <ion-card *ngIf="CONTENT_OTHERDATA.showform_<% id %>">
                     <form #f="ngForm" id="postformid_<% id %>">
+                    <!--
                         <ion-textarea
                             item-content
                             ngControl="content"
@@ -80,6 +67,15 @@
                             componentId="<% cmid %>"
                             placeholder="Type your reply...">
                         </ion-textarea>
+                    -->
+
+                    <div id="textarea_id<% id %>"
+                        class="js_tagging" style="min-height: 200px;"
+                        contenteditable="true"
+                        [innerHTML]=CONTENT_OTHERDATA.sectioncontent 
+                        (keyup)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML">
+                    </div>
+
                     </form>
                     <!-- Form submit button -->
                     <button
@@ -87,7 +83,7 @@
                         samePage=true
                         refreshOnSuccess=true
                         form="postformid_<% id %>"
-                        [args]="{'discussionid':<% discussionid %>, 'post':true, 'parentid':<% id %>}"
+                        [args]="{'discussionid':<% discussionid %>, 'post':true, 'parentid':<% id %>, 'postreplybody':CONTENT_OTHERDATA.sectioncontent}"
                         (click)="CONTENT_OTHERDATA.showform_<% id %> = true"
                         >
                         Submit reply
@@ -130,7 +126,7 @@
                 <%#canreply%>
                 <!-- Button to show reply box -->
                 <button
-                    ion-button small clear style="float: left;"
+                    ion-button small clear style="float: left;" class="js_reply"
                     (click)="CONTENT_OTHERDATA.showform_<% id %> = !CONTENT_OTHERDATA.showform_<% id %>">
                     <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
                     Reply
@@ -167,6 +163,7 @@
                     <form #f="ngForm" id="postformid_<% id %>" *ngIf="CONTENT_OTHERDATA.showform_<% id %>">
                         <ion-card>
                             <ion-card-content>
+                            <!--
                                 <ion-textarea
                                     item-content
                                     ngControl="content"
@@ -174,6 +171,15 @@
                                     component="mod_hsuforum"
                                     componentId="<% cmid %>">
                                 </ion-textarea>
+                                -->
+
+                            <div id="textarea_id<% id %>"
+                                class="js_tagging" style="min-height: 200px;"
+                                contenteditable="true"
+                                [innerHTML]=CONTENT_OTHERDATA.sectioncontent 
+                                (keyup)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML">
+                            </div>
+
                             </ion-card-content>
                         </ion-card>
                     </form>
@@ -184,7 +190,7 @@
                         samePage=true
                         refreshOnSuccess=true
                         form="postformid_<% id %>"
-                        [args]="{'discussionid':<% discussionid %>, 'post':true, 'parentid':<% id %>}"
+                        [args]="{'discussionid':<% discussionid %>, 'post':true, 'parentid':<% id %>, 'postreplybody':CONTENT_OTHERDATA.sectioncontent}"
                         (click)="CONTENT_OTHERDATA.showform_<% id %> = true"
                         >
                         Submit reply

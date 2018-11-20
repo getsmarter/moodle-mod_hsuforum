@@ -277,7 +277,7 @@ class mobile {
                         old_textarea_string = text_area_text;
 
                         beginning_string = (at_position_start > 0) ? old_textarea_string.slice(0, at_position_start -1) : " ";
-// @TODO fix link here
+// @TODO fix link here (RATHER USE REGEX TO ACOMPANY FOR \r\n)
                         replace_string = "<a href=/user/view.php?id=" + id + ">" + profile_string + "</a>";
                         end_string = old_textarea_string.slice(at_position_end, old_textarea_string.length);
 
@@ -286,68 +286,76 @@ class mobile {
 
 
                 function init() {
-// 1. Remember to add @ check event listeners to all text_areas on the screen with unique ids if nessesary
-// 2. Might only need one ul but position the ul where the textarea is (will reduce lines)
                     let ul_active = false;
                     let at_position_start = 0;
                     let at_position_end = 0;
                     let searchstring = "";
-                    let text_area = document.querySelector("#javatest");
+                    let text_areas = document.querySelectorAll(".js_tagging");
                     let filter_element = document.querySelector(".tribute-container");
                     let filter_li_elements = filter_element.querySelectorAll("li");
-
-                    if (text_area) {
-                        text_area.addEventListener("input", function(e) {
-                            // 1. Check for @key being pressed to mark ul as active
-                            if (e.data == "@") {
-                                // 2. Trigger true flag for ul active (remember to bind id to this)
-                                ul_active = true;
-                                // 3. Key caret index position to determine how many chars pressed
-                                at_position_start = window.getSelection().anchorOffset;
-                            }
-
-                            if (ul_active) {
-                                filter_element.style.display = "block";
-                                at_position_end = window.getSelection().anchorOffset;
-// Filter elements
-                                // Dont filter for "shift" and "@"
-                                if (e.data != "@") {
-                                    if (filter_li_elements) {
-                                        // Handle backspace on search. Input event recognize @ as null
-                                        if (e.data == null) {
-                                            reset_children_styles(filter_element, "li");
-                                            searchstring = searchstring.substring(0, searchstring.length - 1);
-                                        } else {
-                                            searchstring += e.data;
-                                        }
-
-                                        filter_li_elements.forEach(function(element) {
-                                            let element_text = element.innerHTML.toLowerCase()
-                                            if (element_text.indexOf(searchstring) == -1) {
-                                                element.style.display = "none";
-                                            }
-                                        });
-                                    }
+                    text_areas.forEach(function(text_area) {
+                        if (text_area) {
+                            text_area.addEventListener("input", function(e) {
+                                // 1. Check for @key being pressed to mark ul as active
+                                if (e.data == "@") {
+                                    // 2. Trigger ul active based on text-area id
+                                    ul_active = e.target.id;
+                                    // 3. Key caret index position to determine how many chars pressed
+                                    at_position_start = window.getSelection().anchorOffset;
                                 }
+
+                                if (ul_active) {
+// Position ul filter element
+                                    let text_area_position = document.getElementById(e.target.id);
+                                    filter_element.style.display = "block";
+                                    if (text_area_position != null) {
+                                        filter_element.style.top = text_area_position.getBoundingClientRect().y + "px";
+                                        filter_element.style.left = "25px";
+                                    }
+                                    at_position_end = window.getSelection().anchorOffset;
+// Filter elements
+                                    // Dont filter for "shift" and "@"
+                                    if (e.data != "@") {
+                                        if (filter_li_elements) {
+                                            // Handle backspace on search. Input event recognize @ as null
+                                            if (e.data == null) {
+                                                reset_children_styles(filter_element, "li");
+                                                searchstring = searchstring.substring(0, searchstring.length - 1);
+                                            } else {
+                                                searchstring += e.data;
+                                            }
+
+                                            filter_li_elements.forEach(function(element) {
+                                                let element_text = element.innerHTML.toLowerCase()
+                                                if (element_text.indexOf(searchstring) == -1) {
+                                                    element.style.display = "none";
+                                                }
+                                            });
+                                        }
+                                    }
 
 // Remove ul once backspace before @ or space pressed and reset params
-                                if (at_position_end < at_position_start || e.keyCode == 32) {
-                                    ul_active = false;
-                                    filter_element.style.display = "none";
-                                    searchstring = "";
-                                    reset_children_styles(filter_element, "li");
+                                    if (at_position_end < at_position_start || e.keyCode == 32) {
+                                        ul_active = false;
+                                        filter_element.style.display = "none";
+                                        searchstring = "";
+                                        reset_children_styles(filter_element, "li");
+                                    }
                                 }
-                            }
-                        });
-                    }
+                            });
+                        }
+                    });
 
 // Click events for li elements
                     if (filter_li_elements) {
                         // Events for list items on click
                         filter_li_elements.forEach(function(element) {
                             element.addEventListener("touchstart", function(e) {
-
-                                text_area.innerHTML = create_profile_link(text_area.innerHTML, e.target.innerText, e.target.id, at_position_start, at_position_end);
+                                // Get textarea by active id
+                                let text_area = document.querySelector("#" + ul_active);
+                                if (text_area != null) {
+                                    text_area.innerHTML = create_profile_link(text_area.innerHTML, e.target.innerText, e.target.id, at_position_start, at_position_end);
+                                }
                 // @TODO create destroy function
                                 ul_active = false;
                                 filter_element.style.display = "none";
@@ -360,7 +368,19 @@ class mobile {
 // END OF INIT FUNCTION
                 }
 
-            setTimeout(function() { console.log("DOM is available now"); init() });',
+            setTimeout(function() { 
+                    console.log("DOM is available now");
+                    init();
+                    let reply_buttons = document.querySelectorAll(".js_reply");
+// Run init again once click on reply since angular injects new html
+                    reply_buttons.forEach(function(button) {
+                        button.addEventListener("touchstart", function(e) {
+                            setTimeout(function() {
+                                init();
+                                }, 100);
+                        });
+                    });
+            });',
             'otherdata' => array(),
             'files' => ''
         );
