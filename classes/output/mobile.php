@@ -276,20 +276,13 @@ class mobile {
 
 
 // Function to build profile link
-                function create_profile_link(text_area_text, profile_string, id, at_position_start, at_position_end) {
-                        let old_textarea_string = "";
-                        let beginning_string = "";
-                        let replace_string = "";
-                        let end_string = "";
+                function create_profile_link(text_area_text, profile_string, id) {
+                        let link_string = "<a href=/user/view.php?id=" + id + ">" + profile_string + "</a>";
+                        let old_textarea_string = document.getElementById("textarea_id5").innerHTML;
 
-                        old_textarea_string = text_area_text;
-
-                        beginning_string = (at_position_start > 0) ? old_textarea_string.slice(0, at_position_start -1) : " ";
-// @TODO fix link here (RATHER USE REGEX TO ACOMPANY FOR \r\n)
-                        replace_string = "<a href=/user/view.php?id=" + id + ">" + profile_string + "</a>";
-                        end_string = old_textarea_string.slice(at_position_end, old_textarea_string.length);
-
-                        return beginning_string + replace_string + end_string;
+                        let regex = /@(.*)<span id="caret_pos"><\/span>/;
+                        let new_text = old_textarea_string.replace(regex, link_string);
+                        document.getElementById("textarea_id5").innerHTML = new_text
                 }
 
 // Function to check for filter_li_elements
@@ -305,7 +298,7 @@ class mobile {
                 }
 
 // Function to return filter_li_elements
-                function return_filter_li_elements() {
+                function return_filter_elements() {
                     let filter_li_elements = false;
                     if (filter_elements_exist()) {
                         let filter_element_container_element = document.querySelector(".tribute-container");
@@ -315,53 +308,92 @@ class mobile {
                     return filter_li_elements;
                 }
 
+// Function to insert dummy span with id to track where to insert new html
+                function replaceSelectionWithHtml(html) {
+                    let range;
+                    if (window.getSelection && window.getSelection().getRangeAt) {
+                        range = window.getSelection().getRangeAt(0);
+                        range.deleteContents();
+                        let div = document.createElement("div");
+                        div.innerHTML = html;
+                        let frag = document.createDocumentFragment(), child;
+                        while ( (child = div.firstChild) ) {
+                            frag.appendChild(child);
+                        }
+                        range.insertNode(frag);
+                    } else if (document.selection && document.selection.createRange) {
+                        range = document.selection.createRange();
+                        range.pasteHTML(html);
+                    }
+                }
+
+// Function to check for dummy span element
+                function at_span_element_exist() {
+                    let spancheck = false
+                    let at_span_element = document.getElementById("caret_pos");
+                    spancheck = (at_span_element != null) ? true : false;
+
+                    return spancheck;
+                }
+
 //+++++++++++++++++++++ End of helper functions ++++++++++++++++++++++++++
 
                 function init() {
-                    let ul_active = false;
+                    // Setting init default vars
+                    let active_search_id = false;
                     let at_position_start = 0;
                     let at_position_end = 0;
                     let searchstring = "";
                     let text_areas = document.querySelectorAll(".js_tagging");
                     let filter_element = document.querySelector(".tribute-container");
                     let filter_li_elements = false;
+                    let at_span_element = null;
 
 // There will only be a filter element if there are tagable students
                     if (filter_elements_exist() && text_areas != null) {
-                        let filter_li_elements = return_filter_li_elements();
+                        let filter_li_elements = return_filter_elements();
 
                         text_areas.forEach(function(text_area) {
                             if (text_area) {
                                 text_area.addEventListener("input", function(e) {
-                                    // 1. Check for @key being pressed to mark ul as active
-                                    if (e.data == "@") {
-                                        // 2. Trigger ul active based on text-area id
-                                        ul_active = e.target.id;
-                                        // 3. Key caret index position to determine how many chars pressed
+
+                                    /* ---------------------------------------------- */
+                                      // Using input event so that it works on mobile *
+                                    /* ---------------------------------------------- */
+                                    if (e.data == "@" && at_span_element == null) {
+                                        active_search_id = e.target.id;
                                         at_position_start = window.getSelection().anchorOffset;
+
+                                        // Insert dummy span with id to get position on screen and to replace text with user link.
+                                        replaceSelectionWithHtml("<span id=caret_pos></span>");
+                                        at_span_element = document.getElementById("caret_pos");
+                                        // at_span_element.focus();
                                     }
-    
-                                    if (ul_active) {
-// Position ul filter element
-                                        let text_area_position = document.getElementById(e.target.id);
+                                    /* ------------------------------------------------------ */
+                                      // Position ul filter element to the span dummy element *
+                                    /* ------------------------------------------------------ */
+                                    if (active_search_id && at_span_element != null) {
                                         filter_element.style.display = "block";
-                                        if (text_area_position != null) {
-                                            filter_element.style.top = text_area_position.getBoundingClientRect().y + "px";
-                                            filter_element.style.left = "25px";
+                                        if (at_span_element != null) {
+                                            filter_element.style.top = (at_span_element.getBoundingClientRect().y) - 35 + "px";
+                                            filter_element.style.left = (at_span_element.getBoundingClientRect().x) - 15 + "px";
                                         }
                                         at_position_end = window.getSelection().anchorOffset;
-// Filter elements
-                                        // Dont filter for "shift" and "@"
+
+                                        /* ---------------- */
+                                         // Filter elements *
+                                        /* ---------------- */
+                                        // Dont filter for "@"
                                         if (e.data != "@") {
-                                            if (filter_li_elements) {
+                                            if (filter_elements_exist()) {
                                                 // Handle backspace on search. Input event recognize @ as null
                                                 if (e.data == null) {
+                                                    // Reset filter elements to search by new string
                                                     reset_children_styles(filter_element, "li");
                                                     searchstring = searchstring.substring(0, searchstring.length - 1);
                                                 } else {
                                                     searchstring += e.data;
                                                 }
-    
                                                 filter_li_elements.forEach(function(element) {
                                                     let element_text = element.innerHTML.toLowerCase()
                                                     if (element_text.indexOf(searchstring) == -1) {
@@ -370,13 +402,19 @@ class mobile {
                                                 });
                                             }
                                         }
-    
-// Remove ul once backspace before @ or space pressed and reset params
+
+                                        /* -------------------------------------------------- */
+                                        // Remove ul once span dummy element has been removed *
+                                        /* -------------------------------------------------- */
                                         if (at_position_end < at_position_start || e.keyCode == 32) {
-                                            ul_active = false;
+                                            active_search_id = false;
                                             filter_element.style.display = "none";
                                             searchstring = "";
                                             reset_children_styles(filter_element, "li");
+                                            if (at_span_element_exist()) {
+                                                document.getElementById("caret_pos").outerHTML = "";
+                                                at_span_element = null;
+                                            }
                                         }
                                     }
                                 });
@@ -385,21 +423,24 @@ class mobile {
 
                     }
 
-// Click events for li elements
+                    /* ----------------------------- */
+                     // Click events for li elements *
+                    /* ----------------------------- */
                     if (filter_elements_exist()) {
                         // Events for list items on click
-                        return_filter_li_elements().forEach(function(element) {
+                        return_filter_elements().forEach(function(element) {
                             element.addEventListener("touchstart", function(e) {
                                 // Get textarea by active id
-                                let text_area = document.querySelector("#" + ul_active);
+                                let text_area = document.querySelector("#" + active_search_id);
                                 if (text_area != null) {
-                                    text_area.innerHTML = create_profile_link(text_area.innerHTML, e.target.innerText, e.target.id, at_position_start, at_position_end);
+                                    create_profile_link(text_area.innerHTML, e.target.innerText, e.target.id);
                                 }
-                // @TODO create destroy function
-                                ul_active = false;
+                                // @TODO create destroy function
+                                active_search_id = false;
                                 filter_element.style.display = "none";
                                 searchstring = "";
                                 reset_children_styles(filter_element, "li");
+                                at_span_element = null;
                             });
                         });
                     }
