@@ -241,14 +241,22 @@ class mobile {
             $reply->liked = userlikedpost($reply->id, $USER->id) ? 'Unlike' : 'Like';
         }
 
+    /// Getting tagable users
+        $tagusers = [];
+        $tagusers = get_allowed_tag_users($forum->id, $discussion->groupid, 1);
+        $tagusers = ($tagusers->result && count($tagusers->content)) ? build_allowed_tag_users($tagusers->content) : [];
+        $showtaguserul = count($tagusers) ? true : false;
+
         $data = array(
-            'cmid' => $cm->id,
+            'cmid'         => $cm->id,
             'discussionid' => $discussion->id,
-            'replies' => array_values($replies),
-            'replycount' => count($replies),
-            'replylabel' => count($replies) >= 2 || count($replies) == 0 ? 'replies' : 'reply',
-            'firstpost' => $firstpost,
-            'canreply' => $cm->groupmode == 0 ? true : $canreply,
+            'replies'      => array_values($replies),
+            'replycount'   => count($replies),
+            'replylabel'   => count($replies) >= 2 || count($replies) == 0 ? 'replies' : 'reply',
+            'firstpost'    => $firstpost,
+            'canreply'     => $cm->groupmode == 0 ? true : $canreply,
+            'showtaguserul'=> $showtaguserul,
+            'tagusers'     => $tagusers,
         );
 
         return array(
@@ -259,7 +267,7 @@ class mobile {
                 ),
             ),
             'javascript' => '
-// Function to reset children styles
+// Function to reset filter list item styles
                 function reset_children_styles(elements, child_type) {
                     return elements.querySelectorAll(child_type).forEach(function(element) {
                         element.style.display = "block";
@@ -284,6 +292,30 @@ class mobile {
                         return beginning_string + replace_string + end_string;
                 }
 
+// Function to check for filter_li_elements
+                function filter_elements_exist() {
+                    let result = false;
+
+                    let filter_element_container_check = document.querySelector(".tribute-container");
+                    if (filter_element_container_check != null) {
+                        let filter_li_elements_check = filter_element_container_check.querySelectorAll("li");
+                        result = (filter_li_elements_check != null && filter_li_elements_check.length) ? true : false;
+                    }
+                    return result;
+                }
+
+// Function to return filter_li_elements
+                function return_filter_li_elements() {
+                    let filter_li_elements = false;
+                    if (filter_elements_exist()) {
+                        let filter_element_container_element = document.querySelector(".tribute-container");
+                        filter_li_elements = filter_element_container_element.querySelectorAll("li");
+                    }
+
+                    return filter_li_elements;
+                }
+
+//+++++++++++++++++++++ End of helper functions ++++++++++++++++++++++++++
 
                 function init() {
                     let ul_active = false;
@@ -292,64 +324,71 @@ class mobile {
                     let searchstring = "";
                     let text_areas = document.querySelectorAll(".js_tagging");
                     let filter_element = document.querySelector(".tribute-container");
-                    let filter_li_elements = filter_element.querySelectorAll("li");
-                    text_areas.forEach(function(text_area) {
-                        if (text_area) {
-                            text_area.addEventListener("input", function(e) {
-                                // 1. Check for @key being pressed to mark ul as active
-                                if (e.data == "@") {
-                                    // 2. Trigger ul active based on text-area id
-                                    ul_active = e.target.id;
-                                    // 3. Key caret index position to determine how many chars pressed
-                                    at_position_start = window.getSelection().anchorOffset;
-                                }
+                    let filter_li_elements = false;
 
-                                if (ul_active) {
-// Position ul filter element
-                                    let text_area_position = document.getElementById(e.target.id);
-                                    filter_element.style.display = "block";
-                                    if (text_area_position != null) {
-                                        filter_element.style.top = text_area_position.getBoundingClientRect().y + "px";
-                                        filter_element.style.left = "25px";
+// There will only be a filter element if there are tagable students
+                    if (filter_elements_exist() && text_areas != null) {
+                        let filter_li_elements = return_filter_li_elements();
+
+                        text_areas.forEach(function(text_area) {
+                            if (text_area) {
+                                text_area.addEventListener("input", function(e) {
+                                    // 1. Check for @key being pressed to mark ul as active
+                                    if (e.data == "@") {
+                                        // 2. Trigger ul active based on text-area id
+                                        ul_active = e.target.id;
+                                        // 3. Key caret index position to determine how many chars pressed
+                                        at_position_start = window.getSelection().anchorOffset;
                                     }
-                                    at_position_end = window.getSelection().anchorOffset;
+    
+                                    if (ul_active) {
+// Position ul filter element
+                                        let text_area_position = document.getElementById(e.target.id);
+                                        filter_element.style.display = "block";
+                                        if (text_area_position != null) {
+                                            filter_element.style.top = text_area_position.getBoundingClientRect().y + "px";
+                                            filter_element.style.left = "25px";
+                                        }
+                                        at_position_end = window.getSelection().anchorOffset;
 // Filter elements
-                                    // Dont filter for "shift" and "@"
-                                    if (e.data != "@") {
-                                        if (filter_li_elements) {
-                                            // Handle backspace on search. Input event recognize @ as null
-                                            if (e.data == null) {
-                                                reset_children_styles(filter_element, "li");
-                                                searchstring = searchstring.substring(0, searchstring.length - 1);
-                                            } else {
-                                                searchstring += e.data;
-                                            }
-
-                                            filter_li_elements.forEach(function(element) {
-                                                let element_text = element.innerHTML.toLowerCase()
-                                                if (element_text.indexOf(searchstring) == -1) {
-                                                    element.style.display = "none";
+                                        // Dont filter for "shift" and "@"
+                                        if (e.data != "@") {
+                                            if (filter_li_elements) {
+                                                // Handle backspace on search. Input event recognize @ as null
+                                                if (e.data == null) {
+                                                    reset_children_styles(filter_element, "li");
+                                                    searchstring = searchstring.substring(0, searchstring.length - 1);
+                                                } else {
+                                                    searchstring += e.data;
                                                 }
-                                            });
+    
+                                                filter_li_elements.forEach(function(element) {
+                                                    let element_text = element.innerHTML.toLowerCase()
+                                                    if (element_text.indexOf(searchstring) == -1) {
+                                                        element.style.display = "none";
+                                                    }
+                                                });
+                                            }
+                                        }
+    
+// Remove ul once backspace before @ or space pressed and reset params
+                                        if (at_position_end < at_position_start || e.keyCode == 32) {
+                                            ul_active = false;
+                                            filter_element.style.display = "none";
+                                            searchstring = "";
+                                            reset_children_styles(filter_element, "li");
                                         }
                                     }
+                                });
+                            }
+                        });
 
-// Remove ul once backspace before @ or space pressed and reset params
-                                    if (at_position_end < at_position_start || e.keyCode == 32) {
-                                        ul_active = false;
-                                        filter_element.style.display = "none";
-                                        searchstring = "";
-                                        reset_children_styles(filter_element, "li");
-                                    }
-                                }
-                            });
-                        }
-                    });
+                    }
 
 // Click events for li elements
-                    if (filter_li_elements) {
+                    if (filter_elements_exist()) {
                         // Events for list items on click
-                        filter_li_elements.forEach(function(element) {
+                        return_filter_li_elements().forEach(function(element) {
                             element.addEventListener("touchstart", function(e) {
                                 // Get textarea by active id
                                 let text_area = document.querySelector("#" + ul_active);
@@ -365,14 +404,14 @@ class mobile {
                         });
                     }
 
-// END OF INIT FUNCTION
-                }
+                } // END OF INIT FUNCTION
 
+            // Now we can run the init function to initialize tagging on the dom
             setTimeout(function() { 
                     console.log("DOM is available now");
                     init();
                     let reply_buttons = document.querySelectorAll(".js_reply");
-// Run init again once click on reply since angular injects new html
+// Run init again once click on a reply since angular injects new html
                     reply_buttons.forEach(function(button) {
                         button.addEventListener("touchstart", function(e) {
                             setTimeout(function() {

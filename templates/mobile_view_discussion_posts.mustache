@@ -1,11 +1,15 @@
 {{=<% %>=}}
 <ion-content class="content content-md has-refresher">
-<ion-card class="tribute-container" style="position:absolute; z-index:10; display:none; width:unset;">
-    <ul style="list-style: none; background: #efefef; display: inline-block; padding: 2px 13px; margin:0;">
-        <li id="0">Jan</li>
-        <li id="1">Rumano</li>
-    </ul>
-</ion-card>
+    <%#showtaguserul%>
+        <ion-card class="tribute-container" style="position:absolute; z-index:10; display:none; width:unset;">
+            <ul style="list-style: none; background: #efefef; display: inline-block; padding: 2px 13px; margin:0;">
+                <%#tagusers%>
+                    <li id="<% id %>"><% name %></li>
+                <%/tagusers%>
+            </ul>
+        </ion-card>
+    <%/showtaguserul%>
+
     <%#firstpost%>
         <ion-card>
             <ion-card-header no-padding text-wrap class="card-header card-header-md">
