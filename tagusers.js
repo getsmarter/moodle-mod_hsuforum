@@ -1,3 +1,13 @@
+/**
+ * Mod_hsuforum mobile tag js library written in vanilla js. The library needs to be echo'd into the return array 
+ * for mobile functions in order for it to work. Vanilla js is mandatory in the ammendment of this library because
+ * of the angular involvement of the mobile app.
+ *
+ * @package	mod_hsuforum
+ * @author JJ Swanevelder
+ */
+
+
 /* ----------------- */
  // Helper functions *
 /* ----------------- */
@@ -104,7 +114,6 @@ function init() {
                         // Insert dummy span with id to get position on screen and to replace text with user link.
                         replaceSelectionWithHtml("<span id=caret_pos></span>");
                         at_span_element = document.getElementById("caret_pos");
-                        // at_span_element.focus();
                     }
                     /* ------------------------------------------------------ */
                       // Position ul filter element to the span dummy element *
@@ -112,7 +121,7 @@ function init() {
                     if (active_search_id && at_span_element != null) {
                         filter_element.style.display = "block";
                         if (at_span_element != null) {
-                            filter_element.style.top = (at_span_element.getBoundingClientRect().y) - 35 + "px";
+                            filter_element.style.top = (at_span_element.offsetTop) + 5 + "px";
                             filter_element.style.left = (at_span_element.getBoundingClientRect().x) - 15 + "px";
                         }
                         at_position_end = window.getSelection().anchorOffset;
@@ -129,10 +138,10 @@ function init() {
                                     reset_children_styles(filter_element, "li");
                                     searchstring = searchstring.substring(0, searchstring.length - 1);
                                 } else {
-                                    searchstring += e.data;
+                                    searchstring += e.data.toLowerCase();
                                 }
                                 filter_li_elements.forEach(function(element) {
-                                    let element_text = element.innerHTML.toLowerCase()
+                                    let element_text = element.innerHTML.toLowerCase();
                                     if (element_text.indexOf(searchstring) == -1) {
                                         element.style.display = "none";
                                     }

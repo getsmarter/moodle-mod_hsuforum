@@ -1,7 +1,12 @@
 {{=<% %>=}}
-<ion-content class="content content-md has-refresher">
     <%#showtaguserul%>
-        <ion-card class="tribute-container" style="position:absolute; z-index:10; display:none; width:unset;">
+        <ion-card class="tribute-container" style=
+            "position:absolute; 
+            z-index:10; 
+            display:none; 
+            width:max-content;
+            max-width:200px;
+            ">
             <ul style="list-style: none; background: #efefef; display: inline-block; padding: 2px 13px; margin:0;">
                 <%#tagusers%>
                     <li id="<% id %>"><% name %></li>
@@ -175,4 +180,3 @@
             <%/canreply%>
         </ion-card>
     </ion-list>
-</ion-content>
