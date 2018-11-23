@@ -62,24 +62,12 @@
                 <%#canreply%>
                 <ion-card *ngIf="CONTENT_OTHERDATA.showform_<% id %>">
                     <form #f="ngForm" id="postformid_<% id %>">
-                    <!--
-                        <ion-textarea
-                            item-content
-                            ngControl="content"
-                            name="postreplybody"
-                            component="mod_hsuforum"
-                            componentId="<% cmid %>"
-                            placeholder="Type your reply...">
-                        </ion-textarea>
-                    -->
-
-                    <div id="textarea_id<% id %>"
-                        class="js_tagging" style="min-height: 200px;"
-                        contenteditable="true"
-                        [innerHTML]=CONTENT_OTHERDATA.sectioncontent 
-                        (keyup)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML">
-                    </div>
-
+                        <div id="textarea_id<% id %>"
+                            class="js_tagging" style="min-height: 200px;"
+                            contenteditable="true"
+                            [innerHTML]=CONTENT_OTHERDATA.sectioncontent 
+                            (keyup)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML">
+                        </div>
                     </form>
                     <!-- Form submit button -->
                     <button
@@ -87,7 +75,7 @@
                         samePage=true
                         refreshOnSuccess=true
                         form="postformid_<% id %>"
-                        [args]="{'discussionid':<% discussionid %>, 'post':true, 'parentid':<% id %>, 'postreplybody':CONTENT_OTHERDATA.sectioncontent}"
+                        [args]="{'discussionid':<% discussionid %>, 'post':true, 'parentid':<% id %>, 'postreplybody':CONTENT_OTHERDATA.sectionbody}"
                         (click)="CONTENT_OTHERDATA.showform_<% id %> = true"
                         >
                         Submit reply
@@ -113,94 +101,78 @@
                 <span><%^replycount%>0<%/replycount%> <% replycount %> <% replylabel %> for discussion</span>
             </p>
         </ion-list-header>
-        <%#replies%>
-            <ion-card>
-
-                <ion-card-header no-padding text-wrap class="card-header card-header-md">
-                    <ion-item text-wrap>
-                        <ion-avatar item-start><img src="<% profilesrc %>"></ion-avatar>
-                        <h3><span class="core-bold"><% subject %></span></h3>
-                        <h3><% firstname %> <% lastname %></h3>
-                    </ion-item>
-                </ion-card-header>
-
-                <ion-item>
-                    <p><% message %></p>
+        <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies">
+            <ion-card-header no-padding text-wrap class="card-header card-header-md">
+                <ion-item text-wrap>
+                    <ion-avatar item-start><img src="{{ reply.profilesrc }}"></ion-avatar>
+                    <h3><span class="core-bold">{{ reply.subject }}</span></h3>
+                    <h3>{{ reply.firstname }} {{ reply.lastname }}</h3>
                 </ion-item>
-                <%#canreply%>
-                <!-- Button to show reply box -->
-                <button
-                    ion-button small clear style="float: left;" class="js_reply"
-                    (click)="CONTENT_OTHERDATA.showform_<% id %> = !CONTENT_OTHERDATA.showform_<% id %>">
-                    <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
-                    Reply
-                </button>
-                <%/canreply%>
-                <!-- Like button -->
-                <button
-                    ion-button small clear style="padding: 0"
-                    core-site-plugins-new-content
-                    samePage=true
-                    [args]="{'discussionid':<% discussionid %>, 'liketoggle':true, 'parentid':<% id %>}"
-                    (click)="refreshContent(showSpinner = true)">
-                    <% liked %>
-                </button>
-                <!-- View reply button -->
-                <button
-                    ion-button small clear style="float: right;" core-site-plugins-new-content
-                    title="Replies for <% message %>"
-                    component="mod_hsuforum" 
-                    method="view_post_replies"
-                    [args]="{'postid':<% id %>, 'discussionid':<% discussionid %>}">
-                    View replies 
-                </button>
-                <!-- Who liked section -->
-                <%#likedescription%>
-                    <ion-item>
-                        <p style="color: #2f6473; background-color: #def2f8; border-color: #d1edf6; padding: 3px 0px;">
-                            <% likedescription %>
-                        </p>
-                    </ion-item>
-                <%/likedescription%>
-                <!-- Form to reply to post -->
-                <%#canreply%>
-                    <form #f="ngForm" id="postformid_<% id %>" *ngIf="CONTENT_OTHERDATA.showform_<% id %>">
-                        <ion-card>
-                            <ion-card-content>
-                            <!--
-                                <ion-textarea
-                                    item-content
-                                    ngControl="content"
-                                    name="postreplybody"
-                                    component="mod_hsuforum"
-                                    componentId="<% cmid %>">
-                                </ion-textarea>
-                                -->
+            </ion-card-header>
 
-                            <div id="textarea_id<% id %>"
+            <ion-item>
+                <p [innerHTML]=reply.message></p>
+            </ion-item>
+            <%#canreply%>
+            <!-- Button to show reply box -->
+            <button
+                ion-button small clear style="float: left;" class="js_reply"
+                (click)="reply.showform = !reply.showform">
+                <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
+                Reply
+            </button>
+            <%/canreply%>
+            <!-- Like button -->
+            <button
+                ion-button small clear style="padding: 0"
+                core-site-plugins-new-content
+                samePage=true
+                [args]="{'discussionid':reply.discussion, 'liketoggle':true, 'parentid':reply.id}"
+                (click)="refreshContent(showSpinner = true)">
+                {{reply.liked}}
+            </button>
+            <!-- View reply button -->
+            <button
+                ion-button small clear style="float: right;" core-site-plugins-new-content
+                title="Replies for {{reply.message}}"
+                component="mod_hsuforum" 
+                method="view_post_replies"
+                [args]="{'postid':reply.id, 'discussionid':reply.discussion}">
+                View replies 
+            </button>
+            <!-- Who liked section -->
+            <ion-item *ngIf="reply.likedescription">
+                <p style="color: #2f6473; background-color: #def2f8; border-color: #d1edf6; padding: 3px 0px;">
+                    {{reply.likedescription}}
+                </p>
+            </ion-item>
+            <!-- Form to reply to post -->
+            <%#canreply%>
+                <form #f="ngForm" id="{{reply.postformid}}" *ngIf="reply.showform">
+                    <ion-card>
+                        <ion-card-content>
+                            <div id="{{reply.textareaid}}"
                                 class="js_tagging" style="min-height: 200px;"
                                 contenteditable="true"
                                 [innerHTML]=CONTENT_OTHERDATA.sectioncontent 
                                 (keyup)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML">
                             </div>
-
-                            </ion-card-content>
-                        </ion-card>
-                    </form>
-                    <!-- Form submit button -->
-                    <button
-                        ion-button small clear style="float: left;" type="submit" core-site-plugins-new-content 
-                        *ngIf="CONTENT_OTHERDATA.showform_<% id %>"
-                        samePage=true
-                        refreshOnSuccess=true
-                        form="postformid_<% id %>"
-                        [args]="{'discussionid':<% discussionid %>, 'post':true, 'parentid':<% id %>, 'postreplybody':CONTENT_OTHERDATA.sectioncontent}"
-                        (click)="CONTENT_OTHERDATA.showform_<% id %> = true"
-                        >
-                        Submit reply
-                    </button>
-                <%/canreply%>
-            </ion-card>
-        <%/replies%>
+                        </ion-card-content>
+                    </ion-card>
+                </form>
+                <!-- Form submit button -->
+                <button
+                    ion-button small clear style="float: left;" type="submit" core-site-plugins-new-content 
+                    *ngIf="reply.showform"
+                    samePage=true
+                    refreshOnSuccess=true
+                    form="{{reply.postformid}}"
+                    [args]="{'discussionid':reply.discussion, 'post':true, 'parentid':reply.id, 'postreplybody':CONTENT_OTHERDATA.sectionbody}"
+                    (click)="reply.showform = true"
+                    >
+                    Submit reply
+                </button>
+            <%/canreply%>
+        </ion-card>
     </ion-list>
 </ion-content>

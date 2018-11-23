@@ -3,8 +3,10 @@ namespace mod_hsuforum\output;
  
 defined('MOODLE_INTERNAL') || die();
 require_once(dirname(dirname(__DIR__)).'/lib.php');
+require_once(dirname(dirname(__DIR__)).'/mobilelib.php');
 
 use context_module;
+use local_mention_users_observer;
 /**
  * The mod_hsuforum mobile app compatibility.
  *
@@ -126,7 +128,7 @@ class mobile {
      * @return array HTML, javascript and otherdata
      */
     public static function view_discussion($args) {
-        global $OUTPUT, $USER, $DB, $PAGE;
+        global $OUTPUT, $USER, $DB, $PAGE, $CFG;
 
         // Check for valid discussion id
         if (!$args || !isset($args['discussionid'])) {
@@ -171,9 +173,16 @@ class mobile {
                     $postreplystatus[$args['parentid']]['status'] = 'failed';
                 }
 
-                // Valididate post and change status
+                // Valididate post, change status and send mail to tagged users
                 if ($post && $post->id) {
                     $postreplystatus[$args['parentid']]['status'] = 'success';
+                    // send mention emails on valid post
+                    $mailtousers = gettaggedusers($postreplybody);
+                    if (count($mailtousers)) {
+                        $coursecoach = local_mention_users_observer::get_course_coach($course->id);
+                        $link = $_SERVER['HTTP_HOST'] . '/mod/hsuforum/discuss.php?d=' . $discussion->id . '#p' . $post_id;
+                        local_mention_users_observer::send_email_to_students($mailtousers, $course->fullname, $coursecoach, $link, $postreplybody);
+                    }
                 }
             } else {
                 $postreplystatus[$args['parentid']]['status'] = 'failed';
@@ -239,6 +248,8 @@ class mobile {
                 $reply->likedescription = getlikedescription($reply->likes);
             }
             $reply->liked = userlikedpost($reply->id, $USER->id) ? 'Unlike' : 'Like';
+            $reply->textareaid = "textarea_id".$reply->id;
+            $reply->postformid = "postform_id".$reply->id;
         }
 
     /// Getting tagable users
@@ -250,7 +261,6 @@ class mobile {
         $data = array(
             'cmid'         => $cm->id,
             'discussionid' => $discussion->id,
-            'replies'      => array_values($replies),
             'replycount'   => count($replies),
             'replylabel'   => count($replies) >= 2 || count($replies) == 0 ? 'replies' : 'reply',
             'firstpost'    => $firstpost,
@@ -267,7 +277,10 @@ class mobile {
                 ),
             ),
             'javascript' => '
-// Function to reset filter list item styles
+                /* ----------------- */
+                 // Helper functions *
+                /* ----------------- */
+                // Function to reset filter list item styles
                 function reset_children_styles(elements, child_type) {
                     return elements.querySelectorAll(child_type).forEach(function(element) {
                         element.style.display = "block";
@@ -275,17 +288,18 @@ class mobile {
                 }
 
 
-// Function to build profile link
-                function create_profile_link(text_area_text, profile_string, id) {
-                        let link_string = "<a href=/user/view.php?id=" + id + ">" + profile_string + "</a>";
-                        let old_textarea_string = document.getElementById("textarea_id5").innerHTML;
+                // Function to build profile link
+                function create_profile_link(text_area_text, profile_string, user_id, textarea_id) {
+                        let base_url = window.location.href;
+                        let link_string = "<a href=" + base_url + "user/view.php?id=" + user_id + ">" + profile_string + "</a>";
+                        let old_textarea_string = text_area_text
 
                         let regex = /@(.*)<span id="caret_pos"><\/span>/;
                         let new_text = old_textarea_string.replace(regex, link_string);
-                        document.getElementById("textarea_id5").innerHTML = new_text
+                        document.getElementById(textarea_id).innerHTML = new_text
                 }
 
-// Function to check for filter_li_elements
+                // Function to check for filter_li_elements
                 function filter_elements_exist() {
                     let result = false;
 
@@ -297,7 +311,7 @@ class mobile {
                     return result;
                 }
 
-// Function to return filter_li_elements
+                // Function to return filter_li_elements
                 function return_filter_elements() {
                     let filter_li_elements = false;
                     if (filter_elements_exist()) {
@@ -308,7 +322,7 @@ class mobile {
                     return filter_li_elements;
                 }
 
-// Function to insert dummy span with id to track where to insert new html
+                // Function to insert dummy span with id to track where to insert new html
                 function replaceSelectionWithHtml(html) {
                     let range;
                     if (window.getSelection && window.getSelection().getRangeAt) {
@@ -327,7 +341,7 @@ class mobile {
                     }
                 }
 
-// Function to check for dummy span element
+                // Function to check for dummy span element
                 function at_span_element_exist() {
                     let spancheck = false
                     let at_span_element = document.getElementById("caret_pos");
@@ -335,8 +349,9 @@ class mobile {
 
                     return spancheck;
                 }
-
-//+++++++++++++++++++++ End of helper functions ++++++++++++++++++++++++++
+                /* ------------------------ */
+                 // End of helper functions *
+                /* ------------------------ */
 
                 function init() {
                     // Setting init default vars
@@ -349,17 +364,18 @@ class mobile {
                     let filter_li_elements = false;
                     let at_span_element = null;
 
-// There will only be a filter element if there are tagable students
+                    /* ------------------------------------------------------------------ */
+                     // There will only be a filter element if there are tagable students *
+                    /* ------------------------------------------------------------------ */
                     if (filter_elements_exist() && text_areas != null) {
                         let filter_li_elements = return_filter_elements();
 
                         text_areas.forEach(function(text_area) {
                             if (text_area) {
+                                /* ---------------------------------------------- */
+                                  // Using input event so that it works on mobile *
+                                /* ---------------------------------------------- */
                                 text_area.addEventListener("input", function(e) {
-
-                                    /* ---------------------------------------------- */
-                                      // Using input event so that it works on mobile *
-                                    /* ---------------------------------------------- */
                                     if (e.data == "@" && at_span_element == null) {
                                         active_search_id = e.target.id;
                                         at_position_start = window.getSelection().anchorOffset;
@@ -433,7 +449,7 @@ class mobile {
                                 // Get textarea by active id
                                 let text_area = document.querySelector("#" + active_search_id);
                                 if (text_area != null) {
-                                    create_profile_link(text_area.innerHTML, e.target.innerText, e.target.id);
+                                    create_profile_link(text_area.innerHTML, e.target.innerText, e.target.id, active_search_id);
                                 }
                                 // @TODO create destroy function
                                 active_search_id = false;
@@ -445,23 +461,26 @@ class mobile {
                         });
                     }
 
-                } // END OF INIT FUNCTION
+                }
 
             // Now we can run the init function to initialize tagging on the dom
             setTimeout(function() { 
-                    console.log("DOM is available now");
-                    init();
-                    let reply_buttons = document.querySelectorAll(".js_reply");
-// Run init again once click on a reply since angular injects new html
-                    reply_buttons.forEach(function(button) {
-                        button.addEventListener("touchstart", function(e) {
-                            setTimeout(function() {
-                                init();
-                                }, 100);
-                        });
+                init();
+                /* -------------------------------------------------------------------- */
+                // Run init again once click on a reply since angular injects new html *
+                /* -------------------------------------------------------------------- */
+                let reply_buttons = document.querySelectorAll(".js_reply");
+                reply_buttons.forEach(function(button) {
+                    button.addEventListener("touchstart", function(e) {
+                        setTimeout(function() {
+                            init();
+                            }, 100);
                     });
+                });
             });',
-            'otherdata' => array(),
+            'otherdata' => array(
+                'replies' => json_encode(array_values($replies)),
+            ),
             'files' => ''
         );
     }
