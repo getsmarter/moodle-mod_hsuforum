@@ -339,6 +339,7 @@
         $select = new url_select($forummenu, '',
             array('/mod/hsuforum/discuss.php?d=' . $discussion->id => get_string("movethisdiscussionto", "hsuforum")),
             'forummenu');
+        $select->attributes = array('aria-label' => 'move discussion');
         echo $OUTPUT->render($select);
         echo "</div>";
     }

@@ -526,6 +526,7 @@ FUN WITH FORMS
         float:left;
         width:100%;
         margin-left: 10px;
+        margin-top: 10px;
     }
 
 
@@ -1152,4 +1153,14 @@ FUN WITH FORMS
     #page-mod-hsuforum-discuss .hsuforum-post-body .actions .alert-info.like {
         margin-top: 20px !important;
     }
+}
+
+#hsuforum-header h1 img.iconlarge {
+	display: none;
+}
+/* Accessibility requirement of h1 with existing styles */
+#hsuforum-header h1 {
+    font-weight: 300;
+    line-height: 1.35 !important;
+    font-size: 2rem;
 }

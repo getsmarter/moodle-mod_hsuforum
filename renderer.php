@@ -60,7 +60,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $mode    = optional_param('mode', 0, PARAM_INT); // Display mode (for single forum)
         $page    = optional_param('page', 0, PARAM_INT); // which page to show
         $forumicon = "<img src='".$OUTPUT->pix_url('icon', 'hsuforum')."' alt='' class='iconlarge activityicon'/> ";
-        echo '<div id="hsuforum-header"><h2>'.$forumicon.format_string($forum->name).'</h2>';
+        echo '<div id="hsuforum-header"><h1>'.$forumicon.format_string($forum->name).'</h1>';
         if (!empty($forum->intro)) {
             echo '<div class="hsuforum_introduction">'.format_module_intro('hsuforum', $forum, $cm->id).'</div>';
         }
@@ -354,8 +354,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         if ($toolsmenuoptions != '') {
             $toolsmenu .= '<div class="dropdown inline">
-                            <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="hsuforumpostdropdownmenubutton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-h"></i></button>
-                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">';
+                            <button class="btn btn-secondary dropdown-toggle btn-sm hsuforumpostdropdownmenubutton" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="post edit menu"><i class="fa fa-ellipsis-h"></i></button>
+                            <div class="dropdown-menu dropdown-menu-right" aria-label="post edit menu item">';
             $toolsmenu .= $toolsmenuoptions;
             $toolsmenu .= '</div></div>';
         }
@@ -505,8 +505,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $toolstring = '';
         $toolsbuttons = '';
         $toolsmenu = '<div class="dropdown inline">
-                        <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="hsuforumpostdropdownmenubutton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-h"></i></button>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">';
+                        <button class="btn btn-secondary dropdown-toggle btn-sm hsuforumpostdropdownmenubutton" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="post edit menu"><i class="fa fa-ellipsis-h"></i></button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-label="post edit menu item">';
 
 
         foreach ($toolsarray as $tools) {
@@ -663,7 +663,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $threadheader = <<<HTML
         <div class="hsuforum-thread-header">
             <div class="hsuforum-thread-title">
-                <h4 id='thread-title-{$d->id}' role="heading" aria-level="4">
+                <h4 id='thread-title-{$d->id}' aria-level="4">
                     $threadtitle
                 </h4>
                 <small>$datecreated</small>
@@ -673,7 +673,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 HTML;
 
         return <<<HTML
-<article id="p{$d->postid}" class="hsuforum-thread hsuforum-post-target clearfix" role="article"
+<article id="p{$d->postid}" class="hsuforum-thread hsuforum-post-target clearfix"
     data-discussionid="$d->id" data-postid="$d->postid" data-author="$author" data-isdiscussion="true" $attrs>
     <header id="h{$d->postid}" class="clearfix $unreadclass">
         <div class="hsuforum-thread-author">
@@ -850,7 +850,7 @@ HTML;
 
     </div>
     <div class="hsuforum-post-body">
-        <h6 role="heading" aria-level="6" class="hsuforum-post-byline" id="hsuforum-post-$p->id">
+        <h6 aria-level="6" class="hsuforum-post-byline" id="hsuforum-post-$p->id">
             $unread $byline $revealed
         </h6>
         <small class='hsuform-post-date'><a href="$p->permalink" class="disable-router"$newwindow>$datecreated</a></small>
@@ -1757,12 +1757,15 @@ HTML;
                 $t->userpicture
             </div>
             <div class="hsuforum-post-body">
-                <label>
+                <div>
                     <span class="accesshide">$t->subjectlabel</span>
-                    <input type="text" placeholder="$t->subjectplaceholder" name="subject" class="form-control" $subjectrequired spellcheck="true" value="$subject" maxlength="255" />
-                </label>
-                <textarea name="message" class="hidden"></textarea>
-                <div data-placeholder="$t->messageplaceholder" aria-label="$messagelabel" contenteditable="true" required="required" spellcheck="true" role="textbox" aria-multiline="true" class="hsuforum-textarea">$t->message</div>
+                    <label for="subject_placeholder" class="hidden">Subject</label>
+                    <input id="subject_placeholder" type="text" placeholder="$t->subjectplaceholder" name="subject" class="form-control" $subjectrequired spellcheck="true" value="$subject" maxlength="255" />
+                </div>
+                <label for="message_placeholder" class="hidden">Message</label>
+                <textarea id="message_placeholder" name="message" class="hidden"></textarea>
+                <label for="$messagelabel" class="hidden">Message</label>
+                <div id="$messagelabel" data-placeholder="$t->messageplaceholder" aria-label="$messagelabel" contenteditable="true" required="required" spellcheck="true" role="textbox" aria-multiline="true" class="hsuforum-textarea">$t->message</div>
 
                 $files
 
@@ -1922,7 +1925,7 @@ HTML;
         if (get_class($data->editor) == 'atto_texteditor'){
             $data->editor->use_editor('hiddenadvancededitor', $data->options, $data->fpoptions);
             $draftitemidfld = '<input type="hidden" id="hiddenadvancededitordraftid" name="hiddenadvancededitor[itemid]" value="'.$data->draftitemid.'" />';
-            return '<div id="hiddenadvancededitorcont">'.$draftitemidfld.'<textarea style="display:none" id="hiddenadvancededitor"></textarea></div>';
+            return '<div id="hiddenadvancededitorcont">'.$draftitemidfld.'<label for="hiddenadvancededitor" class="hidden">Textarea<label><textarea style="display:none" id="hiddenadvancededitor"></textarea></div>';
         }
         return '';
     }

@@ -3597,6 +3597,8 @@ function hsuforum_search_form($course, $forumid=null, $search='') {
     $output  = '<div class="hsuforum-search">';
     $output .= '<form action="'.$CFG->wwwroot.'/mod/hsuforum/search.php">';
     $output .= '<fieldset class="invisiblefieldset">';
+    $output .= '<legend class="hidden">Search parameters for searching a post:</legend>';
+    $output .= '<label for="search" class="hidden">Search for discussions</label>';
     $output .= '<input id="search" name="search" type="search" placeholder="'.get_string('search', 'hsuforum').'" value="'.s($search, true).'"/>';
     $output .= '<input id="searchforums" value="'.get_string('searchforums', 'hsuforum').'" type="submit" />';
     $output .= '<input name="id" type="hidden" value="'.$course->id.'" />';
