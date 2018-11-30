@@ -1164,3 +1164,10 @@ FUN WITH FORMS
     line-height: 1.35 !important;
     font-size: 2rem;
 }
+
+/* Accessibility requirement of h1 with existing styles */
+.hsuforum-thread-title h2 {
+    font-size: 18px !important;
+    line-height: 1.5;
+    margin: 0;
+}
