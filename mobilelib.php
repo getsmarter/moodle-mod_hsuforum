@@ -15,13 +15,30 @@ defined('MOODLE_INTERNAL') || die();
  */
 function gettaggedusers($message) {
     $users = false;
-    $regex = '/id=(\d+)/';
+    $regex = '/user\/view.php\?id=(\d+)/';
 
     if (preg_match_all($regex, $message, $matches)) {
         $users = $matches[1];
     }
 
     return $users;
+}
+
+/**
+ * Function to replace all tagged user links and add the correct domain name
+ * @param string $message Message containing href links for users
+ * @return string 
+ */
+function fixpostbodywithtaggedlinks($message) {
+    global $CFG;
+    $returnmessage = "";
+
+    $regex = '/user\/view.php\?id=/';
+    $replacementlink = $CFG->wwwroot . '/user/view.php?id=';
+    if (preg_replace($regex, $replacementlink, $message)) {
+        $returnmessage = preg_replace($regex, $replacementlink, $message);
+    }
+    return $returnmessage;
 }
 
 /**

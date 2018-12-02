@@ -22,7 +22,7 @@ function reset_children_styles(elements, child_type) {
 // Function to build profile link
 function create_profile_link(text_area_text, profile_string, user_id, textarea_id) {
         let base_url = window.location.href;
-        let link_string = "<a href=" + base_url + "user/view.php?id=" + user_id + ">" + profile_string + "</a>";
+        let link_string = "<a href=user/view.php?id=" + user_id + ">" + profile_string + "</a>";
         let old_textarea_string = text_area_text
 
         let regex = /@(.*)<span id="caret_pos"><\/span>/;
@@ -95,6 +95,13 @@ function init() {
     let filter_li_elements = false;
     let at_span_element = null;
 
+// Debug block
+let debug_element = document.getElementById("debug_container");
+let debug_key = document.getElementById("debug_key").getElementsByTagName('input')[0];
+let debug_searchstring = document.getElementById("debug_searchstring").getElementsByTagName('input')[0];
+let debug_span = document.getElementById("debug_span").getElementsByTagName('input')[0];
+// Debug block
+
     /* ------------------------------------------------------------------ */
      // There will only be a filter element if there are tagable students *
     /* ------------------------------------------------------------------ */
@@ -107,6 +114,11 @@ function init() {
                   // Using input event so that it works on mobile *
                 /* ---------------------------------------------- */
                 text_area.addEventListener("input", function(e) {
+
+// Debug block - span visible on textarea
+console.log(at_span_element_exist());
+debug_span.value = at_span_element_exist();
+// Debug block
                     if (e.data == "@" && at_span_element == null) {
                         active_search_id = e.target.id;
                         at_position_start = window.getSelection().anchorOffset;
@@ -114,6 +126,10 @@ function init() {
                         // Insert dummy span with id to get position on screen and to replace text with user link.
                         replaceSelectionWithHtml("<span id=caret_pos></span>");
                         at_span_element = document.getElementById("caret_pos");
+
+// Debug block - display debug block
+debug_element.style.display = "block";
+// Debug block
                     }
                     /* ------------------------------------------------------ */
                       // Position ul filter element to the span dummy element *
@@ -125,6 +141,10 @@ function init() {
                             filter_element.style.left = (at_span_element.getBoundingClientRect().x) - 15 + "px";
                         }
                         at_position_end = window.getSelection().anchorOffset;
+
+// Debug block - assign key values to debug input values
+debug_key.value = e.data == null ? 'null' : e.data;
+// Debug block
 
                         /* ---------------- */
                          // Filter elements *
@@ -149,6 +169,10 @@ function init() {
                             }
                         }
 
+// Debug block - searchstring to input value
+debug_searchstring.value = searchstring;
+// Debug block
+
                         /* -------------------------------------------------- */
                         // Remove ul once span dummy element has been removed *
                         /* -------------------------------------------------- */
@@ -156,6 +180,9 @@ function init() {
                             active_search_id = false;
                             filter_element.style.display = "none";
                             searchstring = "";
+// Debug block
+debug_element.style.display = "none";
+// Debug block
                             reset_children_styles(filter_element, "li");
                             if (at_span_element_exist()) {
                                 document.getElementById("caret_pos").outerHTML = "";
@@ -185,6 +212,11 @@ function init() {
                 active_search_id = false;
                 filter_element.style.display = "none";
                 searchstring = "";
+
+// Debug block - close off debug section
+debug_element.style.display = "none";
+// Debug block
+
                 reset_children_styles(filter_element, "li");
                 at_span_element = null;
             });

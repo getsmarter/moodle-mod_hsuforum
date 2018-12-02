@@ -165,7 +165,7 @@ class mobile {
                     $post->created       = time();
                     $post->modified      = time();
                     $post->subject       = 'RE: ' . $discussion->name;
-                    $post->message       = $postreplybody;
+                    $post->message       = fixpostbodywithtaggedlinks($postreplybody);
                     $post->messageformat = FORMAT_HTML;
                     $post->id = $DB->insert_record("hsuforum_posts", $post);
                 } catch (Exception $e) {
@@ -179,9 +179,9 @@ class mobile {
                     // send mention emails on valid post
                     $mailtousers = gettaggedusers($postreplybody);
                     if (count($mailtousers)) {
-                        $coursecoach = local_mention_users_observer::get_course_coach($course->id);
-                        $link = $_SERVER['HTTP_HOST'] . '/mod/hsuforum/discuss.php?d=' . $discussion->id . '#p' . $post_id;
-                        local_mention_users_observer::send_email_to_students($mailtousers, $course->fullname, $coursecoach, $link, $postreplybody);
+                        // $coursecoach = local_mention_users_observer::get_course_coach($course->id);
+                        // $link = $_SERVER['HTTP_HOST'] . '/mod/hsuforum/discuss.php?d=' . $discussion->id . '#p' . $post_id;
+                        // local_mention_users_observer::send_email_to_students($mailtousers, $course->fullname, $coursecoach, $link, $postreplybody);
                     }
                 }
             } else {
