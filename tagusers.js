@@ -21,7 +21,6 @@ function reset_children_styles(elements, child_type) {
 
 // Function to build profile link
 function create_profile_link(text_area_text, profile_string, user_id, textarea_id) {
-        let base_url = window.location.href;
         let link_string = "<a href=user/view.php?id=" + user_id + ">" + profile_string + "</a>";
         let old_textarea_string = text_area_text
 
@@ -96,7 +95,6 @@ function init() {
     let at_span_element = null;
 
 // Debug block
-let debug_element = document.getElementById("debug_container");
 let debug_key = document.getElementById("debug_key").getElementsByTagName('input')[0];
 let debug_searchstring = document.getElementById("debug_searchstring").getElementsByTagName('input')[0];
 let debug_span = document.getElementById("debug_span").getElementsByTagName('input')[0];
@@ -151,10 +149,20 @@ debug_key.value = e.data == null ? 'null' : e.data;
                                 if (e.data == null) {
                                     // Reset filter elements to search by new string
                                     reset_children_styles(filter_element, "li");
-                                    searchstring = searchstring.substring(0, searchstring.length - 1);
-                                } else {
-                                    searchstring += e.data.toLowerCase();
-                                }
+                                    // searchstring = searchstring.substring(0, searchstring.length - 1);
+                                } 
+                                // else {
+                                //     searchstring += e.data.toLowerCase();
+                                // }
+
+// Debug block - new search function to test
+// Logic to capture text before the dummy span and after the "@" sign
+let searchregex = /@(.*)<span id="caret_pos"/;
+if (text_area.innerHTML.match(searchregex) && text_area.innerHTML.match(searchregex)[1] !== undefined) {
+    searchstring = text_area.innerHTML.match(searchregex)[1];
+}
+// Debug block
+
                                 filter_li_elements.forEach(function(element) {
                                     let element_text = element.innerHTML.toLowerCase();
                                     if (element_text.indexOf(searchstring) == -1) {
