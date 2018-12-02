@@ -116,7 +116,6 @@ let debug_span = document.getElementById("debug_span").getElementsByTagName('inp
                 text_area.addEventListener("input", function(e) {
 
 // Debug block - span visible on textarea
-console.log(at_span_element_exist());
 debug_span.value = at_span_element_exist();
 // Debug block
                     if (e.data == "@" && at_span_element == null) {
@@ -126,10 +125,6 @@ debug_span.value = at_span_element_exist();
                         // Insert dummy span with id to get position on screen and to replace text with user link.
                         replaceSelectionWithHtml("<span id=caret_pos></span>");
                         at_span_element = document.getElementById("caret_pos");
-
-// Debug block - display debug block
-debug_element.style.display = "block";
-// Debug block
                     }
                     /* ------------------------------------------------------ */
                       // Position ul filter element to the span dummy element *
@@ -180,9 +175,7 @@ debug_searchstring.value = searchstring;
                             active_search_id = false;
                             filter_element.style.display = "none";
                             searchstring = "";
-// Debug block
-debug_element.style.display = "none";
-// Debug block
+
                             reset_children_styles(filter_element, "li");
                             if (at_span_element_exist()) {
                                 document.getElementById("caret_pos").outerHTML = "";
@@ -212,10 +205,6 @@ debug_element.style.display = "none";
                 active_search_id = false;
                 filter_element.style.display = "none";
                 searchstring = "";
-
-// Debug block - close off debug section
-debug_element.style.display = "none";
-// Debug block
 
                 reset_children_styles(filter_element, "li");
                 at_span_element = null;
