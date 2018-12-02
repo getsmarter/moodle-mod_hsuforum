@@ -94,12 +94,6 @@ function init() {
     let filter_li_elements = false;
     let at_span_element = null;
 
-// Debug block
-let debug_key = document.getElementById("debug_key").getElementsByTagName('input')[0];
-let debug_searchstring = document.getElementById("debug_searchstring").getElementsByTagName('input')[0];
-let debug_span = document.getElementById("debug_span").getElementsByTagName('input')[0];
-// Debug block
-
     /* ------------------------------------------------------------------ */
      // There will only be a filter element if there are tagable students *
     /* ------------------------------------------------------------------ */
@@ -108,14 +102,11 @@ let debug_span = document.getElementById("debug_span").getElementsByTagName('inp
 
         text_areas.forEach(function(text_area) {
             if (text_area) {
+
                 /* ---------------------------------------------- */
                   // Using input event so that it works on mobile *
                 /* ---------------------------------------------- */
                 text_area.addEventListener("input", function(e) {
-
-// Debug block - span visible on textarea
-debug_span.value = at_span_element_exist();
-// Debug block
                     if (e.data == "@" && at_span_element == null) {
                         active_search_id = e.target.id;
                         at_position_start = window.getSelection().anchorOffset;
@@ -124,6 +115,7 @@ debug_span.value = at_span_element_exist();
                         replaceSelectionWithHtml("<span id=caret_pos></span>");
                         at_span_element = document.getElementById("caret_pos");
                     }
+
                     /* ------------------------------------------------------ */
                       // Position ul filter element to the span dummy element *
                     /* ------------------------------------------------------ */
@@ -135,33 +127,18 @@ debug_span.value = at_span_element_exist();
                         }
                         at_position_end = window.getSelection().anchorOffset;
 
-// Debug block - assign key values to debug input values
-debug_key.value = e.data == null ? 'null' : e.data;
-// Debug block
-
                         /* ---------------- */
                          // Filter elements *
                         /* ---------------- */
                         // Dont filter for "@"
                         if (e.data != "@") {
                             if (filter_elements_exist()) {
-                                // Handle backspace on search. Input event recognize @ as null
-                                if (e.data == null) {
-                                    // Reset filter elements to search by new string
-                                    reset_children_styles(filter_element, "li");
-                                    // searchstring = searchstring.substring(0, searchstring.length - 1);
-                                } 
-                                // else {
-                                //     searchstring += e.data.toLowerCase();
-                                // }
-
-// Debug block - new search function to test
-// Logic to capture text before the dummy span and after the "@" sign
-let searchregex = /@(.*)<span id="caret_pos"/;
-if (text_area.innerHTML.match(searchregex) && text_area.innerHTML.match(searchregex)[1] !== undefined) {
-    searchstring = text_area.innerHTML.match(searchregex)[1];
-}
-// Debug block
+                                reset_children_styles(filter_element, "li");
+                                // Capture text before the dummy span and after the "@" sign for search
+                                let searchregex = /@(.*)<span id="caret_pos"/;
+                                if (text_area.innerHTML.match(searchregex) && text_area.innerHTML.match(searchregex)[1] !== undefined) {
+                                    searchstring = text_area.innerHTML.match(searchregex)[1];
+                                }
 
                                 filter_li_elements.forEach(function(element) {
                                     let element_text = element.innerHTML.toLowerCase();
@@ -171,10 +148,6 @@ if (text_area.innerHTML.match(searchregex) && text_area.innerHTML.match(searchre
                                 });
                             }
                         }
-
-// Debug block - searchstring to input value
-debug_searchstring.value = searchstring;
-// Debug block
 
                         /* -------------------------------------------------- */
                         // Remove ul once span dummy element has been removed *
