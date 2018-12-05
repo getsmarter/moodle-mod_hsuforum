@@ -1,23 +1,22 @@
 {{=<% %>=}}
 <ion-content>
-    <%#discussions%>
-    <ion-card 
+    <ion-card *ngFor="let discussion of CONTENT_OTHERDATA.discussions"
         core-site-plugins-new-content 
-        title="<% name %>"
+        title={{discussion.name}}
         component="mod_hsuforum" 
         method="view_discussion" 
-        [args]="{discussionid: <% discussion %>}">
+        [args]="{discussionid: discussion.discussion}">
 
         <!-- Header -->
         <ion-item>
-            <ion-avatar item-start><img src="<% profilesrc %>"></ion-avatar>
-            <h2><% name %></h2>
-            <p>Topic by <% umfirstname %> <% umlastname %></p>
+            <ion-avatar item-start><img src={{discussion.profilesrc}}></ion-avatar>
+            <h2>{{ discussion.name }}</h2>
+            <p>Topic by {{ discussion.umfirstname }} {{ discussion.umlastname }}</p>
         </ion-item>
 
         <!-- Content -->
         <ion-card-content>
-            <core-format-text><p><% message %></p></core-format-text>
+            <core-format-text><p [innerHTML]=discussion.message></p></core-format-text>
         </ion-card-content>
 
         <!-- Footer -->
@@ -25,18 +24,19 @@
             <%#showgroupsections%>
             <ion-col>
                 <ion-note>
-                    <ion-icon class="icon icon-md ion-md-people"></ion-icon> <% groupname %>
+                    <ion-icon class="icon icon-md ion-md-people"></ion-icon> {{ discussion.groupname }}
                 </ion-note>
             </ion-col>
             <%/showgroupsections%>
             <ion-col>
                 <ion-note>
-                    <ion-icon class="icon icon-md ion-md-chatboxes"></ion-icon> <span><%^replies%>0<%/replies%><% replies %> replies</span>
+                    <ion-icon class="icon icon-md ion-md-chatboxes"></ion-icon> 
+                    <span *ngIf="discussion.replies"> {{ discussion.replies }} replies</span>
+                    <span *ngIf="!discussion.replies"> 0 replies</span>
                 </ion-note>
             </ion-col>
         </ion-row>
     </ion-card>
-    <%/discussions%>
 
     <!-- Add new discussion -->
     <ion-fab right bottom>

@@ -1,4 +1,19 @@
 {{=<% %>=}}
+<%#showtaguserul%>
+    <ion-card class="tribute-container" style=
+        "position:absolute; 
+        z-index:10; 
+        display:none; 
+        width:max-content;
+        max-width:200px;
+        ">
+        <ul style="list-style: none; background: #efefef; display: inline-block; padding: 2px 13px; margin:0;">
+            <%#tagusers%>
+                <li id="<% id %>"><% name %></li>
+            <%/tagusers%>
+        </ul>
+    </ion-card>
+<%/showtaguserul%>
 <ion-content>
     <form #f="ngForm" id="newdiscussionform">
         <ion-list>
@@ -9,12 +24,14 @@
             </ion-item>
 
             <ion-item>
-                <ion-label stacked>Message</ion-label>
-                    <ion-textarea
-                        name="discussionbody"
-                        placeholder="Message"
-                        [(ngModel)]="CONTENT_OTHERDATA.discussionbody">
-                    </ion-textarea>
+                <p>Message</p>
+                <br>
+                <div id="textarea_id1"
+                    class="js_tagging" style="min-height: 200px;"
+                    contenteditable="true"
+                    [innerHTML]=CONTENT_OTHERDATA.sectioncontent 
+                    (keyup)="CONTENT_OTHERDATA.discussionbody = $event.target.innerHTML">
+                </div>
             </ion-item>
 
             <%#showgroupsections%>
@@ -32,7 +49,7 @@
                     form="newdiscussionform"
                     samePage=true
                     goBackOnSuccess=true
-                    [args]="{cmid:<%cmid%>, groupid:CONTENT_OTHERDATA.groupselection, newdiscussionpost:true}"
+                    [args]="{cmid:<%cmid%>, groupid:CONTENT_OTHERDATA.groupselection, newdiscussionpost:true, discussionbody:CONTENT_OTHERDATA.discussionbody}"
                     [disabled]="CONTENT_OTHERDATA.discussiontitle.length <= 3">
                     <h3>POST TO FORUM</h3>
                 </button>

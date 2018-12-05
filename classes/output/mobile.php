@@ -101,7 +101,6 @@ class mobile {
             'cmid' => $cm->id,
             'cmname' => $cm->name,
             'discussioncount' => count($discussions),
-            'discussions' => array_values($discussions),
             'discussionlabel' => count($discussions) >= 2 || count($discussions) == 0 ? 'discussions' : 'discussion',
             'showgroupsections' => $showgroupsections
         );
@@ -116,6 +115,7 @@ class mobile {
             'javascript' => '',
             'otherdata' => array(
                 'allowedgroups' => json_encode($allowedgroups),
+                'discussions' => json_encode(array_values($discussions)),
             ),
             'files' => ''
         );
@@ -278,13 +278,14 @@ class mobile {
         return array(
             'templates' => array(
                 array(
-                    'id' => 'main',
+                    'id'   => 'main',
                     'html' => $OUTPUT->render_from_template('mod_hsuforum/mobile_view_discussion_posts', $data),
                 ),
             ),
-            'javascript' => $tagusersjs,
-            'otherdata' => array(
-                'replies' => json_encode(array_values($replies)),
+            'javascript'    => $tagusersjs,
+            'otherdata'     => array(
+                'replies'   => json_encode(array_values($replies)),
+                'firstpost' => json_encode($firstpost),
             ),
             'files' => ''
         );
@@ -296,7 +297,7 @@ class mobile {
      * @return array HTML, javascript and otherdata
      */
     public static function add_discussion($args) {
-        global $OUTPUT, $USER, $DB;
+        global $OUTPUT, $USER, $DB, $CFG;
 
         $cm                = get_coursemodule_from_id('hsuforum', $args['cmid']);
         $modcontext        = context_module::instance($cm->id);
@@ -389,6 +390,17 @@ class mobile {
             }
         }
 
+        // Getting tagable users
+        $tagusers = [];
+        $tagusers = get_allowed_tag_users($forum->id, $discussion->groupid, 1);
+        $tagusers = ($tagusers->result && count($tagusers->content)) ? build_allowed_tag_users($tagusers->content) : [];
+        $showtaguserul = count($tagusers) ? true : false;
+
+        // Getting javascript file for injection
+        $tagusersfile = $CFG->dirroot . '/mod/hsuforum/tagusers.js';
+        $handle = fopen($tagusersfile, "r");
+        $tagusersjs = fread($handle, filesize($tagusersfile));
+        fclose($handle);
 
         $returnarray = array(
             'templates' => array(
@@ -396,14 +408,17 @@ class mobile {
                     'id' => 'main',
                     'html' => $OUTPUT->render_from_template('mod_hsuforum/mobile_add_discussion', array(
                         'cmid' => $args['cmid'], 
-                        'showgroupsections' => $showgroupsections)
+                        'showgroupsections' => $showgroupsections,
+                        'showtaguserul'     => $showtaguserul,
+                        'tagusers'          => $tagusers,
+                        )
                     ),
                 ),
             ),
-            'javascript' => '',
+            'javascript' => $tagusersjs,
             'otherdata' => array(
                 'groupsections' => $showgroupsections ? json_encode($allowedgroups) : false,
-                'groupselection' => count($allowedgroups) ? $allowedgroups[0]->id : false,
+                'groupselection' => (is_array($allowedgroups) && count($allowedgroups)) ? $allowedgroups[0]->id : -1,
                 'discussiontitle' => '',
             ),
             'files' => ''
@@ -435,7 +450,6 @@ class mobile {
         $replies = hsuforum_get_all_discussion_posts($discussion->id, $repliescondition);
 
         $data = array(
-            'replies' => array_values($replies),
             'replycount' => count($replies),
             'replylabel' => count($replies) >= 2 || count($replies) == 0 ? 'replies' : 'reply',
         );
@@ -448,7 +462,9 @@ class mobile {
                 ),
             ),
             'javascript' => '',
-            'otherdata' => '',
+            'otherdata' => array(
+                'replies' => json_encode(array_values($replies)),
+            ),
             'files' => ''
         );
     }

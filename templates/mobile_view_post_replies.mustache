@@ -6,16 +6,13 @@
                 <span><%^replycount%>0<%/replycount%> <% replycount %> <% replylabel %> for post</span>
             </p>
         </ion-list-header>
-        <%#replies%>
-            <ion-card>
+            <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies">
                 <ion-card-content>
-                        
                         <ion-item>
-                            <p style="font-size: 11px;">Post by <% firstname %> <% lastname %></p>
-                            <h6><% message %></h6>
+                            <p style="font-size: 11px;">Post by {{ reply.firstname }} {{ reply.lastname }}</p>
+                                <h6 [innerHTML]=reply.message></h6>
                         </ion-item>
                 </ion-card-content>
             </ion-card>
-        <%/replies%>
     </ion-list>
 </core-format-text>
