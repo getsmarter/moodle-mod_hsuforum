@@ -402,7 +402,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $filterandsort = "<form method='get' action='' class='hsuforum-post-filterandsort form-inline'>
                     <legend class='accesshide'>".get_string('sortdiscussions', 'hsuforum')."</legend>
                     <input type='hidden' name='d' value='{$data->id}'>
-                    <div class='form-group'>
+                    <div class='form-group col-md-12 col-lg-5'>
                         <label for='id_filter' class=''>Filter:</label>
                         <select class='custom-select' name='filter' id='id_filter'>
                             <option value='0'>".get_string('filterdefault','hsuforum')."</option>
@@ -410,16 +410,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                             <option ".($filter == 3 ? 'selected' : '')." value='3'>".get_string('filtertutorreplies','hsuforum')."</option>
                         </select>
                     </div>
-                    <div class='form-group'>
-                        <label for='id_sort' class=''> + Sort:</label>
+                    <div class='form-group col-md-12 col-lg-7'>
+                        <label for='id_sort' class=''> <span id='id_plus'>+</span> Sort:</label>
                         <select class='custom-select' name='sort' id='id_sort'>
                             <option value='0'>".get_string('sortdefault','hsuforum')."</option>
                             <option ".($sort == 1 ? 'selected' : '')." value='1'>".get_string('sortnewestfirst','hsuforum')."</option>
                             <option ".($sort == 2 ? 'selected' : '')." value='2'>".get_string('sortmostreplies','hsuforum')."</option>
                             <option ".($sort == 3 ? 'selected' : '')." value='3'>".get_string('sortmostlikes','hsuforum')."</option>
                         </select>
-                    </div>
-                    <input type='submit' value='Apply'>";
+                        <input type='submit' value='Apply'>
+                    </div>";
 
         if ($filter > 0 || $sort > 0) {
             $filterandsort .= "<input type='submit' name='filterandsortreset' value='Reset'>
