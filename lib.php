@@ -5509,20 +5509,20 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
     if ($groupselect || $sortselect) {
         echo "<div id='hsuforum-filter-options'>";
-            echo "<div class='filter-option-wrapper'>";
-                echo "<div class='filter-option p-0 col-sm-12 col-md-6 col-lg-7 col-xl-8'>";
-                echo "<div class='float-left float-md-right'>";
+            echo "<div class='filter-option-wrapper row'>";
+                echo "<div class='filter-option'>";
+                
                     if ($groupselect && strpos($groupselect, '<form') !== false) {
-                        echo'<label style="margin-right:5px" for="selectgroup" >Filter:</label>';
+                        echo'<label for="selectgroup" >Filter:</label>';
                     }
                     echo $groupselect;
-                echo "</div>";
+                
                 echo "</div>";
 
-                echo "<div class='filter-option p-0 col-sm-12 col-md-6 col-lg-4 col-xl-3'>";
-                echo "<div class='float-left float-md-right'>";
+                echo "<div class='filter-option'>";
+                
                     echo $sortselect;
-                echo "</div>";
+                
                 echo "</div>";
 
             echo "</div>";
