@@ -33,7 +33,7 @@ function fixpostbodywithtaggedlinks($message) {
     global $CFG;
     $returnmessage = "";
 
-    $regex = '/user\/view.php\?id=/';
+    $regex = '/mobileappuser\/view.php\?id=/';
     $replacementlink = $CFG->wwwroot . '/user/view.php?id=';
     if (preg_replace($regex, $replacementlink, $message)) {
         $returnmessage = preg_replace($regex, $replacementlink, $message);

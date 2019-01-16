@@ -21,7 +21,7 @@ function reset_children_styles(elements, child_type) {
 
 // Function to build profile link
 function create_profile_link(text_area_text, profile_string, user_id, textarea_id) {
-        let link_string = "<a href=user/view.php?id=" + user_id + ">" + profile_string + "</a>";
+        let link_string = '<a href=mobileappuser/view.php?id=' + user_id + ' userid="' + user_id + '">' + profile_string + '</a>';
         let old_textarea_string = text_area_text
 
         let regex = /@(.*)<span id="caret_pos"><\/span>/;

@@ -44,12 +44,12 @@
             <%/showgroupsections%>
 
             <ion-item>
-                <button ion-button full
-                    type="submit" core-site-plugins-new-content
-                    form="newdiscussionform"
-                    samePage=true
-                    goBackOnSuccess=true
-                    [args]="{cmid:<%cmid%>, groupid:CONTENT_OTHERDATA.groupselection, newdiscussionpost:true, discussionbody:CONTENT_OTHERDATA.discussionbody}"
+                <button ion-button full core-site-plugins-call-ws 
+                    name="mod_hsuforum_add_discussion" 
+                    [params]="{forumid: <% forumid %>, subject: CONTENT_OTHERDATA.discussiontitle, message: CONTENT_OTHERDATA.discussionbody, groupid: CONTENT_OTHERDATA.groupselection}" 
+                    [preSets]="{getFromCache: 0, saveToCache: 0}" 
+                    successMessage 
+                    goBackOnSuccess="true"
                     [disabled]="CONTENT_OTHERDATA.discussiontitle.length <= 3">
                     <h3>POST TO FORUM</h3>
                 </button>

@@ -42,10 +42,12 @@
                     <!-- Like button -->
                     <button
                         ion-button small clear style="padding: 0"
-                        core-site-plugins-new-content
-                        samePage=true
-                        [args]="{'discussionid':<% discussionid %>, 'liketoggle':true, 'parentid':<% id %>}"
-                        (click)="refreshContent(showSpinner = true)">
+                        core-site-plugins-call-ws 
+                        name="mod_hsuforum_like_post" 
+                        [params]="{postid: <% id %>}"
+                        [preSets]="{getFromCache: 0, saveToCache: 0}" 
+                        successMessage 
+                        refreshOnSuccess="true">
                         <% firstpostliked %>
                     </button>
                 </ion-col>
@@ -76,11 +78,13 @@
                     </form>
                     <!-- Form submit button -->
                     <button
-                        ion-button small clear style="float: left;" type="submit" core-site-plugins-new-content 
-                        samePage=true
-                        refreshOnSuccess=true
-                        form="postformid_<% id %>"
-                        [args]="{'discussionid':<% discussionid %>, 'post':true, 'parentid':<% id %>, 'postreplybody':CONTENT_OTHERDATA.sectionbody}"
+                        ion-button small clear style="float: left;" core-site-plugins-call-ws 
+                        [disabled]="CONTENT_OTHERDATA.sectionbody.length <= 3" 
+                        name="mod_hsuforum_add_discussion_post" 
+                        [params]="{postid: <% id %>, subject: 'RE: <% subject %>', message: CONTENT_OTHERDATA.sectionbody}" 
+                        [preSets]="{getFromCache: 0, saveToCache: 0}" 
+                        successMessage 
+                        refreshOnSuccess="true" 
                         (click)="CONTENT_OTHERDATA.showform_<% id %> = true"
                         >
                         Submit reply
@@ -103,7 +107,7 @@
     <ion-list>
         <ion-list-header>
             <p>
-                <span><%^replycount%>0<%/replycount%> <% replycount %> <% replylabel %> for discussion</span>
+                <span><% replycount %> <% replylabel %> for discussion</span>
             </p>
         </ion-list-header>
         <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies">
@@ -130,10 +134,12 @@
             <!-- Like button -->
             <button
                 ion-button small clear style="padding: 0"
-                core-site-plugins-new-content
-                samePage=true
-                [args]="{'discussionid':reply.discussion, 'liketoggle':true, 'parentid':reply.id}"
-                (click)="refreshContent(showSpinner = true)">
+                core-site-plugins-call-ws 
+                name="mod_hsuforum_like_post" 
+                [params]="{postid: reply.id}"
+                [preSets]="{getFromCache: 0, saveToCache: 0}" 
+                successMessage 
+                refreshOnSuccess="true">
                 {{reply.liked}}
             </button>
             <!-- View reply button -->
@@ -167,12 +173,14 @@
                 </form>
                 <!-- Form submit button -->
                 <button
-                    ion-button small clear style="float: left;" type="submit" core-site-plugins-new-content 
+                    ion-button small clear style="float: left;" type="submit" core-site-plugins-call-ws 
+                    name="mod_hsuforum_add_discussion_post" 
                     *ngIf="reply.showform"
-                    samePage=true
-                    refreshOnSuccess=true
-                    form="{{reply.postformid}}"
-                    [args]="{'discussionid':reply.discussion, 'post':true, 'parentid':reply.id, 'postreplybody':CONTENT_OTHERDATA.sectionbody}"
+                    [params]="{postid: reply.id, subject: 'RE:' + reply.subject, message: CONTENT_OTHERDATA.sectionbody}" 
+                    [preSets]="{getFromCache: 0, saveToCache: 0}" 
+                    successMessage 
+                    refreshOnSuccess="true" 
+                    [disabled]="CONTENT_OTHERDATA.sectionbody.length <= 3" 
                     (click)="reply.showform = true"
                     >
                     Submit reply
