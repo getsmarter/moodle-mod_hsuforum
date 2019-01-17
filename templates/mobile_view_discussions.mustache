@@ -1,5 +1,19 @@
 {{=<% %>=}}
-<ion-content>
+<!-- Add new discussion -->
+
+    <ion-card>
+        <button
+            ion-button full 
+            style="margin:0" 
+            core-site-plugins-new-content 
+            component="mod_hsuforum" 
+            method="add_discussion" 
+            [args]="{cmid: <%cmid%>}" 
+            title="Add new discussion">
+            Add new discussion
+        </button>
+    </ion-card>
+
     <ion-card *ngFor="let discussion of CONTENT_OTHERDATA.discussions"
         core-site-plugins-new-content 
         title={{discussion.name}}
@@ -37,16 +51,3 @@
             </ion-col>
         </ion-row>
     </ion-card>
-
-    <!-- Add new discussion -->
-    <ion-fab right bottom>
-        <button ion-fab
-            core-site-plugins-new-content 
-            component="mod_hsuforum" 
-            method="add_discussion" 
-            [args]="{cmid: <%cmid%>}"
-            title="Add new discussion">
-        <ion-icon name="add"></ion-icon></button>
-    </ion-fab>
-
-</ion-content>
