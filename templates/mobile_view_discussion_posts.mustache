@@ -79,7 +79,6 @@
                     <!-- Form submit button -->
                     <button
                         ion-button small clear style="float: left;" core-site-plugins-call-ws 
-                        [disabled]="CONTENT_OTHERDATA.sectionbody.length <= 3" 
                         name="mod_hsuforum_add_discussion_post" 
                         [params]="{postid: <% id %>, subject: 'RE: <% subject %>', message: CONTENT_OTHERDATA.sectionbody}" 
                         [preSets]="{getFromCache: 0, saveToCache: 0}" 
@@ -180,7 +179,6 @@
                     [preSets]="{getFromCache: 0, saveToCache: 0}" 
                     successMessage 
                     refreshOnSuccess="true" 
-                    [disabled]="reply.replybody.length <= 3" 
                     (click)="reply.showform = true"
                     >
                     Submit reply
