@@ -72,7 +72,7 @@
                         <div id="textarea_id<% id %>"
                             class="js_tagging" style="min-height: 200px;"
                             contenteditable="true"
-                            [innerHTML]=CONTENT_OTHERDATA.sectioncontent 
+                            [innerHTML]=CONTENT_OTHERDATA.firstpostreplybody 
                             (keyup)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML">
                         </div>
                     </form>
@@ -165,8 +165,8 @@
                             <div id="{{reply.textareaid}}"
                                 class="js_tagging" style="min-height: 200px;"
                                 contenteditable="true"
-                                [innerHTML]=CONTENT_OTHERDATA.sectioncontent 
-                                (keyup)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML">
+                                [innerHTML]=CONTENT_OTHERDATA.replybody 
+                                (keyup)="reply.replybody = $event.target.innerHTML">
                             </div>
                         </ion-card-content>
                     </ion-card>
@@ -176,11 +176,11 @@
                     ion-button small clear style="float: left;" type="submit" core-site-plugins-call-ws 
                     name="mod_hsuforum_add_discussion_post" 
                     *ngIf="reply.showform"
-                    [params]="{postid: reply.id, subject: 'RE:' + reply.subject, message: CONTENT_OTHERDATA.sectionbody}" 
+                    [params]="{postid: reply.id, subject: 'RE:' + reply.subject, message: reply.replybody}" 
                     [preSets]="{getFromCache: 0, saveToCache: 0}" 
                     successMessage 
                     refreshOnSuccess="true" 
-                    [disabled]="CONTENT_OTHERDATA.sectionbody.length <= 3" 
+                    [disabled]="reply.replybody.length <= 3" 
                     (click)="reply.showform = true"
                     >
                     Submit reply

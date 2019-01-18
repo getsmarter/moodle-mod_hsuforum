@@ -186,6 +186,8 @@ class mobile {
             $reply->liked = userlikedpost($reply->id, $USER->id) ? 'Unlike' : 'Like';
             $reply->textareaid = "textarea_id".$reply->id;
             $reply->postformid = "postform_id".$reply->id;
+            // Blank reply post section
+            $reply->replybody = ' ';
         }
 
     /// Getting tagable users
