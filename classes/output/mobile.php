@@ -197,7 +197,7 @@ class mobile {
         $showtaguserul = count($tagusers) ? true : false;
 
     /// Getting javascript file for injection
-        $tagusersfile = $CFG->dirroot . '/mod/hsuforum/tagusers.js';
+        $tagusersfile = $CFG->dirroot . '/mod/hsuforum/mention_users.js';
         $handle = fopen($tagusersfile, "r");
         $tagusersjs = fread($handle, filesize($tagusersfile));
         fclose($handle);
@@ -270,7 +270,7 @@ class mobile {
         $showtaguserul = count($tagusers) ? true : false;
 
         // Getting javascript file for injection
-        $tagusersfile = $CFG->dirroot . '/mod/hsuforum/tagusers.js';
+        $tagusersfile = $CFG->dirroot . '/mod/hsuforum/mention_users.js';
         $handle = fopen($tagusersfile, "r");
         $tagusersjs = fread($handle, filesize($tagusersfile));
         fclose($handle);

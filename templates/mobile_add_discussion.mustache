@@ -1,4 +1,6 @@
 {{=<% %>=}}
+<!--
+DISABLED FOR NOW UNTIL NEW TAGGING FUNCTIONALITY HAS BEEN IMPROVED
 <%#showtaguserul%>
     <ion-card class="tribute-container" style=
         "position:absolute; 
@@ -14,7 +16,8 @@
         </ul>
     </ion-card>
 <%/showtaguserul%>
-<ion-content>
+-->
+<ion-card id="cardid_newdiscussion">
     <form #f="ngForm" id="newdiscussionform">
         <ion-list>
 
@@ -23,7 +26,7 @@
                 <ion-input min="8" name="discussiontitle" type="text" [(ngModel)]="CONTENT_OTHERDATA.discussiontitle"></ion-input>
             </ion-item>
 
-            <ion-item>
+            <ion-card>
                 <p>Message</p>
                 <br>
                 <div id="textarea_id1"
@@ -32,7 +35,21 @@
                     [innerHTML]=CONTENT_OTHERDATA.sectioncontent 
                     (keyup)="CONTENT_OTHERDATA.discussionbody = $event.target.innerHTML">
                 </div>
-            </ion-item>
+                <!-- Mention user button -->
+                <button class="mention-user" ion-button small clear style="float: left;">
+                    <span
+                    id="newdiscussion">Mention Users</span>
+                </button>
+                <!-- Mention user search element -->
+                <div class="searchfilter" style="display:none;">
+                    <ion-searchbar></ion-searchbar>
+                    <ion-list class="filter_list" style="max-height:150px; overflow-y: scroll;">
+                        <%#tagusers%>
+                            <ion-item id="<% id %>"><% name %></ion-item>
+                        <%/tagusers%>
+                    </ion-list>
+                </div>
+            </ion-card>
 
             <%#showgroupsections%>
             <ion-item>
@@ -57,4 +74,4 @@
 
         </ion-list>
     </form>
-</ion-content>
+</ion-card>

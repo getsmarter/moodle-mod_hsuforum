@@ -1,4 +1,6 @@
 {{=<% %>=}}
+<!--
+DISABLED FOR NOW UNTIL NEW TAGGING FUNCTIONALITY HAS BEEN IMPROVED
     <%#showtaguserul%>
         <ion-card class="tribute-container" style=
             "position:absolute; 
@@ -14,9 +16,10 @@
             </ul>
         </ion-card>
     <%/showtaguserul%>
+-->
 
     <%#firstpost%>
-        <ion-card>
+        <ion-card id="cardid_<% id %>">
             <ion-card-header no-padding text-wrap class="card-header card-header-md">
                 <ion-item style="background-color: #eeeeee;" text-wrap>
                     <ion-avatar item-start><img src="<% profilesrc %>"></ion-avatar>
@@ -34,9 +37,10 @@
                     <%#canreply%>
                         <button
                             ion-button small clear class="js_reply"
-                            (click)="CONTENT_OTHERDATA.showform_<% id %> = !CONTENT_OTHERDATA.showform_<% id %>">
+                            (click)="CONTENT_OTHERDATA.showform_<% id %> = true"
+                            onclick="window.activate_mention_users(event)">
                             <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
-                            <span>Reply</span>
+                            <span id="<% id %>">Reply</span>
                         </button>
                     <%/canreply%>
                     <!-- Like button -->
@@ -80,6 +84,7 @@
                     <button
                         ion-button small clear style="float: left;" core-site-plugins-call-ws 
                         name="mod_hsuforum_add_discussion_post" 
+                        [disabled]="CONTENT_OTHERDATA.sectionbody <= 3"
                         [params]="{postid: <% id %>, subject: 'RE: <% subject %>', message: CONTENT_OTHERDATA.sectionbody}" 
                         [preSets]="{getFromCache: 0, saveToCache: 0}" 
                         successMessage 
@@ -88,16 +93,28 @@
                         >
                         Submit reply
                     </button>
+                    <!-- Mention user button -->
+                    <button class="mention-user" ion-button small clear style="float: left;">
+                        Mention User
+                    </button>
                     <!-- Cancel button -->
                     <button
-                        ion-button small clear style="float: left;"
+                        ion-button class="form_cancel" small clear style="float: right;"
                         (click)="CONTENT_OTHERDATA.showform_<% id %> = false">
                         Cancel
                     </button>
+                    <!-- Mention user search element -->
+                    <div class="searchfilter" style="display:none;">
+                        <ion-searchbar></ion-searchbar>
+                        <ion-list class="filter_list" style="max-height:150px; overflow-y: scroll;">
+                            <%#tagusers%>
+                                <ion-item id="<% id %>"><% name %></ion-item>
+                            <%/tagusers%>
+                        </ion-list>
+                    </div>
                 </ion-card>
                 <%/canreply%>
             </ion-row>
-
         </ion-card>
     <%/firstpost%>
 
@@ -109,7 +126,7 @@
                 <span><% replycount %> <% replylabel %> for discussion</span>
             </p>
         </ion-list-header>
-        <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies">
+        <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies" id="cardid_{{reply.id}}">
             <ion-card-header no-padding text-wrap class="card-header card-header-md">
                 <ion-item text-wrap>
                     <ion-avatar item-start><img src="{{ reply.profilesrc }}"></ion-avatar>
@@ -125,9 +142,10 @@
             <!-- Button to show reply box -->
             <button
                 ion-button small clear style="float: left;" class="js_reply"
-                (click)="reply.showform = !reply.showform">
+                (click)="reply.showform = true"
+                onclick="window.activate_mention_users(event)">
                 <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
-                Reply
+                <span id="{{reply.id}}">Reply</span>
             </button>
             <%/canreply%>
             <!-- Like button -->
@@ -158,23 +176,21 @@
             </ion-item>
             <!-- Form to reply to post -->
             <%#canreply%>
-                <form #f="ngForm" id="{{reply.postformid}}" *ngIf="reply.showform">
-                    <ion-card>
-                        <ion-card-content>
-                            <div id="{{reply.textareaid}}"
-                                class="js_tagging" style="min-height: 200px;"
-                                contenteditable="true"
-                                [innerHTML]=CONTENT_OTHERDATA.replybody 
-                                (keyup)="reply.replybody = $event.target.innerHTML">
-                            </div>
-                        </ion-card-content>
-                    </ion-card>
+            <ion-card *ngIf="reply.showform">
+                <form #f="ngForm" id="{{reply.postformid}}">
+                    <div id="{{reply.textareaid}}"
+                        class="js_tagging" style="min-height: 200px;"
+                        contenteditable="true"
+                        [innerHTML]=CONTENT_OTHERDATA.replybody 
+                        (keyup)="reply.replybody = $event.target.innerHTML">
+                    </div>
                 </form>
                 <!-- Form submit button -->
                 <button
                     ion-button small clear style="float: left;" type="submit" core-site-plugins-call-ws 
                     name="mod_hsuforum_add_discussion_post" 
                     *ngIf="reply.showform"
+                    [disabled]="reply.replybody <= 3"
                     [params]="{postid: reply.id, subject: 'RE:' + reply.subject, message: reply.replybody}" 
                     [preSets]="{getFromCache: 0, saveToCache: 0}" 
                     successMessage 
@@ -183,6 +199,27 @@
                     >
                     Submit reply
                 </button>
+                <!-- Mention user button -->
+                <button
+                    ion-button class="mention-user" small clear style="float: left;">
+                    Mention User
+                </button>
+                <!-- Cancel button -->
+                <button
+                    ion-button class="form_cancel" small clear style="float: right;"
+                    (click)="reply.showform = false">
+                    Cancel
+                </button>
+                <!-- Mention user search element -->
+                <div class="searchfilter" style="display:none;">
+                    <ion-searchbar></ion-searchbar>
+                    <ion-list class="filter_list" style="max-height:150px; overflow-y: scroll;">
+                        <%#tagusers%>
+                            <ion-item id="<% id %>"><% name %></ion-item>
+                        <%/tagusers%>
+                    </ion-list>
+                </div>
+            </ion-card>
             <%/canreply%>
         </ion-card>
     </ion-list>
