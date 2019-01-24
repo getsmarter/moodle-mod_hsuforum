@@ -47,7 +47,7 @@ class mobile {
         $groupmode              = groups_get_activity_groupmode($cm, $course);
         $canstart               = hsuforum_user_can_post_discussion($forum, $currentgroup, $groupmode, $cm, $context);
         $allgroups              = groups_get_all_groups($cm->course, 0, $cm->groupingid);
-        $allowedgroups          = array_values(groups_get_activity_allowed_groups($cm));
+        $allowedgroups          = groups_get_activity_allowed_groups($cm, $USER->id);
 
         if (count($allowedgroups) && (int) $cm->groupmode > 0) {
             $showgroupsections = true;
@@ -102,7 +102,8 @@ class mobile {
             'cmname' => $cm->name,
             'discussioncount' => count($discussions),
             'discussionlabel' => count($discussions) >= 2 || count($discussions) == 0 ? 'discussions' : 'discussion',
-            'showgroupsections' => $showgroupsections
+            'showgroupsections' => $showgroupsections,
+            'canstart' => $canstart,
         );
 
         return array(
@@ -241,27 +242,35 @@ class mobile {
         $cm                = get_coursemodule_from_id('hsuforum', $args['cmid']);
         $modcontext        = context_module::instance($cm->id);
         $forum             = $DB->get_record('hsuforum', array('id' => $cm->instance));
-        $postsuccess       = false;
-        $allowedgroups     = false;
+        $allowedgroups     = array_values(groups_get_activity_allowed_groups($cm));
+        $allgroups         = groups_get_all_groups($cm->course, 0, $cm->groupingid);
         $showgroupsections = false;
 
-        // Check if group mode apply and getting instance allowed groups
+        // Check user group permissions and build allowed group arr for select box.
+        // Visible or separate group
         if ((int) $cm->groupmode > 0) {
-            $allowedgroups = array_values(groups_get_activity_allowed_groups($cm));
-            $showgroupsections = true;
-        }
-
-        if ((int) $cm->groupmode == 2) {
             $groupstopostto = [];
-            // Note: all groups are returned when in visible groups mode so we must manually filter.
-            foreach ($allowedgroups as $groupid => $group) {
+            foreach ($allgroups as $groupid => $group) {
                 if (hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $modcontext)) {
                     $groupstopostto[] = $group;
                 }
             }
+            // Check if user can post to all groups
+            if (count($groupstopostto) === count($allgroups)) {
+                $all_participants = new \stdClass;
+                $all_participants->id = '-1';
+                $all_participants->name = 'All Participants';
+                array_unshift($groupstopostto, $all_participants);
+            }
             // Replace original allowed groups with filtered one based on permissions
             $allowedgroups = $groupstopostto;
+        // No group will post to all groups
+        } else {
+            $allowedgroups = [];
         }
+
+        // Check if we will show the select box on template
+        $showgroupsections = count($allowedgroups) ? true : false;
 
         // Getting tagable users
         $tagusers = [];
@@ -291,7 +300,7 @@ class mobile {
             ),
             'javascript' => $tagusersjs,
             'otherdata' => array(
-                'groupsections' => $showgroupsections ? json_encode($allowedgroups) : false,
+                'groupsections' => json_encode($allowedgroups),
                 'groupselection' => (is_array($allowedgroups) && count($allowedgroups)) ? $allowedgroups[0]->id : -1,
                 'discussiontitle' => '',
             ),

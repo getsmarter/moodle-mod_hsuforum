@@ -1,6 +1,6 @@
 {{=<% %>=}}
+<%#canstart%>
 <!-- Add new discussion -->
-
     <ion-card>
         <button
             ion-button full 
@@ -13,41 +13,42 @@
             Add new discussion
         </button>
     </ion-card>
+<%/canstart%>
 
-    <ion-card *ngFor="let discussion of CONTENT_OTHERDATA.discussions"
-        core-site-plugins-new-content 
-        title={{discussion.name}}
-        component="mod_hsuforum" 
-        method="view_discussion" 
-        [args]="{discussionid: discussion.discussion}">
+<ion-card *ngFor="let discussion of CONTENT_OTHERDATA.discussions"
+    core-site-plugins-new-content 
+    title={{discussion.name}}
+    component="mod_hsuforum" 
+    method="view_discussion" 
+    [args]="{discussionid: discussion.discussion}">
 
-        <!-- Header -->
-        <ion-item>
-            <ion-avatar item-start><img src={{discussion.profilesrc}}></ion-avatar>
-            <h2>{{ discussion.name }}</h2>
-            <p>Topic by {{ discussion.umfirstname }} {{ discussion.umlastname }}</p>
-        </ion-item>
+    <!-- Header -->
+    <ion-item>
+        <ion-avatar item-start><img src={{discussion.profilesrc}}></ion-avatar>
+        <h2>{{ discussion.name }}</h2>
+        <p>Topic by {{ discussion.umfirstname }} {{ discussion.umlastname }}</p>
+    </ion-item>
 
-        <!-- Content -->
-        <ion-card-content>
-            <core-format-text><p [innerHTML]=discussion.message></p></core-format-text>
-        </ion-card-content>
+    <!-- Content -->
+    <ion-card-content>
+        <core-format-text><p [innerHTML]=discussion.message></p></core-format-text>
+    </ion-card-content>
 
-        <!-- Footer -->
-        <ion-row class="row" text-center>
-            <%#showgroupsections%>
-            <ion-col>
-                <ion-note>
-                    <ion-icon class="icon icon-md ion-md-people"></ion-icon> {{ discussion.groupname }}
-                </ion-note>
-            </ion-col>
-            <%/showgroupsections%>
-            <ion-col>
-                <ion-note>
-                    <ion-icon class="icon icon-md ion-md-chatboxes"></ion-icon> 
-                    <span *ngIf="discussion.replies"> {{ discussion.replies }} replies</span>
-                    <span *ngIf="!discussion.replies"> 0 replies</span>
-                </ion-note>
-            </ion-col>
-        </ion-row>
-    </ion-card>
+    <!-- Footer -->
+    <ion-row class="row" text-center>
+        <%#showgroupsections%>
+        <ion-col>
+            <ion-note>
+                <ion-icon class="icon icon-md ion-md-people"></ion-icon> {{ discussion.groupname }}
+            </ion-note>
+        </ion-col>
+        <%/showgroupsections%>
+        <ion-col>
+            <ion-note>
+                <ion-icon class="icon icon-md ion-md-chatboxes"></ion-icon> 
+                <span *ngIf="discussion.replies"> {{ discussion.replies }} replies</span>
+                <span *ngIf="!discussion.replies"> 0 replies</span>
+            </ion-note>
+        </ion-col>
+    </ion-row>
+</ion-card>

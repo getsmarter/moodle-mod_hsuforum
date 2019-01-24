@@ -1087,9 +1087,9 @@ class mod_hsuforum_external extends external_api {
             // Groups not supported, force to -1.
             $groupid = -1;
         } else {
-            // Check if we receive the default or and empty value for groupid,
+            // Check if we receive an empty value for groupid,
             // in this case, get the group for the user in the activity.
-            if ($groupid === -1 or empty($params['groupid'])) {
+            if (empty($params['groupid'])) {
                 $groupid = groups_get_activity_group($cm);
             } else {
                 // Here we rely in the group passed, hsuforum_user_can_post_discussion will validate the group.
