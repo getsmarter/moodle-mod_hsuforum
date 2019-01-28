@@ -93,6 +93,18 @@ class mobile {
                     $postuser->user_picture->size = 100;
                     $discussion->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
                 }
+                // Getting footer stats
+                $stats = get_discussion_footer_stats($discussion, $forum->id);
+                $discussion->views = $stats['views'];
+                $discussion->contribs = $stats['contribs'];
+                $discussion->createdfiltered = strlen($stats['createdfiltered']) ?  get_string('posted', 'hsuforum') . " " . $stats['createdfiltered'] : false;
+                $discussion->latestpost = strlen($stats['latestpost']) ? $stats['latestpost'] : false;
+
+                // Setting discussion labels/strings
+                $discussion->viewslabel = ($stats['views'] == 0) || ($stats['views'] > 1) ? get_string('views', 'hsuforum') : get_string('view', 'hsuforum');
+                $discussion->contribslabel = ($stats['contribs'] == 0) || ($stats['contribs'] > 1) ? get_string('contributors', 'hsuforum') : get_string('contributor', 'hsuforum');
+                $discussion->subscribedlabel = $discussion->subscriptionid ? get_string('toggled:subscribe', 'hsuforum') : get_string('toggle:subscribe', 'hsuforum');
+                $discussion->replylabel = ($discussion->replies == 0) || ($discussion->replies > 1) ? get_string('replies', 'hsuforum') : get_string('reply', 'hsuforum');
             }
         }
 
@@ -101,7 +113,7 @@ class mobile {
             'cmid' => $cm->id,
             'cmname' => $cm->name,
             'discussioncount' => count($discussions),
-            'discussionlabel' => count($discussions) >= 2 || count($discussions) == 0 ? 'discussions' : 'discussion',
+            'discussionlabel' => count($discussions) >= 2 || count($discussions) == 0 ? get_string('discussions', 'hsuforum') : get_string('discussion', 'hsuforum'),
             'showgroupsections' => $showgroupsections,
             'canstart' => $canstart,
         );
@@ -117,6 +129,7 @@ class mobile {
             'otherdata' => array(
                 'allowedgroups' => json_encode($allowedgroups),
                 'discussions' => json_encode(array_values($discussions)),
+                'forum' => json_encode($forum),
             ),
             'files' => ''
         );
@@ -202,6 +215,10 @@ class mobile {
         $handle = fopen($tagusersfile, "r");
         $tagusersjs = fread($handle, filesize($tagusersfile));
         fclose($handle);
+
+    // Events
+        hsuforum_discussion_view($modcontext, $forum, $discussion);
+        hsuforum_tp_add_read_record($USER->id, $discussion->firstpost);
 
         $data = array(
             'cmid'         => $cm->id,

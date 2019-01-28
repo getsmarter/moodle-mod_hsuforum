@@ -102,4 +102,14 @@ $functions = array(
         'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
      ),
 
+    'mod_hsuforum_subscribe' => array(
+        'classname' => 'mod_hsuforum_external',
+        'methodname' => 'toggle_discussion_subscription',
+        'classpath' => 'mod/hsuforum/externallib.php',
+        'description' => 'Toggle discussion subscription',
+        'type' => 'write',
+        'capabilities' => 'hsuforum:toggle_discussion_subscription',
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+     ),
+
 );

@@ -348,3 +348,67 @@ function get_allowed_tag_users($forum_id=0, $group_id=0, $advancedforum=0, $repl
 
     return $result;
     }
+
+/**
+ * Function to return the stat counts for the discusssion card footer element
+ * @param object $discussion the discussion
+ * @param int $forumid the forum id
+ * 
+ * @return array the stats for the footer
+ */
+function get_discussion_footer_stats($discussion, $forumid){
+    global $DB;
+    $stats = [];
+
+    // Created
+    $stats['createdfiltered'] = hsuforum_relative_time($discussion->created);
+
+    // Latest post
+    $latestpost = '';
+    if (!empty($discussion->modified) && !empty($discussion->replies)) {
+        $latestpost = hsuforum_relative_time($discussion->timemodified);
+    }
+    $stats['latestpost'] = $latestpost;
+
+    // Getting the contirbutors
+    $contribsql = "select count(distinct(userid)) as contributes from {hsuforum_posts} where discussion = ?";
+    $contribparams = array('discussion' => $discussion->id);
+
+    if ($c = $DB->get_record_sql($contribsql, $contribparams)) {
+        $stats['contribs'] = $c->contributes;
+    } else {
+        $stats['contribs'] = 0;
+    }
+
+    // Getting the views
+    $viewssql = "select count(userid) as views from {hsuforum_read} where forumid = ? and discussionid = ?";
+    $viewsparams = array('forumid' => $forumid, 'discussionid' => $discussion->id);
+    if ($v = $DB->get_record_sql($viewssql, $viewsparams)) {
+        $stats['views'] = $v->views;
+    } else {
+        $stats['views'] = 0;
+    }
+
+    return $stats;
+}
+
+/**
+ * Check for discussion subscription
+ * @param int $discussionid the discussion id
+ * @param int $userid the user id
+ *
+ * @return bool
+ */
+function user_subscribed($discussionid, $userid) {
+    global $DB;
+    $subscribed = false;
+
+    try {
+        $result = $DB->get_records_sql('SELECT * FROM {hsuforum_subscriptions_disc} WHERE discussion = ? AND userid = ?', array($discussionid, $userid));
+        $subscribed = count($result) ? true : false;
+    } catch (Exception $e) {
+        print_r($e->getMessage);
+    }
+
+    return $subscribed;
+}

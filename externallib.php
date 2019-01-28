@@ -1243,4 +1243,67 @@ class mod_hsuforum_external extends external_api {
         );
     }
 
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     * @since Moodle 3.0
+     */
+    public static function toggle_discussion_subscription_parameters() {
+        return new external_function_parameters(
+            array(
+                'discussionid' => new external_value(PARAM_INT, 'Discussion ID'),
+            )
+        );
+    }
+
+    /**
+     * Subscribe to a discussion in a forum
+     *
+     * @param int $discussionid the discussion id
+     * @return array new subscription id
+     * @throws moodle_exception
+     */
+    public static function toggle_discussion_subscription($discussionid) {
+        global $DB, $CFG, $USER;
+        require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
+        require_once($CFG->dirroot . "/mod/hsuforum/mobilelib.php");
+
+        $params = self::validate_parameters(self::toggle_discussion_subscription_parameters(), array('discussionid'=>$discussionid));
+        $transaction = $DB->start_delegated_transaction();
+
+        try {
+            if (!user_subscribed($params['discussionid'], $USER->id)) {
+                $subscribtion = new \stdClass();
+                $subscribtion->discussion = $params['discussionid'];
+                $subscribtion->userid = $USER->id;
+                $DB->insert_record('hsuforum_subscriptions_disc', $subscribtion);
+            } else {
+                $DB->delete_records('hsuforum_subscriptions_disc', array('discussion' => $params['discussionid'], 'userid' => $USER->id));
+            }
+        } catch (Exception $e) {
+            throw new coding_exception($e->getMessage());
+        }
+
+        $transaction->allow_commit();
+
+        $result = array();
+        $result['subscriptionid'] = $subscribtion->id;
+        return $result;
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     * @since Moodle 3.0
+     */
+    public static function toggle_discussion_subscription_returns() {
+        return new external_single_structure(
+            array(
+                'subscriptionid' => new external_value(PARAM_INT, 'subscription id'),
+            )
+        );
+    }
+
 }

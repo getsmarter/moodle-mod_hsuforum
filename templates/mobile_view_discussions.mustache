@@ -15,6 +15,13 @@
     </ion-card>
 <%/canstart%>
 
+<ion-card *ngIf="CONTENT_OTHERDATA.discussions.length > 0">
+    <ion-card-content>
+        <core-format-text text="{{CONTENT_OTHERDATA.forum.intro}}"></core-format-text>
+        <p text-right>{{CONTENT_OTHERDATA.discussions.length}} <% discussionlabel %></p>
+    </ion-card-content>
+</ion-card>
+
 <ion-card *ngFor="let discussion of CONTENT_OTHERDATA.discussions"
     core-site-plugins-new-content 
     title={{discussion.name}}
@@ -26,12 +33,43 @@
     <ion-item>
         <ion-avatar item-start><img src={{discussion.profilesrc}}></ion-avatar>
         <h2>{{ discussion.name }}</h2>
-        <p>Topic by {{ discussion.umfirstname }} {{ discussion.umlastname }}</p>
+        <ion-row class="row">
+            <ion-col style="padding-left: 0">
+                <ion-note>
+                    <p>{{ discussion.umfirstname }} {{ discussion.umlastname }}</p>
+                </ion-note>
+            </ion-col>
+            <!-- Subscribe to a discussion -->
+            <ion-col>
+                <ion-note text-right>
+                    <p *ngIf="discussion.createdfiltered" [innerHTML]="discussion.createdfiltered"></p>
+                    <button 
+                        style="text-transform: uppercase; padding: 0; float: right; background-color: unset;"
+                        core-site-plugins-call-ws 
+                        name="mod_hsuforum_subscribe" 
+                        [params]="{discussionid: discussion.discussion}"
+                        [preSets]="{getFromCache: 0, saveToCache: 0}" 
+                        successMessage 
+                        refreshOnSuccess="true">
+                        <p *ngIf="discussion.subscriptionid">
+                            <ion-icon 
+                                style="color: #ffac0d;" 
+                                class="icon icon-md ion-md-mail">
+                            </ion-icon>
+                                <span style="font-weight:500;">{{discussion.subscribedlabel}}</span></p>
+                        <p *ngIf="!discussion.subscriptionid">
+                            <ion-icon class="icon icon-md ion-md-mail"></ion-icon>
+                            <span>{{discussion.subscribedlabel}}</span>
+                        </p>
+                    </button>
+                </ion-note>
+            </ion-col>
+        </ion-row>
     </ion-item>
 
     <!-- Content -->
     <ion-card-content>
-        <core-format-text><p [innerHTML]=discussion.message></p></core-format-text>
+        <core-format-text maxHeight="60" fullOnClick="true" text="{{discussion.message}}"></core-format-text>
     </ion-card-content>
 
     <!-- Footer -->
@@ -43,11 +81,37 @@
             </ion-note>
         </ion-col>
         <%/showgroupsections%>
+        <!-- Replies -->
         <ion-col>
             <ion-note>
                 <ion-icon class="icon icon-md ion-md-chatboxes"></ion-icon> 
-                <span *ngIf="discussion.replies"> {{ discussion.replies }} replies</span>
-                <span *ngIf="!discussion.replies"> 0 replies</span>
+                <span *ngIf="discussion.replies"> {{ discussion.replies }} {{ discussion.replylabel }}</span>
+                <span *ngIf="!discussion.replies"> 0 {{ discussion.replylabel }}</span>
+            </ion-note>
+        </ion-col>
+
+        <!-- Latest Post -->
+        <ion-col *ngIf="discussion.latestpost">
+            <ion-note>
+                <ion-icon class="icon icon-md ion-md-time"></ion-icon> 
+                <span [innerHTML]="discussion.latestpost"></span>
+            </ion-note>
+        </ion-col>
+
+        <!-- Contributors -->
+        <ion-col>
+            <ion-note>
+                <ion-icon class="icon icon-md ion-md-contacts"></ion-icon> 
+                <span *ngIf="discussion.contribs"> {{ discussion.contribs }} {{ discussion.contribslabel }}</span>
+                <span *ngIf="!discussion.contribs"> 0 {{ discussion.contribslabel }}</span>
+            </ion-note>
+        </ion-col>
+
+        <!-- Views -->
+        <ion-col>
+            <ion-note>
+                <ion-icon class="icon icon-md ion-md-eye"></ion-icon> 
+                <span> {{ discussion.views }} {{ discussion.viewslabel }}</span>
             </ion-note>
         </ion-col>
     </ion-row>
