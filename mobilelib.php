@@ -372,7 +372,7 @@ function get_discussion_footer_stats($discussion, $forumid){
 
     // Getting the contirbutors
     $contribsql = "select count(distinct(userid)) as contributes from {hsuforum_posts} where discussion = ?";
-    $contribparams = array('discussion' => $discussion->id);
+    $contribparams = array('discussion' => $discussion->discussion);
 
     if ($c = $DB->get_record_sql($contribsql, $contribparams)) {
         $stats['contribs'] = $c->contributes;
@@ -382,7 +382,7 @@ function get_discussion_footer_stats($discussion, $forumid){
 
     // Getting the views
     $viewssql = "select count(userid) as views from {hsuforum_read} where forumid = ? and discussionid = ?";
-    $viewsparams = array('forumid' => $forumid, 'discussionid' => $discussion->id);
+    $viewsparams = array('forumid' => $forumid, 'discussionid' => $discussion->discussion);
     if ($v = $DB->get_record_sql($viewssql, $viewsparams)) {
         $stats['views'] = $v->views;
     } else {
