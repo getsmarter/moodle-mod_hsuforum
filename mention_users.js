@@ -53,7 +53,6 @@ function setup_event_listeners(ion_card, postref) {
     // @TODO - Setup caret tracking if needed. For now append the text
         let textarea = (ion_card !== null) ? ion_card.querySelector('div[contenteditable="true"]') : null;
         if (textarea !== null) {
-// console.log(this.CONTENT_OTHERDATA);
                 textarea.addEventListener("input", e => { 
                     // Populating store with textarea
                     window.filterSearch[postref].textarea = e.target.innerHTML;

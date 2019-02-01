@@ -1,23 +1,4 @@
 {{=<% %>=}}
-<!--
-DISABLED FOR NOW UNTIL NEW TAGGING FUNCTIONALITY HAS BEEN IMPROVED
-    <%#showtaguserul%>
-        <ion-card class="tribute-container" style=
-            "position:absolute; 
-            z-index:10; 
-            display:none; 
-            width:max-content;
-            max-width:200px;
-            ">
-            <ul style="list-style: none; background: #efefef; display: inline-block; padding: 2px 13px; margin:0;">
-                <%#tagusers%>
-                    <li id="<% id %>"><% name %></li>
-                <%/tagusers%>
-            </ul>
-        </ion-card>
-    <%/showtaguserul%>
--->
-
     <%#firstpost%>
         <ion-card id="cardid_<% id %>">
             <ion-card-header no-padding text-wrap class="card-header card-header-md">
@@ -74,7 +55,7 @@ DISABLED FOR NOW UNTIL NEW TAGGING FUNCTIONALITY HAS BEEN IMPROVED
                 <ion-card *ngIf="CONTENT_OTHERDATA.showform_<% id %>">
                     <form #f="ngForm" id="postformid_<% id %>">
                         <div id="textarea_id<% id %>"
-                            class="js_tagging" style="min-height: 200px;"
+                            style="min-height: 200px;"
                             contenteditable="true"
                             [innerHTML]=CONTENT_OTHERDATA.firstpostreplybody 
                             (keyup)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML">
@@ -179,7 +160,7 @@ DISABLED FOR NOW UNTIL NEW TAGGING FUNCTIONALITY HAS BEEN IMPROVED
             <ion-card *ngIf="reply.showform">
                 <form #f="ngForm" id="{{reply.postformid}}">
                     <div id="{{reply.textareaid}}"
-                        class="js_tagging" style="min-height: 200px;"
+                        style="min-height: 200px;"
                         contenteditable="true"
                         [innerHTML]=CONTENT_OTHERDATA.replybody 
                         (keyup)="reply.replybody = $event.target.innerHTML">
