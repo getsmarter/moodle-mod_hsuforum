@@ -412,3 +412,24 @@ function user_subscribed($discussionid, $userid) {
 
     return $subscribed;
 }
+
+/**
+ * Get post reply count in a dicussion
+ * @param int $discussionid the discussion id
+ * @param int $postid the post id
+ *
+ * @return int
+ */
+function get_post_replies($discussionid, $postid) {
+    global $DB;
+    $replies = 0;
+
+    $repliessql = "select count(parent) as replies from {hsuforum_posts} where discussion = ? and parent = ?";
+    $repliesparams = array('discussion' => $discussionid, 'post' => $postid);
+
+    if ($v = $DB->get_record_sql($repliessql, $repliesparams)) {
+        $replies = $v->replies;
+    }
+
+    return $replies;
+}

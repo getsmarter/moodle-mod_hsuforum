@@ -179,7 +179,17 @@ class mobile {
             if ($firstpost->likecount) {
                 $firstpost->likedescription = getlikedescription($firstpost->likes);
             }
-            $firstpost->firstpostliked = userlikedpost($firstpost->id, $USER->id) ? 'Unlike' : 'Like';
+            // Getting firstpost ribbon stats
+            $stats = get_discussion_footer_stats($firstpost, $forum->id);
+            $firstpost->replies = get_post_replies($discussion->id, $firstpost->id);
+            $firstpost->views = $stats['views'];
+            $firstpost->createdfiltered = strlen($stats['createdfiltered']) ? $stats['createdfiltered'] : false;
+            $firstpost->contribs = $stats['contribs'];
+            // Set ribbon labels
+            $firstpost->viewslabel = ($stats['views'] == 0) || ($stats['views'] > 1) ? get_string('views', 'hsuforum') : get_string('view', 'hsuforum');
+            $firstpost->contribslabel = ($stats['contribs'] == 0) || ($stats['contribs'] > 1) ? get_string('contributors', 'hsuforum') : get_string('contributor', 'hsuforum');
+            $firstpost->replylabel = ($firstpost->replies == 0) || ($firstpost->replies > 1) ? get_string('replies', 'hsuforum') : get_string('reply', 'hsuforum');
+            $firstpost->likelabel = userlikedpost($firstpost->id, $USER->id) ? get_string('unlike', 'hsuforum') : get_string('like', 'hsuforum');
         }
 
         $repliescondition = array('p.parent' => $discussion->firstpost);
@@ -197,7 +207,8 @@ class mobile {
             if ($reply->likecount) {
                 $reply->likedescription = getlikedescription($reply->likes);
             }
-            $reply->liked = userlikedpost($reply->id, $USER->id) ? 'Unlike' : 'Like';
+            $reply->created = hsuforum_relative_time($reply->created);
+            $reply->likelabel = userlikedpost($reply->id, $USER->id) ? get_string('unlike', 'hsuforum') : get_string('like', 'hsuforum');
             $reply->textareaid = "textarea_id".$reply->id;
             $reply->postformid = "postform_id".$reply->id;
             // Blank reply post section
@@ -216,19 +227,25 @@ class mobile {
         $tagusersjs = fread($handle, filesize($tagusersfile));
         fclose($handle);
 
-    // Events
+    /// Setting additional labels
+        // @todo - convert additional lables to an array then pass to context var if we get to many labels
+        $replylabel = count($replies) >= 2 || count($replies) == 0 ? get_string('replies', 'hsuforum') : get_string('reply', 'hsuforum');
+        $replyfromlabel = get_string('replyfrom', 'hsuforum');
+
+    /// Handling Events
         hsuforum_discussion_view($modcontext, $forum, $discussion);
         hsuforum_tp_add_read_record($USER->id, $discussion->firstpost);
 
         $data = array(
-            'cmid'         => $cm->id,
-            'discussionid' => $discussion->id,
-            'replycount'   => count($replies),
-            'replylabel'   => count($replies) >= 2 || count($replies) == 0 ? 'replies' : 'reply',
-            'firstpost'    => $firstpost,
-            'canreply'     => $cm->groupmode == 0 ? true : $canreply,
-            'showtaguserul'=> $showtaguserul,
-            'tagusers'     => $tagusers,
+            'cmid'           => $cm->id,
+            'discussionid'   => $discussion->id,
+            'replycount'     => count($replies),
+            'replylabel'     => $replylabel,
+            'replyfromlabel' => $replyfromlabel,
+            'firstpost'      => $firstpost,
+            'canreply'       => $cm->groupmode == 0 ? true : $canreply,
+            'showtaguserul'  => $showtaguserul,
+            'tagusers'       => $tagusers,
         );
 
         return array(

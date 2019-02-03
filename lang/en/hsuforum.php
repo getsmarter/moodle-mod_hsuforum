@@ -673,6 +673,10 @@ $string['contributors'] = 'Contributors';
 $string['contributor'] = 'Contributor';
 $string['views'] = 'Views';
 $string['view'] = 'View';
+$string['like'] = 'Like';
+$string['liked'] = 'Liked';
+$string['unlike'] = 'Unlike';
+$string['replyfrom'] = 'Reply from';
 
 // Deprecated since Moodle 3.0.
 $string['subscribersto'] = 'Subscribers to "{$a->name}"';

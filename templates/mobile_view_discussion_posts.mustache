@@ -33,7 +33,8 @@
                         [preSets]="{getFromCache: 0, saveToCache: 0}" 
                         successMessage 
                         refreshOnSuccess="true">
-                        <% firstpostliked %>
+                        <ion-icon class="icon icon-md ion-md-thumbs-up" style="margin-right: 4px;"></ion-icon>
+                        <% likelabel %>
                     </button>
                 </ion-col>
             </ion-row>
@@ -97,22 +98,47 @@
                 <%/canreply%>
             </ion-row>
         </ion-card>
+
+        <!-- Ribbon on firstpost -->
+        <ion-card style="margin-left: 0; width: 100%; padding: 10px">
+            <ion-note style="padding: 4px;">
+                <ion-icon class="icon icon-md ion-md-chatboxes"></ion-icon> 
+                <span><% replycount %> <% replylabel %></span>
+            </ion-note>
+            <ion-note style="padding: 4px;">
+                <ion-icon class="icon icon-md ion-md-contacts"></ion-icon> 
+                <span><% contribs %> <% contribslabel %></span>
+            </ion-note>
+            <ion-note style="padding: 4px;">
+                <ion-icon class="icon icon-md ion-md-eye"></ion-icon> 
+                <span><% views %> <% viewslabel %></span>
+            </ion-note>
+            <ion-note style="padding: 4px;">
+                <ion-icon class="icon icon-md ion-md-time"></ion-icon>
+                <core-format-text text="<% createdfiltered %>"></core-format-text>
+            </ion-note>
+        </ion-card>
     <%/firstpost%>
 
 
     <!-- REPLIES ON FIRSTPOST -->
     <ion-list>
-        <ion-list-header>
-            <p>
-                <span><% replycount %> <% replylabel %> for discussion</span>
-            </p>
-        </ion-list-header>
         <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies" id="cardid_{{reply.id}}">
             <ion-card-header no-padding text-wrap class="card-header card-header-md">
                 <ion-item text-wrap>
                     <ion-avatar item-start><img src="{{ reply.profilesrc }}"></ion-avatar>
-                    <h3><span class="core-bold">{{ reply.subject }}</span></h3>
-                    <h3>{{ reply.firstname }} {{ reply.lastname }}</h3>
+                    <ion-row>
+                        <ion-col>
+                            <ion-note style="padding: 0">
+                                <% replyfromlabel %> {{ reply.firstname }} {{ reply.lastname }}
+                            </ion-note>
+                        </ion-col>
+                        <ion-col text-right>
+                            <ion-note style="padding: 0">
+                                <core-format-text text="{{reply.created}}"></core-format-text>
+                            </ion-note>
+                        </ion-col>
+                    </ion-row>
                 </ion-item>
             </ion-card-header>
 
@@ -138,7 +164,8 @@
                 [preSets]="{getFromCache: 0, saveToCache: 0}" 
                 successMessage 
                 refreshOnSuccess="true">
-                {{reply.liked}}
+                <ion-icon class="icon icon-md ion-md-thumbs-up" style="margin-right: 4px;"></ion-icon>
+                {{reply.likelabel}}
             </button>
             <!-- View reply button -->
             <button
