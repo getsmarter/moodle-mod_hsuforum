@@ -92,6 +92,7 @@ class mobile {
                 if ($postuser) {
                     $postuser->user_picture->size = 100;
                     $discussion->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
+                    $discussion->postuserid = $postuser->id;
                 }
                 // Getting footer stats
                 $stats = get_discussion_footer_stats($discussion, $forum->id);
@@ -108,14 +109,21 @@ class mobile {
             }
         }
 
+        /// Setting additional labels
+        // @todo - convert additional lables to an array then pass to context var if we get to many labels
+        $discussionlabel = count($discussions) >= 2 || count($discussions) == 0 ? get_string('discussions', 'hsuforum') : get_string('discussion', 'hsuforum');
+        $unreadlabel = get_string('unread', 'hsuforum');
+
         // Build data array to output in the template
         $data = array(
             'cmid' => $cm->id,
             'cmname' => $cm->name,
-            'discussioncount' => count($discussions),
-            'discussionlabel' => count($discussions) >= 2 || count($discussions) == 0 ? get_string('discussions', 'hsuforum') : get_string('discussion', 'hsuforum'),
-            'showgroupsections' => $showgroupsections,
             'canstart' => $canstart,
+            'courseid' => $course->id,
+            'unreadlabel' => $unreadlabel,
+            'discussionlabel' => $discussionlabel,
+            'discussioncount' => count($discussions),
+            'showgroupsections' => $showgroupsections,
         );
 
         return array(
@@ -156,6 +164,7 @@ class mobile {
         $modcontext = context_module::instance($cm->id);
         $canreply   = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
         $postreplystatus = [];
+        $unreadpostids = [];
 
     /// Getting firstpost and root replies for the firstpost
         // Note there can only be one post(when user created discussion) in a discussion and then additional posts are regarged as replies(api data structure reflects this concept). Very confusing...
@@ -164,27 +173,35 @@ class mobile {
         $replies = false;
 
         $firstpostcondition = array('p.id' => $discussion->firstpost);
-        $firstpostresult = hsuforum_get_all_discussion_posts($discussion->id, $firstpostcondition);
+        $firstpostresult = hsuforum_get_all_discussion_posts($discussion->id, $firstpostcondition, $USER->id);
 
         // Populating firstpost with virtual props needed for template
         if ($firstpostresult) {
-            // Avatar section
             $firstpost = array_pop($firstpostresult);
+
+            // Getting all nested unread ids for root post in discussion
+            $readpostids = hsuforum_get_unread_nested_postids($discussion->id, $firstpost->id, $USER->id);
+
+            // Avatar section
             $postuser = hsuforum_extract_postuser($firstpost, $forum, context_module::instance($cm->id));
             $postuser->user_picture->size = 100;
             $firstpost->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
+            $firstpost->postuserid = $postuser->id;
+
             // Like section
             $firstpost->likes = array_values(getpostlikes($firstpost));
             $firstpost->likecount = count($firstpost->likes);
             if ($firstpost->likecount) {
                 $firstpost->likedescription = getlikedescription($firstpost->likes);
             }
+
             // Getting firstpost ribbon stats
             $stats = get_discussion_footer_stats($firstpost, $forum->id);
             $firstpost->replies = get_post_replies($discussion->id, $firstpost->id);
             $firstpost->views = $stats['views'];
             $firstpost->createdfiltered = strlen($stats['createdfiltered']) ? $stats['createdfiltered'] : false;
             $firstpost->contribs = $stats['contribs'];
+
             // Set ribbon labels
             $firstpost->viewslabel = ($stats['views'] == 0) || ($stats['views'] > 1) ? get_string('views', 'hsuforum') : get_string('view', 'hsuforum');
             $firstpost->contribslabel = ($stats['contribs'] == 0) || ($stats['contribs'] > 1) ? get_string('contributors', 'hsuforum') : get_string('contributor', 'hsuforum');
@@ -192,8 +209,8 @@ class mobile {
             $firstpost->likelabel = userlikedpost($firstpost->id, $USER->id) ? get_string('unlike', 'hsuforum') : get_string('like', 'hsuforum');
         }
 
-        $repliescondition = array('p.parent' => $discussion->firstpost);
-        $replies = hsuforum_get_all_discussion_posts($discussion->id, $repliescondition);
+        $repliesparams = array('p.parent' => $discussion->firstpost);
+        $replies = hsuforum_get_all_discussion_posts($discussion->id, $repliesparams);
 
         // Populating replies with virtual props needed for template
         foreach ($replies as &$reply) {
@@ -201,6 +218,8 @@ class mobile {
             $postuser = hsuforum_extract_postuser($reply, $forum, context_module::instance($cm->id));
             $postuser->user_picture->size = 100;
             $reply->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
+            $reply->postuserid = $postuser->id;
+
             // Like section
             $reply->likes = array_values(getpostlikes($reply));
             $reply->likecount = count($reply->likes);
@@ -211,8 +230,15 @@ class mobile {
             $reply->likelabel = userlikedpost($reply->id, $USER->id) ? get_string('unlike', 'hsuforum') : get_string('like', 'hsuforum');
             $reply->textareaid = "textarea_id".$reply->id;
             $reply->postformid = "postform_id".$reply->id;
+
             // Blank reply post section
             $reply->replybody = ' ';
+
+            // Check for unread reply posts and updating the unreadpostids array
+            if (!in_array($reply->id, $readpostids)) {
+                $reply->unread = true;
+                array_push($unreadpostids, $reply->id);
+            }
         }
 
     /// Getting tagable users
@@ -231,17 +257,27 @@ class mobile {
         // @todo - convert additional lables to an array then pass to context var if we get to many labels
         $replylabel = count($replies) >= 2 || count($replies) == 0 ? get_string('replies', 'hsuforum') : get_string('reply', 'hsuforum');
         $replyfromlabel = get_string('replyfrom', 'hsuforum');
+        $unreadlabel = get_string('unread', 'hsuforum');
 
     /// Handling Events
         hsuforum_discussion_view($modcontext, $forum, $discussion);
-        hsuforum_tp_add_read_record($USER->id, $discussion->firstpost);
+
+    /// Marking unread posts as read
+        // Root post
+        hsuforum_tp_add_read_record($USER->id, $firstpost->id);
+        // Nested replies on parent
+        if (count($unreadpostids)) {
+            hsuforum_mark_posts_read($USER, $unreadpostids);
+        }
 
         $data = array(
+            'courseid'       => $course->id,
             'cmid'           => $cm->id,
             'discussionid'   => $discussion->id,
             'replycount'     => count($replies),
             'replylabel'     => $replylabel,
             'replyfromlabel' => $replyfromlabel,
+            'unreadlabel'    => $unreadlabel,
             'firstpost'      => $firstpost,
             'canreply'       => $cm->groupmode == 0 ? true : $canreply,
             'showtaguserul'  => $showtaguserul,
@@ -350,23 +386,72 @@ class mobile {
     public static function view_post_replies($args) {
         global $OUTPUT, $USER, $DB, $PAGE;
 
+        // Setting up init variables
+        $postid        = $args['postid'];
+        $discussion    = $DB->get_record('hsuforum_discussions', array('id' => $args['discussionid']), '*', MUST_EXIST);
+        $course        = $DB->get_record('course', array('id' => $discussion->course), '*', MUST_EXIST);
+        $forum         = $DB->get_record('hsuforum', array('id' => $discussion->forum), '*', MUST_EXIST);
+        $cm            = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id, false, MUST_EXIST);
+        $modcontext    = context_module::instance($cm->id);
+        $unreadpostids = [];
+
         // Check for valid discussion id
         if (!$args || (!isset($args['postid']) && !isset($args['discussionid'])) ) {
-            print_r('No discussion id or post id provided');
-            // @TODO - handle ionic way to redirect back with error popup
+            throw new coding_exception('No discussion id or post id provided');
         }
 
-        // Setting up init variables
-        $postid = $args['postid'];
-        $discussion = $DB->get_record('hsuforum_discussions', array('id' => $args['discussionid']), '*', MUST_EXIST);
-
         // Getting replies for the post
-        $repliescondition = array('p.parent' => $postid);
-        $replies = hsuforum_get_all_discussion_posts($discussion->id, $repliescondition);
+        $repliesparams = array('p.parent' => $postid);
+        $replies = hsuforum_get_all_discussion_posts($discussion->id, $repliesparams);
+
+        // Getting all nested unread ids for root post in reply
+        $readpostids = hsuforum_get_unread_nested_postids($discussion->id, $args['postid'], $USER->id);
+
+        // Populating replies with virtual props needed for template
+        if ($replies) {
+            foreach ($replies as &$reply) {
+                // Avatar section
+                $postuser = hsuforum_extract_postuser($reply, $forum, context_module::instance($cm->id));
+                $postuser->user_picture->size = 100;
+                $reply->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
+                $reply->postuserid = $postuser->id;
+
+                // Like section
+                $reply->likes = array_values(getpostlikes($reply));
+                $reply->likecount = count($reply->likes);
+                if ($reply->likecount) {
+                    $reply->likedescription = getlikedescription($reply->likes);
+                }
+
+                // Check for unread reply posts and updating the unreadpostids array
+                if (!in_array($reply->id, $readpostids)) {
+                    $reply->unread = true;
+                    array_push($unreadpostids, $reply->id);
+                }
+
+                // Various
+                $reply->likelabel = userlikedpost($reply->id, $USER->id) ? get_string('unlike', 'hsuforum') : get_string('like', 'hsuforum');
+                $reply->created = hsuforum_relative_time($reply->created);
+            }
+        }
+
+        // Marking unread posts as read
+        hsuforum_tp_add_read_record($USER->id, $args['postid']);
+        if (count($unreadpostids)) {
+            hsuforum_mark_posts_read($USER, $unreadpostids);
+        }
+
+        // Setting additional labels
+        // @todo - convert additional lables to an array then pass to context var if we get to many labels
+        $unreadlabel = get_string('unread', 'hsuforum');
+        $replyfromlabel = get_string('replyfrom', 'hsuforum');
 
         $data = array(
-            'replycount' => count($replies),
-            'replylabel' => count($replies) >= 2 || count($replies) == 0 ? 'replies' : 'reply',
+            'courseid'       => $course->id,
+            'replycount'     => count($replies),
+            'replylabel'     => count($replies) >= 2 || count($replies) == 0 ? 'replies' : 'reply',
+            'unreadlabel'    => $unreadlabel,
+            'replyfromlabel' => $replyfromlabel,
         );
 
         return array(

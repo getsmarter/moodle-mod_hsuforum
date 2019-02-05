@@ -3,7 +3,9 @@
         <ion-card id="cardid_<% id %>">
             <ion-card-header no-padding text-wrap class="card-header card-header-md">
                 <ion-item style="background-color: #eeeeee;" text-wrap>
-                    <ion-avatar item-start><img src="<% profilesrc %>"></ion-avatar>
+                    <ion-avatar item-start>
+                        <a core-user-link courseId="<% courseid %>" userId="<% postuserid %>"><img src="<% profilesrc %>"></a>
+                    </ion-avatar>
                     <h2><span class="core-bold"><% subject %></span></h2>
                     <h3><% firstname %> <% lastname %></h3>
                 </ion-item>
@@ -126,7 +128,9 @@
         <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies" id="cardid_{{reply.id}}">
             <ion-card-header no-padding text-wrap class="card-header card-header-md">
                 <ion-item text-wrap>
-                    <ion-avatar item-start><img src="{{ reply.profilesrc }}"></ion-avatar>
+                    <ion-avatar item-start>
+                        <a core-user-link courseId="<% courseid %>" userId="{{reply.postuserid}}"><img src={{reply.profilesrc}}></a>
+                    </ion-avatar>
                     <ion-row>
                         <ion-col>
                             <ion-note style="padding: 0">
@@ -137,6 +141,21 @@
                             <ion-note style="padding: 0">
                                 <core-format-text text="{{reply.created}}"></core-format-text>
                             </ion-note>
+                            <!-- New post icon -->
+                            <br>
+                            <p *ngIf="!reply.postread" style="padding-right: 4px;">
+                                <ion-icon 
+                                    style="color: #f42684;" 
+                                    class="icon icon-md fa fa-circle fa-primary">
+                                </ion-icon>
+                                <span style="
+                                    color: #000;
+                                    text-transform: uppercase;
+                                    font-weight: 500;
+                                    ">
+                                    <% unreadlabel %>
+                                </span>
+                            </p>
                         </ion-col>
                     </ion-row>
                 </ion-item>

@@ -6021,6 +6021,7 @@ function hsuforum_mark_posts_read($user, $postids) {
          }
 
  // First insert any new entries.
+    //  @TODO Temp remove trackingsql for now since there is no trackingtype column in hsuforum table but this is in config table
  $sql = "INSERT INTO {hsuforum_read} (userid, postid, discussionid, forumid, firstread, lastread)
 
          SELECT :userid1, p.id, p.discussion, d.forum, :firstread, :lastread
@@ -6036,7 +6037,6 @@ function hsuforum_mark_posts_read($user, $postids) {
                  )
              WHERE p.id $usql
                  AND p.modified >= :cutoffdate
-                 $trackingsql
                  AND fr.id IS NULL";
 
  $status = $DB->execute($sql, $params) && $status;

@@ -433,3 +433,53 @@ function get_post_replies($discussionid, $postid) {
 
     return $replies;
 }
+
+/**
+ * Get all unread post ids for a discussion
+ * @param int $discussionid the discussion id
+ * @param int $user the user id
+ *
+ * @return array the unread post ids
+ */
+function hsuforum_get_unread_discussionids($discussionid, $userid) {
+    global $DB;
+    $readids = [];
+
+    $readssql = "select id from {hsuforum_read} where discussionid = ? and userid = ?";
+    $readsparams = array('discussion' => $discussionid, 'user' => $userid);
+    $result = $DB->get_records_sql($readssql, $readsparams);
+
+    if (count($result)) {
+        $readids = array_values(array_map(function($r) { return $r->id; }, $result));
+    }
+
+    return $readids;
+}
+
+/**
+ * Get all nested unread post ids for a parent post
+ * @param int $discussionid the discussion id
+ * @param int $postid the parent post id
+ * @param int $user the user id
+ *
+ * @return array the unread post ids
+ */
+function hsuforum_get_unread_nested_postids($discussionid, $postid, $userid) {
+    global $DB;
+    $readids = [];
+
+    $sql = "SELECT r.postid 
+            FROM {hsuforum_read} r 
+            JOIN {hsuforum_posts} p ON p.id = r.postid 
+            WHERE p.parent = ? 
+            AND r.discussionid = ? 
+            AND r.userid = ? ";
+    $params = array('parent' => $postid, 'discussion' => $discussionid, 'user' => $userid);
+    $result = $DB->get_records_sql($sql, $params);
+
+    if (count($result)) {
+        $readids = array_values(array_map(function($r) { return $r->postid; }, $result));
+    }
+
+    return $readids;
+}

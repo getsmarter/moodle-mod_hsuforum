@@ -1,18 +1,67 @@
 {{=<% %>=}}
-<core-format-text component="mod_ouwiki" componentId="<% cmid %>">
-    <ion-list>
-        <ion-list-header>
-            <p>
-                <span><% replycount %> <% replylabel %> for post</span>
-            </p>
-        </ion-list-header>
-            <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies">
-                <ion-card-content>
-                        <ion-item>
-                            <p style="font-size: 11px;">Post by {{ reply.firstname }} {{ reply.lastname }}</p>
-                                <h6 [innerHTML]=reply.message></h6>
-                        </ion-item>
-                </ion-card-content>
-            </ion-card>
-    </ion-list>
-</core-format-text>
+<ion-list>
+    <ion-list-header>
+        <p>
+            <span><% replycount %> <% replylabel %> for post</span>
+        </p>
+    </ion-list-header>
+    <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies">
+        <ion-card-header no-padding text-wrap class="card-header card-header-md">
+            <ion-item text-wrap>
+                <ion-avatar item-start>
+                    <a core-user-link courseId="<% courseid %>" userId="{{reply.postuserid}}"><img src={{reply.profilesrc}}></a>
+                </ion-avatar>
+                <ion-row>
+                    <ion-col>
+                        <ion-note style="padding: 0">
+                            <% replyfromlabel %> {{ reply.firstname }} {{ reply.lastname }}
+                        </ion-note>
+                    </ion-col>
+                    <ion-col text-right>
+                        <ion-note style="padding: 0">
+                            <core-format-text text="{{reply.created}}"></core-format-text>
+                        </ion-note>
+                        <!-- New post icon -->
+                        <br>
+                        <p *ngIf="!reply.postread" style="padding-right: 4px;">
+                            <ion-icon 
+                                style="color: #f42684;" 
+                                class="icon icon-md fa fa-circle fa-primary">
+                            </ion-icon>
+                            <span style="
+                                color: #000;
+                                text-transform: uppercase;
+                                font-weight: 500;
+                                ">
+                                <% unreadlabel %>
+                            </span>
+                        </p>
+                    </ion-col>
+                </ion-row>
+            </ion-item>
+        </ion-card-header>
+
+        <ion-item>
+            <core-format-text singleline="false" ><p [innerHTML]="reply.message"></p></core-format-text>
+        </ion-item>
+        <!-- Like button -->
+        <button
+            ion-button small clear
+            core-site-plugins-call-ws 
+            name="mod_hsuforum_like_post" 
+            [params]="{postid: reply.id}"
+            [preSets]="{getFromCache: 0, saveToCache: 0}" 
+            successMessage 
+            refreshOnSuccess="true">
+            <ion-icon class="icon icon-md ion-md-thumbs-up" style="margin-right: 4px;"></ion-icon>
+            {{reply.likelabel}}
+        </button>
+        <!-- Who liked section -->
+            <ion-item *ngIf="reply.likedescription">
+                <p style="color: #2f6473; background-color: #def2f8; border-color: #d1edf6; padding: 3px 0px;">
+                    {{reply.likedescription}}
+                </p>
+            </ion-item>
+    </ion-card>
+
+</ion-list>

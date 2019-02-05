@@ -31,7 +31,9 @@
 
     <!-- Header -->
     <ion-item>
-        <ion-avatar item-start><img src={{discussion.profilesrc}}></ion-avatar>
+        <ion-avatar item-start>
+            <a core-user-link courseId="<% courseid %>" userId="{{discussion.postuserid}}"><img src={{discussion.profilesrc}}></a>
+        </ion-avatar>
         <h2>{{ discussion.name }}</h2>
         <ion-row class="row">
             <ion-col style="padding-left: 0">
@@ -62,6 +64,21 @@
                             <span>{{discussion.subscribedlabel}}</span>
                         </p>
                     </button>
+                    <!-- New post icon -->
+                    <br>
+                    <p *ngIf="discussion.unread">
+                            <ion-icon 
+                                style="color: #f42684;" 
+                                class="icon icon-md fa fa-circle fa-primary">
+                            </ion-icon>
+                        <span style="
+                            color: #000;
+                            text-transform: uppercase;
+                            font-weight: 500;
+                            ">
+                            <% unreadlabel %>
+                        </span>
+                    </p>
                 </ion-note>
             </ion-col>
         </ion-row>
