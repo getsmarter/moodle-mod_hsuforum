@@ -483,3 +483,65 @@ function hsuforum_get_unread_nested_postids($discussionid, $postid, $userid) {
 
     return $readids;
 }
+
+/**
+ * Get all user roles and assignment ids in course
+ * @param int $courseid the course id
+ *
+ * @return array all roles and assignment ids in course
+ */
+function hsuforum_get_course_roles_and_assignments($courseid) {
+    global $DB;
+    $coursecontext = $DB->get_record('context', array('instanceid' => $courseid, 'contextlevel' => '50'));
+
+    // Creating basic data struct for assignments
+    $roles              = [];
+    $roles['htutor']    = [];
+    $roles['tutor']     = [];
+    $roles['smanager']  = [];
+    $roles['gsmanager'] = [];
+    $roles['student']   = [];
+
+    try {
+        $rolehtutor  = $DB->get_record('role', array('shortname' => 'headtutor'));
+        $roletutor   = $DB->get_record('role', array('shortname' => 'tutor'));
+        $smanager    = $DB->get_record('role', array('shortname' => 'coursecoach'));
+        $gsmanager   = $DB->get_record('role', array('shortname' => 'support'));
+        $student     = $DB->get_record('role', array('shortname' => 'student'));
+
+        $roles['htutor']    = hsuforum_get_course_role_assignment_ids($coursecontext->id, $rolehtutor->id);
+        $roles['tutor']     = hsuforum_get_course_role_assignment_ids($coursecontext->id, $roletutor->id);
+        $roles['smanager']  = hsuforum_get_course_role_assignment_ids($coursecontext->id, $smanager->id);
+        $roles['gsmanager'] = hsuforum_get_course_role_assignment_ids($coursecontext->id, $gsmanager->id);
+        $roles['student']   = hsuforum_get_course_role_assignment_ids($coursecontext->id, $student->id);
+    } catch (Exception $e) {
+        print_r($e->getMessage);
+    }
+
+    return $roles;
+}
+
+/**
+ * Get role assignment ids in a course
+ * @param int $coursecontextid the course context id
+ * @param int $roleid the role id
+ *
+ * @return array role assignment ids
+ */
+function hsuforum_get_course_role_assignment_ids($coursecontextid, $roleid) {
+    global $DB;
+    $roleids = [];
+    try {
+        $roleidssql = "select userid from {role_assignments} where contextid = ? and roleid = ?";
+        $roleidsparams = array('context' => $coursecontextid, 'role' => $roleid);
+        $result = $DB->get_records_sql($roleidssql, $roleidsparams);
+
+        if (count($result)) {
+            $roleids = array_values(array_map(function($r) { return $r->userid; }, $result));
+        }
+    } catch (Exception $e) {
+        print_r($e->getMessage);
+    }
+
+    return $roleids;
+}

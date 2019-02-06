@@ -22,7 +22,7 @@
     </ion-card-content>
 </ion-card>
 
-<ion-card *ngFor="let discussion of CONTENT_OTHERDATA.discussions"
+<ion-card *ngFor="let discussion of CONTENT_OTHERDATA.discussions" [ngStyle]="{'border-left': '3px solid', 'border-color': discussion.rolecolor}"
     core-site-plugins-new-content 
     title={{discussion.name}}
     component="mod_hsuforum" 
@@ -38,7 +38,7 @@
         <ion-row class="row">
             <ion-col style="padding-left: 0">
                 <ion-note>
-                    <p>{{ discussion.umfirstname }} {{ discussion.umlastname }}</p>
+                    <p>{{ discussion.firstname }} {{ discussion.lastname }}</p>
                 </ion-note>
             </ion-col>
             <!-- Subscribe to a discussion -->

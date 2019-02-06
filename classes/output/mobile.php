@@ -30,6 +30,7 @@ class mobile {
         $forum   = $DB->get_record('hsuforum', array('id' => $cm->instance));
         $context = context_module::instance($cm->id);
         $course  = $DB->get_record('course', array('id' => $cm->course));
+        $courseroleassignments = hsuforum_get_course_roles_and_assignments($course->id);
 
     /// Basic Validation checks
         /** Checks for valid course module
@@ -101,6 +102,24 @@ class mobile {
                 $discussion->createdfiltered = strlen($stats['createdfiltered']) ?  get_string('posted', 'hsuforum') . " " . $stats['createdfiltered'] : false;
                 $discussion->latestpost = strlen($stats['latestpost']) ? $stats['latestpost'] : false;
 
+                // Getting role colors
+                switch (true) {
+                    case in_array($postuser->id, $courseroleassignments['htutor']):
+                    case in_array($postuser->id, $courseroleassignments['tutor']):
+                    case in_array($postuser->id, $courseroleassignments['gsmanager']):
+                        $discussion->rolecolor = '#333';
+                        break;
+                    case in_array($postuser->id, $courseroleassignments['smanager']):
+                        $discussion->rolecolor = '#f42684';
+                        break;
+                    case (in_array($postuser->id, $courseroleassignments['student'])) && ($postuser->id == $USER->id):
+                        $discussion->rolecolor = '#bbb';
+                        break;
+                    default:
+                        $discussion->rolecolor = "#fff";
+                        break;
+                }
+
                 // Setting discussion labels/strings
                 $discussion->viewslabel = ($stats['views'] == 0) || ($stats['views'] > 1) ? get_string('views', 'hsuforum') : get_string('view', 'hsuforum');
                 $discussion->contribslabel = ($stats['contribs'] == 0) || ($stats['contribs'] > 1) ? get_string('contributors', 'hsuforum') : get_string('contributor', 'hsuforum');
@@ -157,14 +176,15 @@ class mobile {
             throw new coding_exception('No discussion id provided');
         }
 
-        $discussion = $DB->get_record('hsuforum_discussions', array('id' => $args['discussionid']), '*', MUST_EXIST);
-        $course     = $DB->get_record('course', array('id' => $discussion->course), '*', MUST_EXIST);
-        $forum      = $DB->get_record('hsuforum', array('id' => $discussion->forum), '*', MUST_EXIST);
-        $cm         = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id, false, MUST_EXIST);
-        $modcontext = context_module::instance($cm->id);
-        $canreply   = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
-        $postreplystatus = [];
-        $unreadpostids = [];
+        $discussion            = $DB->get_record('hsuforum_discussions', array('id' => $args['discussionid']), '*', MUST_EXIST);
+        $course                = $DB->get_record('course', array('id' => $discussion->course), '*', MUST_EXIST);
+        $forum                 = $DB->get_record('hsuforum', array('id' => $discussion->forum), '*', MUST_EXIST);
+        $cm                    = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id, false, MUST_EXIST);
+        $modcontext            = context_module::instance($cm->id);
+        $canreply              = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
+        $courseroleassignments = hsuforum_get_course_roles_and_assignments($course->id);
+        $postreplystatus       = [];
+        $unreadpostids         = [];
 
     /// Getting firstpost and root replies for the firstpost
         // Note there can only be one post(when user created discussion) in a discussion and then additional posts are regarged as replies(api data structure reflects this concept). Very confusing...
@@ -238,6 +258,24 @@ class mobile {
             if (!in_array($reply->id, $readpostids)) {
                 $reply->unread = true;
                 array_push($unreadpostids, $reply->id);
+            }
+
+            // Getting role colors
+            switch (true) {
+                case in_array($postuser->id, $courseroleassignments['htutor']):
+                case in_array($postuser->id, $courseroleassignments['tutor']):
+                case in_array($postuser->id, $courseroleassignments['gsmanager']):
+                    $reply->rolecolor = '#333';
+                    break;
+                case in_array($postuser->id, $courseroleassignments['smanager']):
+                    $reply->rolecolor = '#f42684';
+                    break;
+                case (in_array($postuser->id, $courseroleassignments['student'])) && ($postuser->id == $USER->id):
+                    $reply->rolecolor = '#bbb';
+                    break;
+                default:
+                    $reply->rolecolor = "#fff";
+                    break;
             }
         }
 
