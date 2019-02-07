@@ -102,23 +102,37 @@
         </ion-card>
 
         <!-- Ribbon on firstpost -->
-        <ion-card style="margin-left: 0; width: 100%; padding: 10px">
-            <ion-note style="padding: 4px;">
-                <ion-icon class="icon icon-md ion-md-chatboxes"></ion-icon> 
-                <span><% replycount %> <% replylabel %></span>
-            </ion-note>
-            <ion-note style="padding: 4px;">
-                <ion-icon class="icon icon-md ion-md-contacts"></ion-icon> 
-                <span><% contribs %> <% contribslabel %></span>
-            </ion-note>
-            <ion-note style="padding: 4px;">
-                <ion-icon class="icon icon-md ion-md-eye"></ion-icon> 
-                <span><% views %> <% viewslabel %></span>
-            </ion-note>
-            <ion-note style="padding: 4px;">
-                <ion-icon class="icon icon-md ion-md-time"></ion-icon>
-                <core-format-text text="<% createdfiltered %>"></core-format-text>
-            </ion-note>
+        <ion-card style="margin-left: 0; width: 100%; padding: 10px 5px;">
+            <ion-row text-center>
+                <ion-col>
+                    <ion-note style="padding: 4px;">
+                        <ion-icon class="icon icon-md ion-md-chatboxes"></ion-icon> 
+                        <span><% replycount %> <% replylabel %></span>
+                    </ion-note>
+                </ion-col>
+
+                <ion-col>
+                    <ion-note style="padding: 4px;">
+                        <ion-icon class="icon icon-md ion-md-contacts"></ion-icon> 
+                        <span><% contribs %> <% contribslabel %></span>
+                    </ion-note>
+                </ion-col>
+
+                <ion-col>
+                    <ion-note style="padding: 4px;">
+                        <ion-icon class="icon icon-md ion-md-eye"></ion-icon> 
+                        <span><% views %> <% viewslabel %></span>
+                    </ion-note>
+                </ion-col>
+
+                <ion-col>
+                    <ion-note style="padding: 4px;">
+                        <ion-icon class="icon icon-md ion-md-time"></ion-icon>
+                        <core-format-text text="<% createdfiltered %>"></core-format-text>
+                    </ion-note>
+                </ion-col>
+
+            </ion-row>
         </ion-card>
     <%/firstpost%>
 

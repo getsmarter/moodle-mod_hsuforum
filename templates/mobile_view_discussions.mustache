@@ -90,7 +90,7 @@
     </ion-card-content>
 
     <!-- Footer -->
-    <ion-row class="row" text-center>
+    <ion-row class="row" text-center style="margin-bottom: 2px;">
         <%#showgroupsections%>
         <ion-col>
             <ion-note>
@@ -104,14 +104,6 @@
                 <ion-icon class="icon icon-md ion-md-chatboxes"></ion-icon> 
                 <span *ngIf="discussion.replies"> {{ discussion.replies }} {{ discussion.replylabel }}</span>
                 <span *ngIf="!discussion.replies"> 0 {{ discussion.replylabel }}</span>
-            </ion-note>
-        </ion-col>
-
-        <!-- Latest Post -->
-        <ion-col *ngIf="discussion.latestpost">
-            <ion-note>
-                <ion-icon class="icon icon-md ion-md-time"></ion-icon> 
-                <span [innerHTML]="discussion.latestpost"></span>
             </ion-note>
         </ion-col>
 
@@ -131,5 +123,14 @@
                 <span> {{ discussion.views }} {{ discussion.viewslabel }}</span>
             </ion-note>
         </ion-col>
+
+        <!-- Latest Post -->
+        <ion-col *ngIf="discussion.latestpost">
+            <ion-note>
+                <ion-icon class="icon icon-md ion-md-time"></ion-icon> 
+                <span [innerHTML]="discussion.latestpost"></span>
+            </ion-note>
+        </ion-col>
+
     </ion-row>
 </ion-card>
