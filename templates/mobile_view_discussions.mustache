@@ -65,19 +65,15 @@
                         </p>
                     </button>
                     <!-- New post icon -->
-                    <p *ngIf="discussion.unread" style="float: right;">
+                    <button *ngIf="discussion.unread" style="float: right; background: transparent; padding: 1px;">
+                        <p>
                             <ion-icon 
                                 style="color: #f42684;" 
                                 class="icon icon-md fa fa-circle fa-primary">
                             </ion-icon>
-                        <span style="
-                            color: #000;
-                            text-transform: uppercase;
-                            font-weight: 500;
-                            ">
-                            <% unreadlabel %>
-                        </span>
-                    </p>
+                            <span style="color: #000; text-transform: uppercase; font-weight: 500;"> <% unreadlabel %></span>
+                        </p>
+                    </button>
                 </ion-note>
             </ion-col>
         </ion-row>
