@@ -361,7 +361,7 @@ function get_discussion_footer_stats($discussion, $forumid){
     $stats = [];
 
     // Created
-    $stats['createdfiltered'] = hsuforum_relative_time($discussion->created);
+    $stats['createdfiltered'] = get_string('posttimeago', 'hsuforum', hsuforum_relative_time($discussion->created));
 
     // Latest post
     $latestpost = '';

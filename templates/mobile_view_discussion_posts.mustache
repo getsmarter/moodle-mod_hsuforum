@@ -12,7 +12,7 @@
             </ion-card-header>
 
             <ion-card-content padding-top class="card-content card-content-md">
-                <core-format-text singleline="false" ><p [innerHTML]="CONTENT_OTHERDATA.firstpost.message"></p></core-format-text>
+                <core-format-text singleline="false" text="{{CONTENT_OTHERDATA.firstpost.message}}"></core-format-text>
             </ion-card-content>
 
             <ion-row>
@@ -139,7 +139,8 @@
 
     <!-- REPLIES ON FIRSTPOST -->
     <ion-list>
-        <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies" id="cardid_{{reply.id}}" [ngStyle]="{'border-left': '3px solid', 'border-color': reply.rolecolor}">
+        <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies" id="cardid_{{reply.id}}" 
+            [ngStyle]="{'border-left': (reply.rolecolor) ? '3px solid': '0', 'border-color': reply.rolecolor}">
             <ion-card-header no-padding text-wrap class="card-header card-header-md">
                 <ion-item text-wrap>
                     <ion-avatar item-start>
@@ -176,7 +177,7 @@
             </ion-card-header>
 
             <ion-item>
-                <p [innerHTML]=reply.message></p>
+                <core-format-text text="{{reply.message}}"></core-format-text>
             </ion-item>
             <%#canreply%>
             <!-- Button to show reply box -->

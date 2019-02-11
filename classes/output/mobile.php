@@ -99,7 +99,7 @@ class mobile {
                 $stats = get_discussion_footer_stats($discussion, $forum->id);
                 $discussion->views = $stats['views'];
                 $discussion->contribs = $stats['contribs'];
-                $discussion->createdfiltered = strlen($stats['createdfiltered']) ?  get_string('posted', 'hsuforum') . " " . $stats['createdfiltered'] : false;
+                $discussion->createdfiltered = $stats['createdfiltered'];
                 $discussion->latestpost = strlen($stats['latestpost']) ? $stats['latestpost'] : false;
 
                 // Getting role colors
@@ -116,7 +116,7 @@ class mobile {
                         $discussion->rolecolor = '#bbb';
                         break;
                     default:
-                        $discussion->rolecolor = "#fff";
+                        $discussion->rolecolor = false;
                         break;
                 }
 
@@ -132,6 +132,7 @@ class mobile {
         // @todo - convert additional lables to an array then pass to context var if we get to many labels
         $discussionlabel = count($discussions) >= 2 || count($discussions) == 0 ? get_string('discussions', 'hsuforum') : get_string('discussion', 'hsuforum');
         $unreadlabel = get_string('unread', 'hsuforum');
+        $postedbylabel = get_string('postedby', 'hsuforum');
 
         // Build data array to output in the template
         $data = array(
@@ -141,6 +142,7 @@ class mobile {
             'courseid' => $course->id,
             'unreadlabel' => $unreadlabel,
             'discussionlabel' => $discussionlabel,
+            'postedbylabel' => $postedbylabel,
             'discussioncount' => count($discussions),
             'showgroupsections' => $showgroupsections,
         );
@@ -274,7 +276,7 @@ class mobile {
                     $reply->rolecolor = '#bbb';
                     break;
                 default:
-                    $reply->rolecolor = "#fff";
+                    $reply->rolecolor = false;
                     break;
             }
         }

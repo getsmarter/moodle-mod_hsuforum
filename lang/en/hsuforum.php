@@ -677,6 +677,7 @@ $string['like'] = 'Like';
 $string['liked'] = 'Liked';
 $string['unlike'] = 'Unlike';
 $string['replyfrom'] = 'Reply from';
+$string['postedby'] = 'Posted by: ';
 
 // Deprecated since Moodle 3.0.
 $string['subscribersto'] = 'Subscribers to "{$a->name}"';
