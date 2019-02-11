@@ -185,7 +185,6 @@ class mobile {
         $modcontext            = context_module::instance($cm->id);
         $canreply              = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
         $courseroleassignments = hsuforum_get_course_roles_and_assignments($course->id);
-        $postreplystatus       = [];
         $unreadpostids         = [];
 
     /// Getting firstpost and root replies for the firstpost
@@ -424,86 +423,122 @@ class mobile {
      * @return array HTML, javascript and otherdata
      */
     public static function view_post_replies($args) {
-        global $OUTPUT, $USER, $DB, $PAGE;
-
-        // Setting up init variables
-        $postid        = $args['postid'];
-        $discussion    = $DB->get_record('hsuforum_discussions', array('id' => $args['discussionid']), '*', MUST_EXIST);
-        $course        = $DB->get_record('course', array('id' => $discussion->course), '*', MUST_EXIST);
-        $forum         = $DB->get_record('hsuforum', array('id' => $discussion->forum), '*', MUST_EXIST);
-        $cm            = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id, false, MUST_EXIST);
-        $modcontext    = context_module::instance($cm->id);
-        $unreadpostids = [];
+        global $OUTPUT, $USER, $DB, $PAGE, $CFG;
 
         // Check for valid discussion id
-        if (!$args || (!isset($args['postid']) && !isset($args['discussionid'])) ) {
-            throw new coding_exception('No discussion id or post id provided');
+        if (!$args || !isset($args['discussionid'])) {
+            throw new coding_exception('No discussion id provided');
         }
 
-        // Getting replies for the post
+        $postid                = $args['postid'];
+        $discussion            = $DB->get_record('hsuforum_discussions', array('id' => $args['discussionid']), '*', MUST_EXIST);
+        $course                = $DB->get_record('course', array('id' => $discussion->course), '*', MUST_EXIST);
+        $forum                 = $DB->get_record('hsuforum', array('id' => $discussion->forum), '*', MUST_EXIST);
+        $cm                    = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id, false, MUST_EXIST);
+        $modcontext            = context_module::instance($cm->id);
+        $canreply              = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
+        $courseroleassignments = hsuforum_get_course_roles_and_assignments($course->id);
+        $unreadpostids         = [];
+
+    /// Getting replies for the post
         $repliesparams = array('p.parent' => $postid);
         $replies = hsuforum_get_all_discussion_posts($discussion->id, $repliesparams);
 
-        // Getting all nested unread ids for root post in reply
-        $readpostids = hsuforum_get_unread_nested_postids($discussion->id, $args['postid'], $USER->id);
+    /// Populating replies with virtual props needed for template
+        foreach ($replies as &$reply) {
+            // Avatar section
+            $postuser = hsuforum_extract_postuser($reply, $forum, context_module::instance($cm->id));
+            $postuser->user_picture->size = 100;
+            $reply->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
+            $reply->postuserid = $postuser->id;
 
-        // Populating replies with virtual props needed for template
-        if ($replies) {
-            foreach ($replies as &$reply) {
-                // Avatar section
-                $postuser = hsuforum_extract_postuser($reply, $forum, context_module::instance($cm->id));
-                $postuser->user_picture->size = 100;
-                $reply->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
-                $reply->postuserid = $postuser->id;
+            // Like section
+            $reply->likes = array_values(getpostlikes($reply));
+            $reply->likecount = count($reply->likes);
+            if ($reply->likecount) {
+                $reply->likedescription = getlikedescription($reply->likes);
+            }
+            $reply->created = hsuforum_relative_time($reply->created);
+            $reply->likelabel = userlikedpost($reply->id, $USER->id) ? get_string('unlike', 'hsuforum') : get_string('like', 'hsuforum');
+            $reply->textareaid = "textarea_id".$reply->id;
+            $reply->postformid = "postform_id".$reply->id;
 
-                // Like section
-                $reply->likes = array_values(getpostlikes($reply));
-                $reply->likecount = count($reply->likes);
-                if ($reply->likecount) {
-                    $reply->likedescription = getlikedescription($reply->likes);
-                }
+            // Blank reply post section
+            $reply->replybody = ' ';
 
-                // Check for unread reply posts and updating the unreadpostids array
-                if (!in_array($reply->id, $readpostids)) {
-                    $reply->unread = true;
-                    array_push($unreadpostids, $reply->id);
-                }
+            // Check for unread reply posts and updating the unreadpostids array
+            if (!in_array($reply->id, $readpostids)) {
+                $reply->unread = true;
+                array_push($unreadpostids, $reply->id);
+            }
 
-                // Various
-                $reply->likelabel = userlikedpost($reply->id, $USER->id) ? get_string('unlike', 'hsuforum') : get_string('like', 'hsuforum');
-                $reply->created = hsuforum_relative_time($reply->created);
+            // Getting role colors
+            switch (true) {
+                case in_array($postuser->id, $courseroleassignments['htutor']):
+                case in_array($postuser->id, $courseroleassignments['tutor']):
+                case in_array($postuser->id, $courseroleassignments['gsmanager']):
+                    $reply->rolecolor = '#333';
+                    break;
+                case in_array($postuser->id, $courseroleassignments['smanager']):
+                    $reply->rolecolor = '#f42684';
+                    break;
+                case (in_array($postuser->id, $courseroleassignments['student'])) && ($postuser->id == $USER->id):
+                    $reply->rolecolor = '#bbb';
+                    break;
+                default:
+                    $reply->rolecolor = false;
+                    break;
             }
         }
 
-        // Marking unread posts as read
-        hsuforum_tp_add_read_record($USER->id, $args['postid']);
+    /// Getting tagable users
+        $tagusers = [];
+        $tagusers = get_allowed_tag_users($forum->id, $discussion->groupid, 1);
+        $tagusers = ($tagusers->result && count($tagusers->content)) ? build_allowed_tag_users($tagusers->content) : [];
+        $showtaguserul = count($tagusers) ? true : false;
+
+    /// Getting javascript file for injection
+        $tagusersfile = $CFG->dirroot . '/mod/hsuforum/mention_users.js';
+        $handle = fopen($tagusersfile, "r");
+        $tagusersjs = fread($handle, filesize($tagusersfile));
+        fclose($handle);
+
+    /// Setting additional labels
+        // @todo - convert additional lables to an array then pass to context var if we get to many labels
+        $replylabel = count($replies) >= 2 || count($replies) == 0 ? get_string('replies', 'hsuforum') : get_string('reply', 'hsuforum');
+        $replyfromlabel = get_string('replyfrom', 'hsuforum');
+        $unreadlabel = get_string('unread', 'hsuforum');
+
+    /// Marking unread posts as read
+        hsuforum_tp_add_read_record($USER->id, $postid);
         if (count($unreadpostids)) {
             hsuforum_mark_posts_read($USER, $unreadpostids);
         }
 
-        // Setting additional labels
-        // @todo - convert additional lables to an array then pass to context var if we get to many labels
-        $unreadlabel = get_string('unread', 'hsuforum');
-        $replyfromlabel = get_string('replyfrom', 'hsuforum');
-
         $data = array(
             'courseid'       => $course->id,
+            'cmid'           => $cm->id,
+            'discussionid'   => $discussion->id,
             'replycount'     => count($replies),
-            'replylabel'     => count($replies) >= 2 || count($replies) == 0 ? 'replies' : 'reply',
-            'unreadlabel'    => $unreadlabel,
+            'replylabel'     => $replylabel,
             'replyfromlabel' => $replyfromlabel,
+            'unreadlabel'    => $unreadlabel,
+            'canreply'       => $cm->groupmode == 0 ? true : $canreply,
+            'showtaguserul'  => $showtaguserul,
+            'tagusers'       => $tagusers,
         );
 
         return array(
             'templates' => array(
                 array(
-                    'id' => 'main',
+                    'id'   => 'main',
                     'html' => $OUTPUT->render_from_template('mod_hsuforum/mobile_view_post_replies', $data),
                 ),
             ),
-            'javascript' => '',
-            'otherdata' => array(
-                'replies' => json_encode(array_values($replies)),
+            'javascript'        => $tagusersjs,
+            'otherdata'         => array(
+                'replies'       => json_encode(array_values($replies)),
+                'sectionbody'   => '',
             ),
             'files' => ''
         );

@@ -5,7 +5,10 @@
             <span><% replycount %> <% replylabel %> for post</span>
         </p>
     </ion-list-header>
-    <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies">
+
+<!-- REPLIES ON FIRSTPOST -->
+    <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies" id="cardid_{{reply.id}}" 
+        [ngStyle]="{'border-left': (reply.rolecolor) ? '3px solid': '0', 'border-color': reply.rolecolor}">
         <ion-card-header no-padding text-wrap class="card-header card-header-md">
             <ion-item text-wrap>
                 <ion-avatar item-start>
@@ -42,11 +45,21 @@
         </ion-card-header>
 
         <ion-item>
-            <core-format-text singleline="false" text="{{reply.message}}"></core-format-text>
+            <core-format-text text="{{reply.message}}"></core-format-text>
         </ion-item>
+        <%#canreply%>
+        <!-- Button to show reply box -->
+        <button
+            ion-button small clear style="float: left;" class="js_reply"
+            (click)="reply.showform = true"
+            onclick="window.activate_mention_users(event)">
+            <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
+            <span id="{{reply.id}}">Reply</span>
+        </button>
+        <%/canreply%>
         <!-- Like button -->
         <button
-            ion-button small clear
+            ion-button small clear style="padding: 0"
             core-site-plugins-call-ws 
             name="mod_hsuforum_like_post" 
             [params]="{postid: reply.id}"
@@ -57,11 +70,57 @@
             {{reply.likelabel}}
         </button>
         <!-- Who liked section -->
-            <ion-item *ngIf="reply.likedescription">
-                <p style="color: #2f6473; background-color: #def2f8; border-color: #d1edf6; padding: 3px 0px;">
-                    {{reply.likedescription}}
-                </p>
-            </ion-item>
+        <ion-item *ngIf="reply.likedescription">
+            <p style="color: #2f6473; background-color: #def2f8; border-color: #d1edf6; padding: 3px 0px;">
+                {{reply.likedescription}}
+            </p>
+        </ion-item>
+        <!-- Form to reply to post -->
+        <%#canreply%>
+        <ion-card *ngIf="reply.showform">
+            <form #f="ngForm" id="{{reply.postformid}}">
+                <div id="{{reply.textareaid}}"
+                    style="min-height: 200px;"
+                    contenteditable="true"
+                    [innerHTML]=CONTENT_OTHERDATA.replybody 
+                    (keyup)="reply.replybody = $event.target.innerHTML">
+                </div>
+            </form>
+            <!-- Form submit button -->
+            <button
+                ion-button small clear style="float: left;" type="submit" core-site-plugins-call-ws 
+                name="mod_hsuforum_add_discussion_post" 
+                *ngIf="reply.showform"
+                [disabled]="reply.replybody <= 3"
+                [params]="{postid: reply.id, subject: 'RE:' + reply.subject, message: reply.replybody}" 
+                [preSets]="{getFromCache: 0, saveToCache: 0}" 
+                successMessage 
+                refreshOnSuccess="true" 
+                (click)="reply.showform = true"
+                >
+                Submit reply
+            </button>
+            <!-- Mention user button -->
+            <button
+                ion-button class="mention-user" small clear style="float: left;">
+                Mention User
+            </button>
+            <!-- Cancel button -->
+            <button
+                ion-button class="form_cancel" small clear style="float: right;"
+                (click)="reply.showform = false">
+                Cancel
+            </button>
+            <!-- Mention user search element -->
+            <div class="searchfilter" style="display:none;">
+                <ion-searchbar></ion-searchbar>
+                <ion-list class="filter_list" style="max-height:150px; overflow-y: scroll;">
+                    <%#tagusers%>
+                        <ion-item id="<% id %>"><% name %></ion-item>
+                    <%/tagusers%>
+                </ion-list>
+            </div>
+        </ion-card>
+        <%/canreply%>
     </ion-card>
-
 </ion-list>

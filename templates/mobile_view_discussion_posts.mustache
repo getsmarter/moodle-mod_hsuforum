@@ -124,14 +124,14 @@
                         <span><% views %> <% viewslabel %></span>
                     </ion-note>
                 </ion-col>
-
-                <ion-col>
-                    <ion-note style="padding: 4px;">
-                        <ion-icon class="icon icon-md ion-md-time"></ion-icon>
-                        <core-format-text text="<% createdfiltered %>"></core-format-text>
-                    </ion-note>
-                </ion-col>
-
+                <%#createdfiltered%>
+                    <ion-col>
+                        <ion-note style="padding: 4px;">
+                            <ion-icon class="icon icon-md ion-md-time"></ion-icon>
+                            <core-format-text text="<% createdfiltered %>"></core-format-text>
+                        </ion-note>
+                    </ion-col>
+                <%/createdfiltered%>
             </ion-row>
         </ion-card>
     <%/firstpost%>
@@ -204,7 +204,7 @@
             <!-- View reply button -->
             <button
                 ion-button small clear style="float: right;" core-site-plugins-new-content
-                title="Replies for {{reply.message}}"
+                title="Replies to {{reply.message}}"
                 component="mod_hsuforum" 
                 method="view_post_replies"
                 [args]="{'postid':reply.id, 'discussionid':reply.discussion}">
