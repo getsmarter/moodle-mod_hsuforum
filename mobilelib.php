@@ -393,6 +393,52 @@ function get_discussion_footer_stats($discussion, $forumid){
 }
 
 /**
+ * Function to return the stat counts for the discusssion banner element
+ * Reason for this one vs footer is that the $discussion object in the footer function has additional props 
+ * that moodle bundled in the query. The $discussion object in the banner one does not have this and we need to 
+ * build another stat array for this view.
+ * @param object $discussion the discussion
+ * @param object $firstpost the firstpost for the discussion
+ * @param int $forumid the forum id
+ * 
+ * @return array the stats for the banner
+ */
+function get_discussion_banner_stats($discussion, $firstpost, $forumid){
+    global $DB;
+    $stats = [];
+
+    // Created
+    $stats['createdfiltered'] = get_string('posttimeago', 'hsuforum', hsuforum_relative_time($firstpost->created));
+
+    // Latest post
+    $stats['latestpost'] = hsuforum_relative_time($discussion->timemodified);
+
+    // Replies
+    $stats['replies'] = hsuforum_count_replies($firstpost, $children=true);
+
+    // Getting the contirbutors
+    $contribsql = "select count(distinct(userid)) as contributes from {hsuforum_posts} where discussion = ?";
+    $contribparams = array('discussion' => $discussion->id);
+
+    if ($c = $DB->get_record_sql($contribsql, $contribparams)) {
+        $stats['contribs'] = $c->contributes;
+    } else {
+        $stats['contribs'] = 0;
+    }
+
+    // Getting the views
+    $viewssql = "select count(userid) as views from {hsuforum_read} where forumid = ? and discussionid = ?";
+    $viewsparams = array('forumid' => $forumid, 'discussionid' => $discussion->id);
+    if ($v = $DB->get_record_sql($viewssql, $viewsparams)) {
+        $stats['views'] = $v->views;
+    } else {
+        $stats['views'] = 0;
+    }
+
+    return $stats;
+}
+
+/**
  * Check for discussion subscription
  * @param int $discussionid the discussion id
  * @param int $userid the user id

@@ -107,7 +107,7 @@
                 <ion-col>
                     <ion-note style="padding: 4px;">
                         <ion-icon class="icon icon-md ion-md-chatboxes"></ion-icon> 
-                        <span><% replycount %> <% replylabel %></span>
+                        <span><% replies %> <% replylabel %></span>
                     </ion-note>
                 </ion-col>
 
@@ -128,7 +128,7 @@
                     <ion-col>
                         <ion-note style="padding: 4px;">
                             <ion-icon class="icon icon-md ion-md-time"></ion-icon>
-                            <core-format-text text="<% createdfiltered %>"></core-format-text>
+                            <core-format-text text="<% latestpost %>"></core-format-text>
                         </ion-note>
                     </ion-col>
                 <%/createdfiltered%>
@@ -204,7 +204,7 @@
             <!-- View reply button -->
             <button
                 ion-button small clear style="float: right;" core-site-plugins-new-content
-                title="Replies to {{reply.message}}"
+                title="Reply to {{reply.message}}"
                 component="mod_hsuforum" 
                 method="view_post_replies"
                 [args]="{'postid':reply.id, 'discussionid':reply.discussion}">

@@ -217,10 +217,11 @@ class mobile {
             }
 
             // Getting firstpost ribbon stats
-            $stats = get_discussion_footer_stats($firstpost, $forum->id);
-            $firstpost->replies = get_post_replies($discussion->id, $firstpost->id);
+            $stats = get_discussion_banner_stats($discussion, $firstpost, $forum->id);
+            $firstpost->replies = $stats['replies'];
             $firstpost->views = $stats['views'];
             $firstpost->createdfiltered = strlen($stats['createdfiltered']) ? $stats['createdfiltered'] : false;
+            $firstpost->latestpost = strlen($stats['latestpost']) ? $stats['latestpost'] : false;
             $firstpost->contribs = $stats['contribs'];
 
             // Set ribbon labels

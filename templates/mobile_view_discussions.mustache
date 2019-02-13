@@ -51,6 +51,15 @@
                         <ion-note><% postedbylabel %> {{ discussion.firstname }} {{ discussion.lastname }}</ion-note>
                     </ion-row>
 
+                    <!-- Group listing section -->
+                    <%#showgroupsections%>
+                        <ion-row style="font-weight: initial">
+                            <ion-note>
+                                <ion-icon class="icon icon-md ion-md-people"></ion-icon> {{ discussion.groupname }}
+                            </ion-note>
+                        </ion-row>
+                    <%/showgroupsections%>
+
                     <!-- New post section -->
                     <ion-row *ngIf="discussion.unread">
                         <ion-note>
@@ -93,15 +102,6 @@
                             </p>
                         </button>
                     </ion-row>
-
-                    <!-- Group listing section -->
-                    <%#showgroupsections%>
-                        <ion-row style="font-weight: initial">
-                            <ion-note>
-                                <ion-icon class="icon icon-md ion-md-people"></ion-icon> {{ discussion.groupname }}
-                            </ion-note>
-                        </ion-row>
-                    <%/showgroupsections%>
 
                 </ion-item>
             </ion-row>
