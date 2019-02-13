@@ -426,8 +426,8 @@ class mobile {
         global $OUTPUT, $USER, $DB, $PAGE, $CFG;
 
         // Check for valid discussion id
-        if (!$args || !isset($args['discussionid'])) {
-            throw new coding_exception('No discussion id provided');
+        if (!$args || !isset($args['postid'])) {
+            throw new coding_exception('No post id provided');
         }
 
         $postid                = $args['postid'];
@@ -439,6 +439,9 @@ class mobile {
         $canreply              = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
         $courseroleassignments = hsuforum_get_course_roles_and_assignments($course->id);
         $unreadpostids         = [];
+
+    /// Getting all nested unread ids for root post in discussion
+        $readpostids = hsuforum_get_unread_nested_postids($discussion->id, $postid, $USER->id);
 
     /// Getting replies for the post
         $repliesparams = array('p.parent' => $postid);
