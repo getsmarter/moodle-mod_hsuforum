@@ -204,7 +204,7 @@
             <!-- View reply button -->
             <button
                 ion-button small clear style="float: right;" core-site-plugins-new-content
-                title="Reply to {{reply.message}}"
+                title="Reply to <% discussionname %>"
                 component="mod_hsuforum" 
                 method="view_post_replies"
                 [args]="{'postid':reply.id, 'discussionid':reply.discussion}">

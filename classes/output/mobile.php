@@ -314,6 +314,7 @@ class mobile {
             'courseid'       => $course->id,
             'cmid'           => $cm->id,
             'discussionid'   => $discussion->id,
+            'discussionname' => $discussion->name,
             'replycount'     => count($replies),
             'replylabel'     => $replylabel,
             'replyfromlabel' => $replyfromlabel,
