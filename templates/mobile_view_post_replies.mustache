@@ -85,31 +85,41 @@
                     (keyup)="reply.replybody = $event.target.innerHTML">
                 </div>
             </form>
-            <!-- Form submit button -->
-            <button
-                ion-button small clear style="float: left;" type="submit" core-site-plugins-call-ws 
-                name="mod_hsuforum_add_discussion_post" 
-                *ngIf="reply.showform"
-                [disabled]="reply.replybody <= 3"
-                [params]="{postid: reply.id, subject: 'RE:' + reply.subject, message: reply.replybody}" 
-                [preSets]="{getFromCache: 0, saveToCache: 0}" 
-                successMessage 
-                refreshOnSuccess="true" 
-                (click)="reply.showform = true"
-                >
-                Submit reply
-            </button>
-            <!-- Mention user button -->
-            <button
-                ion-button class="mention-user" small clear style="float: left;">
-                Mention User
-            </button>
-            <!-- Cancel button -->
-            <button
-                ion-button class="form_cancel" small clear style="float: right;"
-                (click)="reply.showform = false">
-                Cancel
-            </button>
+            <ion-row>
+                <!-- Form submit button -->
+                <ion-col>
+                    <button
+                        ion-button small clear style="float: left;" type="submit" core-site-plugins-call-ws 
+                        name="mod_hsuforum_add_discussion_post" 
+                        *ngIf="reply.showform"
+                        [disabled]="reply.replybody <= 3"
+                        [params]="{postid: reply.id, subject: 'RE:' + reply.subject, message: reply.replybody}" 
+                        [preSets]="{getFromCache: 0, saveToCache: 0}" 
+                        successMessage 
+                        refreshOnSuccess="true" 
+                        (click)="reply.showform = true"
+                        >
+                        Submit reply
+                    </button>
+                </ion-col>
+
+                <!-- Mention user button -->
+                <ion-col>
+                    <button
+                        ion-button class="mention-user" small clear style="float: left;">
+                        <ion-icon style="margin-right: 2px;" class="icon-md ion-md-at"></ion-icon>Mention User
+                    </button>
+                </ion-col>
+
+                <!-- Cancel button -->
+                <ion-col>
+                    <button
+                        ion-button class="form_cancel" small clear style="float: right;"
+                        (click)="reply.showform = false">
+                        Cancel
+                    </button>
+                </ion-col>
+            </ion-row>
             <!-- Mention user search element -->
             <div class="searchfilter" style="display:none;">
                 <ion-searchbar></ion-searchbar>

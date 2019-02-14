@@ -181,7 +181,7 @@ function mention_user(user_element, ion_card) {
 
     // Focus element
     let focusnode = mention_textarea.querySelector('span#last_insert');
-    setCaret(focusnode, 1);
+    setCaret(focusnode, mention_textarea, 1);
     mention_textarea.querySelector('span#last_insert').removeAttribute('id');
 
     // Trigger key up to for template bind that is happening ((keyup)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML")
@@ -224,13 +224,14 @@ function replaceSelectionWithHtml(html, ion_card) {
     }
 }
 
-function setCaret(el, pos) {
+// Function to set caret and focus
+function setCaret(caret_element, focus_element, pos) {
     let range = document.createRange();
     let sel = window.getSelection();
 
-    range.setStart(el, pos);
+    range.setStart(caret_element, pos);
     range.collapse(true);
     sel.removeAllRanges();
     sel.addRange(range);
-    el.focus();
+    focus_element.focus({preventScroll:false});
 }
