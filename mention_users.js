@@ -63,6 +63,7 @@ function setup_event_listeners(ion_card, postref) {
             mention_user_button.addEventListener('touchstart', e => {
                 reset_filter_elements(postref);
                 toggle_mention_user_element(ion_card);
+                replaceSelectionWithHtml("<span id=caret_pos></span>", ion_card);
                 window.filterSearch[postref].search_input.value = " ";
             })
 
@@ -157,15 +158,37 @@ function toggle_mention_user_element(ion_card) {
 }
 
 
-// Function toggle the whole mention user element
-function mention_user(user_element, ion_card, postref) {
+/**
+ * Function to mention a user.
+ * @param HTMLObjectElement user_element
+ * @param HTMLObjectElement ion_card
+ * 
+ * How this works:
+ * a) The text area will already have a placeholder span element with id 'caret_pos' that we can target (replaceSelectionWithHtml())
+ * b) We will replace the caret_pos span to the link string.
+ * c) With the replacement to the new mentioned user link we will add a trailing span with id 'last_insert'
+ * d) The trailing span 'last_insert' will be used to position caret and focus on the element.
+ */
+function mention_user(user_element, ion_card) {
     let profile_string = user_element.querySelector('ion-label').innerHTML;
-    let link_string = '<a href=mobileappuser/view.php?id=' + user_element.id + ' userid="' + user_element.id + '">' + profile_string + '</a>';
+    let link_string = '<a href=mobileappuser/view.php?id=' + user_element.id + ' userid="' + user_element.id + '">' + profile_string + '</a><span id="last_insert">&nbsp;</span>';
     let mention_textarea = ion_card.querySelector('div[contenteditable="true"]');
-    let textarea = window.filterSearch[postref].textarea == undefined ? "Mentioned" : window.filterSearch[postref].textarea;
 
-    mention_textarea.innerHTML = textarea + " " + link_string;
-    triggerEvent(mention_textarea, 'keyup')
+    // Replace dummy pan with link_string
+    let regex = /<span id="caret_pos"><\/span>/;
+    let new_text = mention_textarea.innerHTML.replace(regex, link_string);
+    mention_textarea.innerHTML = new_text;
+
+    // Focus element
+    let focusnode = mention_textarea.querySelector('span#last_insert');
+    setCaret(focusnode, 1);
+    mention_textarea.querySelector('span#last_insert').removeAttribute('id');
+
+    // Trigger key up to for template bind that is happening ((keyup)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML")
+    triggerEvent(mention_textarea, 'keyup');
+
+    // Close mention user element
+    toggle_mention_user_element(ion_card);
 }
 
 // Function to trigger events
@@ -180,3 +203,34 @@ function triggerEvent(el, type){
          el.fireEvent('on'+e.eventType, e);
      }
  }
+
+ // Function to insert dummy span with id to track where to insert new html
+function replaceSelectionWithHtml(html, ion_card) {
+    let mention_textarea = ion_card.querySelector('div[contenteditable="true"]');
+    let range;
+
+    if (mention_textarea.innerHTML.length) {
+        range = window.getSelection().getRangeAt(0);
+        range.deleteContents();
+        let div = document.createElement("div");
+        div.innerHTML = html;
+        let frag = document.createDocumentFragment(), child;
+        while ( (child = div.firstChild) ) {
+            frag.appendChild(child);
+        }
+        range.insertNode(frag);
+    } else {
+        mention_textarea.innerHTML = html;
+    }
+}
+
+function setCaret(el, pos) {
+    let range = document.createRange();
+    let sel = window.getSelection();
+
+    range.setStart(el, pos);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    el.focus();
+}
