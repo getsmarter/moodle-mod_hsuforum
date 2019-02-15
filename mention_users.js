@@ -182,6 +182,10 @@ function mention_user(user_element, ion_card) {
     // Focus element
     let focusnode = mention_textarea.querySelector('span#last_insert');
     setCaret(focusnode, mention_textarea, 1);
+    // Set touch event back on the focusnode
+    var touchEvent = new Event('touchstart');
+    focusnode.dispatchEvent(touchEvent);
+    // Deleting node identifier
     mention_textarea.querySelector('span#last_insert').removeAttribute('id');
 
     // Trigger key up to for template bind that is happening ((keyup)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML")
