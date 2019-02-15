@@ -187,9 +187,10 @@
                 </ion-item>
             </ion-card-header>
 
-            <ion-item>
-                <core-format-text text="{{reply.message}}"></core-format-text>
-            </ion-item>
+            <ion-card-content>
+                <core-format-text maxHeight="127" fullOnClick="true" text="{{reply.message}}"></core-format-text>
+            </ion-card-content>
+            
             <%#canreply%>
             <!-- Button to show reply box -->
             <button
