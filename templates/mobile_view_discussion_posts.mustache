@@ -1,4 +1,35 @@
 {{=<% %>=}}
+<ion-card>
+<h3>Ios Test block1</h3>
+<form #f="ngForm" id="postformid_500">
+    <div id="textarea_id500"
+        style="min-height: 100px;"
+        contenteditable="true">
+    </div>
+</form>
+<hr>
+<h3>Ios Test block2</h3>
+<form #f="ngForm" id="postformid_501">
+    <div id="textarea_id501"
+        style="min-height: 100px;"
+        contenteditable="true"
+        [innerHTML]=CONTENT_OTHERDATA.firstpostreplybody1 
+        (keypress)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML">
+    </div>
+</form>
+<hr>
+<h3>Ios Test block3</h3>
+<form #f="ngForm" id="postformid_502">
+    <div id="textarea_id502"
+        style="min-height: 100px;"
+        contenteditable="true"
+        [innerHTML]=CONTENT_OTHERDATA.firstpostreplybody1 
+        (keypress)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML"
+        (keyup)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML">
+    </div>
+</form>
+
+</ion-card>
     <%#firstpost%>
         <ion-card id="cardid_<% id %>">
             <ion-card-header no-padding text-wrap class="card-header card-header-md">
@@ -61,6 +92,7 @@
                             style="min-height: 200px;"
                             contenteditable="true"
                             [innerHTML]=CONTENT_OTHERDATA.firstpostreplybody 
+                            (keypress)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML"
                             (keyup)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML">
                         </div>
                     </form>
