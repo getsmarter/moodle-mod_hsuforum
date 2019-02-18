@@ -1,6 +1,14 @@
 {{=<% %>=}}
 <ion-card>
-<h3>Ios Test block1</h3>
+<h3>Ios Test block1 - blank content editable with styling fix</h3>
+<form #f="ngForm" id="postformid_500">
+    <div id="textarea_id500"
+        style="min-height: 100px; -webkit-user-select: text; user-select: text;"
+        contenteditable="true">
+    </div>
+</form>
+<hr>
+<h3>Ios Test block1 - blank content editable</h3>
 <form #f="ngForm" id="postformid_500">
     <div id="textarea_id500"
         style="min-height: 100px;"
@@ -8,7 +16,7 @@
     </div>
 </form>
 <hr>
-<h3>Ios Test block2</h3>
+<h3>Ios Test block2 - with keypress event</h3>
 <form #f="ngForm" id="postformid_501">
     <div id="textarea_id501"
         style="min-height: 100px;"
@@ -18,7 +26,7 @@
     </div>
 </form>
 <hr>
-<h3>Ios Test block3</h3>
+<h3>Ios Test block3 - with keypress and keyup event</h3>
 <form #f="ngForm" id="postformid_502">
     <div id="textarea_id502"
         style="min-height: 100px;"
@@ -89,7 +97,7 @@
                 <ion-card *ngIf="CONTENT_OTHERDATA.showform_<% id %>">
                     <form #f="ngForm" id="postformid_<% id %>">
                         <div id="textarea_id<% id %>"
-                            style="min-height: 200px;"
+                            style="min-height: 200px; -webkit-user-select: text; user-select: text;"
                             contenteditable="true"
                             [innerHTML]=CONTENT_OTHERDATA.firstpostreplybody 
                             (keypress)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML"
