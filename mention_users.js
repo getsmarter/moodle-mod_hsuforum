@@ -89,7 +89,7 @@ function setup_event_listeners(ion_card, postref) {
             let filter_elements = get_filter_elements(ion_card, postref);
             if (filter_elements.length) {
                 filter_elements.forEach( filter_element => {
-                    filter_element.addEventListener('touchstart', e => {
+                    filter_element.addEventListener('click', e => {
                         mention_user(filter_element, ion_card, postref);
                     });
                 });
