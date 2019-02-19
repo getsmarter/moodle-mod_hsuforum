@@ -12,10 +12,11 @@
                 <p>Message</p>
                 <br>
                 <div id="textarea_id1"
-                    style="min-height: 200px;"
+                    style="min-height: 200px; -webkit-user-select: text; user-select: text;"
                     contenteditable="true"
                     [innerHTML]=CONTENT_OTHERDATA.sectioncontent 
-                    (keyup)="CONTENT_OTHERDATA.discussionbody = $event.target.innerHTML">
+                    (keyup)="CONTENT_OTHERDATA.discussionbody = $event.target.innerHTML"
+                    (keypress)="CONTENT_OTHERDATA.discussionbody = $event.target.innerHTML">
                 </div>
                 <!-- Mention user button -->
                 <button class="mention-user" ion-button small clear style="float: left;">

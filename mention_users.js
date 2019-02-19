@@ -50,7 +50,6 @@ function init(ref) {
 function setup_event_listeners(ion_card, postref) {
     setTimeout(() => { 
     // Track textarea changes in data structure
-    // @TODO - Setup caret tracking if needed. For now append the text
         let textarea = (ion_card !== null) ? ion_card.querySelector('div[contenteditable="true"]') : null;
         if (textarea !== null) {
                 textarea.addEventListener("input", e => { 
@@ -181,12 +180,7 @@ function mention_user(user_element, ion_card) {
 
     // Focus element
     let focusnode = mention_textarea.querySelector('span#last_insert');
-    setCaret(focusnode, mention_textarea, 1);
-
-    // @ TODO will rework this on new ticket
-    // Set touch event back on the focusnode
-    // var touchEvent = new Event('touchstart');
-    // focusnode.dispatchEvent(touchEvent);
+    setCaret(focusnode, mention_textarea, 0);
 
     // Deleting node identifier
     mention_textarea.querySelector('span#last_insert').removeAttribute('id');

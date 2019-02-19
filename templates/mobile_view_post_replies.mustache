@@ -80,10 +80,11 @@
         <ion-card *ngIf="reply.showform">
             <form #f="ngForm" id="{{reply.postformid}}">
                 <div id="{{reply.textareaid}}"
-                    style="min-height: 200px;"
+                    style="min-height: 200px; -webkit-user-select: text; user-select: text;"
                     contenteditable="true"
                     [innerHTML]=CONTENT_OTHERDATA.replybody 
-                    (keyup)="reply.replybody = $event.target.innerHTML">
+                    (keyup)="reply.replybody = $event.target.innerHTML"
+                    (keypress)="reply.replybody = $event.target.innerHTML">
                 </div>
             </form>
             <ion-row text-center>
