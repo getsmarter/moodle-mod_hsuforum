@@ -6,6 +6,7 @@ require_once(dirname(dirname(__DIR__)).'/lib.php');
 require_once(dirname(dirname(__DIR__)).'/mobilelib.php');
 
 use context_module;
+use moodle_url;
 use local_mention_users_observer;
 /**
  * The mod_hsuforum mobile app compatibility.
@@ -236,9 +237,11 @@ class mobile {
             $firstpost->files = [];
             foreach ($filesraw as $file) {
                 $fileobj = new \stdClass;
+                $fileobj->id = $file->get_itemid();
                 $fileobj->filename = $file->get_filename();
                 $fileobj->filepath = $file->get_filepath();
-                $fileobj->fileurl = $file->get_source();
+                $fileobj->fileurl = moodle_url::make_pluginfile_url(
+                    $modcontext->id, 'mod_hsuforum', "attachment", $fileobj->id, '/', $fileobj->filename)->out(false);
                 $fileobj->filesize = $file->get_filesize();
                 $fileobj->timemodified = $file->get_timemodified();
                 $fileobj->mimetype = $file->get_mimetype();
@@ -302,9 +305,11 @@ class mobile {
             $reply->files = [];
             foreach ($filesraw as $file) {
                 $fileobj = new \stdClass;
+                $fileobj->id = $file->get_itemid();
                 $fileobj->filename = $file->get_filename();
                 $fileobj->filepath = $file->get_filepath();
-                $fileobj->fileurl = $file->get_source();
+                $fileobj->fileurl = moodle_url::make_pluginfile_url(
+                    $modcontext->id, 'mod_hsuforum', "attachment", $fileobj->id, '/', $fileobj->filename)->out(false);
                 $fileobj->filesize = $file->get_filesize();
                 $fileobj->timemodified = $file->get_timemodified();
                 $fileobj->mimetype = $file->get_mimetype();
