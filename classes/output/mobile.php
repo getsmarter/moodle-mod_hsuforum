@@ -186,6 +186,7 @@ class mobile {
         $canreply              = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
         $courseroleassignments = hsuforum_get_course_roles_and_assignments($course->id);
         $unreadpostids         = [];
+        $attachmentclass       = new \mod_hsuforum\attachments($forum, $modcontext);
 
     /// Getting firstpost and root replies for the firstpost
         // Note there can only be one post(when user created discussion) in a discussion and then additional posts are regarged as replies(api data structure reflects this concept). Very confusing...
@@ -229,6 +230,22 @@ class mobile {
             $firstpost->contribslabel = ($stats['contribs'] == 0) || ($stats['contribs'] > 1) ? get_string('contributors', 'hsuforum') : get_string('contributor', 'hsuforum');
             $firstpost->replylabel = ($firstpost->replies == 0) || ($firstpost->replies > 1) ? get_string('replies', 'hsuforum') : get_string('reply', 'hsuforum');
             $firstpost->likelabel = userlikedpost($firstpost->id, $USER->id) ? get_string('unlike', 'hsuforum') : get_string('like', 'hsuforum');
+
+            // Getting attachments files
+            $filesraw = $attachmentclass->get_attachments($firstpost->id);
+            $firstpost->files = [];
+            foreach ($filesraw as $file) {
+                $fileobj = new \stdClass;
+                $fileobj->filename = $file->get_filename();
+                $fileobj->filepath = $file->get_filepath();
+                $fileobj->fileurl = $file->get_source();
+                $fileobj->filesize = $file->get_filesize();
+                $fileobj->timemodified = $file->get_timemodified();
+                $fileobj->mimetype = $file->get_mimetype();
+                $fileobj->isexternalfile = $file->get_repository_type();
+    
+                array_push($firstpost->files, $fileobj);
+            }
         }
 
         $repliesparams = array('p.parent' => $discussion->firstpost);
@@ -278,6 +295,22 @@ class mobile {
                 default:
                     $reply->rolecolor = false;
                     break;
+            }
+
+            // Getting attachments files
+            $filesraw = $attachmentclass->get_attachments($reply->id);
+            $reply->files = [];
+            foreach ($filesraw as $file) {
+                $fileobj = new \stdClass;
+                $fileobj->filename = $file->get_filename();
+                $fileobj->filepath = $file->get_filepath();
+                $fileobj->fileurl = $file->get_source();
+                $fileobj->filesize = $file->get_filesize();
+                $fileobj->timemodified = $file->get_timemodified();
+                $fileobj->mimetype = $file->get_mimetype();
+                $fileobj->isexternalfile = $file->get_repository_type();
+    
+                array_push($reply->files, $fileobj);
             }
         }
 

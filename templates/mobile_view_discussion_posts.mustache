@@ -13,6 +13,16 @@
 
             <ion-card-content padding-top class="card-content card-content-md">
                 <core-format-text singleline="false" text="{{CONTENT_OTHERDATA.firstpost.message}}"></core-format-text>
+
+            <!-- Uploaded files -->
+            <%#files%>
+                <core-file
+                    [file]="{fileurl: '<% fileurl %>', filename: '<% filename %>', timemodified: '<% timemodified %>', filesize: '<% filesize %>'}"
+                    component="mod_hsuforum" 
+                    componentId="<% cmid %>">
+                </core-file>
+            <%/files%>
+
             </ion-card-content>
 
             <ion-row>
@@ -187,6 +197,13 @@
                     </ion-row>
                 </ion-item>
             </ion-card-header>
+
+            <!-- Uploaded files -->
+            <core-file *ngFor="let file of reply.files"
+                [file]=file 
+                component="mod_hsuforum" 
+                componentId="<% cmid %>">
+            </core-file>
 
             <ion-card-content>
                 <core-format-text maxHeight="127" fullOnClick="true" text="{{reply.message}}"></core-format-text>
