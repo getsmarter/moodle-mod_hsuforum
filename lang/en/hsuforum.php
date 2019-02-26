@@ -666,6 +666,18 @@ $string['manageforumsubscriptions'] = 'Manage forum subscriptions';
 $string['nonanonymous'] = 'Non anonymously';
 $string['hiderecentposts'] = 'Hide recent Posts';
 $string['confighiderecentposts'] = 'Set to yes to stop the display of recent forum posts on the course page.';
+$string['hsuforum:likepost'] = 'Like a post';
+$string['hsuforum:subscribe_discussion'] = 'Subscribe webservice action(forum, discussion or post)';
+$string['posted'] = 'Posted';
+$string['contributors'] = 'Contributors';
+$string['contributor'] = 'Contributor';
+$string['views'] = 'Views';
+$string['view'] = 'View';
+$string['like'] = 'Like';
+$string['liked'] = 'Liked';
+$string['unlike'] = 'Unlike';
+$string['replyfrom'] = 'Reply from';
+$string['postedby'] = 'Posted by: ';
 
 // Deprecated since Moodle 3.0.
 $string['subscribersto'] = 'Subscribers to "{$a->name}"';

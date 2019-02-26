@@ -1,0 +1,62 @@
+{{=<% %>=}}
+<ion-card id="cardid_newdiscussion">
+    <form #f="ngForm" id="newdiscussionform">
+        <ion-list>
+
+            <ion-item>
+                <ion-label stacked>Subject</ion-label>
+                <ion-input min="8" name="discussiontitle" type="text" [(ngModel)]="CONTENT_OTHERDATA.discussiontitle"></ion-input>
+            </ion-item>
+
+            <ion-card>
+                <p>Message</p>
+                <br>
+                <div id="textarea_id1"
+                    style="min-height: 200px; -webkit-user-select: text; user-select: text;"
+                    contenteditable="true"
+                    [innerHTML]=CONTENT_OTHERDATA.sectioncontent 
+                    (keyup)="CONTENT_OTHERDATA.discussionbody = $event.target.innerHTML"
+                    (keypress)="CONTENT_OTHERDATA.discussionbody = $event.target.innerHTML">
+                </div>
+                <!-- Mention user button -->
+                <button class="mention-user" ion-button small clear style="float: left;">
+                    <span id="newdiscussion">
+                        <ion-icon style="margin-right: 2px;" class="icon-md ion-md-at"></ion-icon>
+                        Mention User
+                    </span>
+                </button>
+                <!-- Mention user search element -->
+                <div class="searchfilter" style="display:none;">
+                    <ion-searchbar></ion-searchbar>
+                    <ion-list class="filter_list" style="max-height:150px; overflow-y: scroll;">
+                        <%#tagusers%>
+                            <ion-item id="<% id %>"><% name %></ion-item>
+                        <%/tagusers%>
+                    </ion-list>
+                </div>
+            </ion-card>
+
+            <%#showgroupsections%>
+            <ion-item>
+                <ion-label>Group</ion-label>
+                <ion-select interface="popover" name="groupselection" [(ngModel)]="CONTENT_OTHERDATA.groupselection">
+                    <ion-option value="{{group.id}}" *ngFor="let group of CONTENT_OTHERDATA.groupsections">{{group.name}}</ion-option>
+                </ion-select>
+            </ion-item>
+            <%/showgroupsections%>
+
+            <ion-item>
+                <button ion-button full core-site-plugins-call-ws 
+                    name="mod_hsuforum_add_discussion" 
+                    [params]="{forumid: <% forumid %>, subject: CONTENT_OTHERDATA.discussiontitle, message: CONTENT_OTHERDATA.discussionbody, groupid: CONTENT_OTHERDATA.groupselection}" 
+                    [preSets]="{getFromCache: 0, saveToCache: 0}" 
+                    successMessage 
+                    goBackOnSuccess="true"
+                    [disabled]="CONTENT_OTHERDATA.discussiontitle.length <= 3">
+                    <h3>POST TO FORUM</h3>
+                </button>
+            </ion-item>
+
+        </ion-list>
+    </form>
+</ion-card>

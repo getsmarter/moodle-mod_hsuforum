@@ -78,7 +78,8 @@ $functions = array(
         'classpath' => 'mod/hsuforum/externallib.php',
         'description' => 'Create new posts into an existing discussion.',
         'type' => 'write',
-        'capabilities' => 'mod/hsuforum:replypost'
+        'capabilities' => 'mod/hsuforum:replypost',
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE)
      ),
 
      'mod_hsuforum_add_discussion' => array(
@@ -87,7 +88,28 @@ $functions = array(
         'classpath' => 'mod/hsuforum/externallib.php',
         'description' => 'Add a new discussion into an existing forum.',
         'type' => 'write',
-        'capabilities' => 'mod/hsuforum:startdiscussion'
+        'capabilities' => 'mod/hsuforum:startdiscussion',
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE)
+     ),
+
+    'mod_hsuforum_like_post' => array(
+        'classname' => 'mod_hsuforum_external',
+        'methodname' => 'like_post',
+        'classpath' => 'mod/hsuforum/externallib.php',
+        'description' => 'Like a post',
+        'type' => 'write',
+        'capabilities' => 'mod/hsuforum:likepost',
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+     ),
+
+    'mod_hsuforum_subscribe' => array(
+        'classname' => 'mod_hsuforum_external',
+        'methodname' => 'toggle_discussion_subscription',
+        'classpath' => 'mod/hsuforum/externallib.php',
+        'description' => 'Toggle discussion subscription',
+        'type' => 'write',
+        'capabilities' => 'hsuforum:toggle_discussion_subscription',
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
      ),
 
 );

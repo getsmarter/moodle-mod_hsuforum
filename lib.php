@@ -5509,11 +5509,23 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
     if ($groupselect || $sortselect) {
         echo "<div id='hsuforum-filter-options'>";
-        if ($groupselect && strpos($groupselect, '<form') !== false) {
-            echo'<label style="margin-right:5px" for="selectgroup" >Filter:</label>';
-        }
-        echo $groupselect;
-        echo $sortselect;
+            echo "<div class='filter-option-wrapper row'>";
+                echo "<div class='filter-option'>";
+                
+                    if ($groupselect && strpos($groupselect, '<form') !== false) {
+                        echo'<label for="selectgroup" >Filter:</label>';
+                    }
+                    echo $groupselect;
+                
+                echo "</div>";
+
+                echo "<div class='filter-option'>";
+                
+                    echo $sortselect;
+                
+                echo "</div>";
+
+            echo "</div>";
         echo "</div>";
     }
 
@@ -6009,6 +6021,7 @@ function hsuforum_mark_posts_read($user, $postids) {
          }
 
  // First insert any new entries.
+    //  @TODO Temp remove trackingsql for now since there is no trackingtype column in hsuforum table but this is in config table
  $sql = "INSERT INTO {hsuforum_read} (userid, postid, discussionid, forumid, firstread, lastread)
 
          SELECT :userid1, p.id, p.discussion, d.forum, :firstread, :lastread
@@ -6024,7 +6037,6 @@ function hsuforum_mark_posts_read($user, $postids) {
                  )
              WHERE p.id $usql
                  AND p.modified >= :cutoffdate
-                 $trackingsql
                  AND fr.id IS NULL";
 
  $status = $DB->execute($sql, $params) && $status;

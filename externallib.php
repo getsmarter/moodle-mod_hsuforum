@@ -882,6 +882,7 @@ class mod_hsuforum_external extends external_api {
     public static function add_discussion_post($postid, $subject, $message, $options = array()) {
         global $DB, $CFG, $USER;
         require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
+        require_once($CFG->dirroot . "/mod/hsuforum/mobilelib.php");
 
         $params = self::validate_parameters(self::add_discussion_post_parameters(),
                                             array(
@@ -935,7 +936,7 @@ class mod_hsuforum_external extends external_api {
         $post->discussion = $discussion->id;
         $post->parent = $parent->id;
         $post->subject = $params['subject'];
-        $post->message = $params['message'];
+        $post->message = fixpostbodywithtaggedlinks($params['message']);
         $post->messageformat = FORMAT_HTML;   // Force formatting for now.
         $post->messagetrust = trusttext_trusted($context);
         $post->itemid = 0;
@@ -1042,6 +1043,7 @@ class mod_hsuforum_external extends external_api {
     public static function add_discussion($forumid, $subject, $message, $groupid = -1, $options = array()) {
         global $DB, $CFG;
         require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
+        require_once($CFG->dirroot . "/mod/hsuforum/mobilelib.php");
 
         $params = self::validate_parameters(self::add_discussion_parameters(),
                                             array(
@@ -1085,9 +1087,9 @@ class mod_hsuforum_external extends external_api {
             // Groups not supported, force to -1.
             $groupid = -1;
         } else {
-            // Check if we receive the default or and empty value for groupid,
+            // Check if we receive an empty value for groupid,
             // in this case, get the group for the user in the activity.
-            if ($groupid === -1 or empty($params['groupid'])) {
+            if (empty($params['groupid'])) {
                 $groupid = groups_get_activity_group($cm);
             } else {
                 // Here we rely in the group passed, hsuforum_user_can_post_discussion will validate the group.
@@ -1106,7 +1108,7 @@ class mod_hsuforum_external extends external_api {
         $discussion = new stdClass();
         $discussion->course = $course->id;
         $discussion->forum = $forum->id;
-        $discussion->message = $params['message'];
+        $discussion->message = fixpostbodywithtaggedlinks($params['message']);
         $discussion->messageformat = FORMAT_HTML;   // Force formatting for now.
         $discussion->messagetrust = trusttext_trusted($context);
         $discussion->itemid = 0;
@@ -1171,6 +1173,135 @@ class mod_hsuforum_external extends external_api {
             array(
                 'discussionid' => new external_value(PARAM_INT, 'New Discussion ID'),
                 'warnings' => new external_warnings()
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     * @since Moodle 3.0
+     */
+    public static function like_post_parameters() {
+        return new external_function_parameters(
+            array(
+                'postid' => new external_value(PARAM_INT, 'Post ID'),
+            )
+        );
+    }
+
+    /**
+     * Like a post in a forum
+     *
+     * @param int $postid the post id
+     * @return array new like id
+     * @throws moodle_exception
+     */
+    public static function like_post($postid) {
+        global $DB, $USER, $CFG;
+        require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
+        require_once($CFG->dirroot . "/mod/hsuforum/mobilelib.php");
+
+        $params = self::validate_parameters(self::like_post_parameters(), array('postid'=>$postid));
+        $transaction = $DB->start_delegated_transaction();
+
+        try {
+            if (!userlikedpost($params['postid'], $USER->id)) {
+                $like = new \stdClass();
+                $like->postid = $params['postid'];
+                $like->userid = $USER->id;
+                $like->action = "like";
+                $like->created = time();
+    
+                $DB->insert_record('hsuforum_actions', $like);
+            } else {
+                $DB->delete_records('hsuforum_actions', array('postid' => $params['postid'], 'userid' => $USER->id));
+            }
+        } catch (Exception $e) {
+            throw new coding_exception($e->getMessage());
+        }
+
+        $transaction->allow_commit();
+
+        $result = array();
+        $result['likeid'] = $like->id;
+        return $result;
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     * @since Moodle 3.0
+     */
+    public static function like_post_returns() {
+        return new external_single_structure(
+            array(
+                'likeid' => new external_value(PARAM_INT, 'Like action id'),
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     * @since Moodle 3.0
+     */
+    public static function toggle_discussion_subscription_parameters() {
+        return new external_function_parameters(
+            array(
+                'discussionid' => new external_value(PARAM_INT, 'Discussion ID'),
+            )
+        );
+    }
+
+    /**
+     * Subscribe to a discussion in a forum
+     *
+     * @param int $discussionid the discussion id
+     * @return array new subscription id
+     * @throws moodle_exception
+     */
+    public static function toggle_discussion_subscription($discussionid) {
+        global $DB, $CFG, $USER;
+        require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
+        require_once($CFG->dirroot . "/mod/hsuforum/mobilelib.php");
+
+        $params = self::validate_parameters(self::toggle_discussion_subscription_parameters(), array('discussionid'=>$discussionid));
+        $transaction = $DB->start_delegated_transaction();
+
+        try {
+            if (!user_subscribed($params['discussionid'], $USER->id)) {
+                $subscribtion = new \stdClass();
+                $subscribtion->discussion = $params['discussionid'];
+                $subscribtion->userid = $USER->id;
+                $DB->insert_record('hsuforum_subscriptions_disc', $subscribtion);
+            } else {
+                $DB->delete_records('hsuforum_subscriptions_disc', array('discussion' => $params['discussionid'], 'userid' => $USER->id));
+            }
+        } catch (Exception $e) {
+            throw new coding_exception($e->getMessage());
+        }
+
+        $transaction->allow_commit();
+
+        $result = array();
+        $result['subscriptionid'] = $subscribtion->id;
+        return $result;
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     * @since Moodle 3.0
+     */
+    public static function toggle_discussion_subscription_returns() {
+        return new external_single_structure(
+            array(
+                'subscriptionid' => new external_value(PARAM_INT, 'subscription id'),
             )
         );
     }
