@@ -92,7 +92,9 @@ function getlikedescription($likes) {
             break;
         case count($likes) == 2:
             foreach ($likes as $key => $like) {
-                if ($like->userid == $USER->id) {
+                if ($like->userid == $USER->id && $key == 1) {
+                    $string .= "You";
+                } else if($like->userid == $USER->id) {
                     $string .= "You and ";
                 } else if ($key == 1) {
                     $string .= $like->likedfullname;
