@@ -496,8 +496,8 @@ class mobile {
             // @TODO - we can flatten this array at some point to facilitate for pagination
             $filteredchildrenidarr = hsuforum_get_discussion_post_hierarchy($discussion->id);
 
-            if (isset($filteredchildrenidarr[$discussion->id][$postid]["secondlevelposts"])) {
-                $secondlevelposts = $filteredchildrenidarr[$discussion->id][$postid]["secondlevelposts"];
+            if (isset($filteredchildrenidarr[$discussion->firstpost][$postid]["secondlevelposts"])) {
+                $secondlevelposts = $filteredchildrenidarr[$discussion->firstpost][$postid]["secondlevelposts"];
                 foreach ($secondlevelposts as $post) {
                     $replies[] = hsuforum_get_post_full($post['id']);
                     if (count($post['children'])) {

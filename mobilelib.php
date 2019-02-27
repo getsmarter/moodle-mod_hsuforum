@@ -612,27 +612,29 @@ function hsuforum_get_discussion_post_hierarchy($discussionid, $order = "ASC") {
     $postsparams     = array('discussion' => $discussionid, 'privatereply' => $USER->id, 'user' => $USER->id);
     $discussionposts = $DB->get_records_sql($postssql, $postsparams);
     $filteredposts   = [];
+    $firstpost       = [];
 
     foreach ($discussionposts as $key => $post) {
         // Firstpost
         if (!$post->parent) {
             $filteredposts[$post->id] = [];
+            $firstpost = $post;
         // Firstlevel posts
-        } elseif ($post->parent == $discussionid) {
-            $filteredposts[$discussionid][$post->id] = [];
-        // Secondlevel posts
-        } elseif (isset($filteredposts[$discussionid][$post->parent])) {
-            $filteredposts[$discussionid][$post->parent]['secondlevelposts'][$post->id] = [
+        } elseif (isset($filteredposts[$post->parent])) {
+            $filteredposts[$post->parent][$post->id] = [];
+        // Secondlevel posts - essentially a reply on the firstlevel
+        } elseif (isset($filteredposts[$firstpost->id][$post->parent])) {
+            $filteredposts[$firstpost->id][$post->parent]['secondlevelposts'][$post->id] = [
                 'id'      => $post->id,
                 'parent'  => $post->parent,
                 'depth'   => 2,
                 'created' => $post->created
             ];
-        // Children on firstreply that will be grouped together
+        // Third level and deeper will be grouped as children of second level
         } else {
             $firstlevelpost = hsuforum_get_firstlevel_post($post->id, $discussionposts);
-            if ($firstreplyparent = hsuforum_get_secondlevel_post($post->id, $discussionposts, $filteredposts[$discussionid][$firstlevelpost->id]['secondlevelposts'])) {
-                    $filteredposts[$discussionid][$firstlevelpost->id]['secondlevelposts'][$firstreplyparent->id]['children'][$post->id] = [
+            if ($firstreplyparent = hsuforum_get_secondlevel_post($post->id, $discussionposts, $filteredposts[$firstpost->id][$firstlevelpost->id]['secondlevelposts'])) {
+                    $filteredposts[$firstpost->id][$firstlevelpost->id]['secondlevelposts'][$firstreplyparent->id]['children'][$post->id] = [
                     'id'      => $post->id,
                     'parent'  => $post->parent,
                     'depth'   => $firstlevelpost->depth,
@@ -650,7 +652,7 @@ function hsuforum_get_discussion_post_hierarchy($discussionid, $order = "ASC") {
  * @param int $postid the post id
  * @param array $unfilteredposts the posts for a discussion
  *
- * @return object the root parent:
+ * @return object the firstlevel post
  */
 function hsuforum_get_firstlevel_post($postid, $unfilteredposts = array()) {
     $firstlevelpost = false;
@@ -693,7 +695,7 @@ function hsuforum_get_firstlevel_post($postid, $unfilteredposts = array()) {
  * @param array $unfilteredposts the posts for a discussion
  * @param array $firstreplies the firstlevel posts on a firstpost.
  *
- * @return object the root parent:
+ * @return object the secondlevel post
  */
 function hsuforum_get_secondlevel_post($postid, $unfilteredposts = array(), $firstreplies = array()) {
     $secondlevelpost = false;
