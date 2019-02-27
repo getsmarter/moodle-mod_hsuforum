@@ -233,11 +233,12 @@
             </button>
             <!-- View reply button -->
             <button
+                *ngIf="reply.havereplies"
                 ion-button small clear style="float: right;" core-site-plugins-new-content
                 title="Reply to <% discussionname %>"
                 component="mod_hsuforum" 
                 method="view_post_replies"
-                [args]="{'postid':reply.id, 'discussionid':reply.discussion}">
+                [args]="{'postid':reply.id, 'discussionid':reply.discussion, 'havechildren': reply.havereplies}">
                 View replies 
             </button>
             <!-- Who liked section -->

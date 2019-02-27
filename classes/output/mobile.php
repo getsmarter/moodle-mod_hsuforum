@@ -317,6 +317,9 @@ class mobile {
     
                 array_push($reply->files, $fileobj);
             }
+
+            // Check for nested replies
+            $reply->havereplies = hsuforum_count_replies($reply, $children=true);
         }
 
     /// Getting tagable users
@@ -478,6 +481,7 @@ class mobile {
         $modcontext            = context_module::instance($cm->id);
         $canreply              = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
         $courseroleassignments = hsuforum_get_course_roles_and_assignments($course->id);
+        $havechildren          = isset($args['havechildren']) ? $args['havechildren'] : false;
         $unreadpostids         = [];
 
     /// Getting all nested unread ids for root post in discussion
@@ -485,7 +489,30 @@ class mobile {
 
     /// Getting replies for the post
         $repliesparams = array('p.parent' => $postid);
-        $replies = hsuforum_get_all_discussion_posts($discussion->id, $repliesparams);
+        $replies = [];
+
+    /// Build replies structure where posts deeper that second level will be nested as children in the secondlevelpost
+        if ($havechildren > 0) {
+            // @TODO - we can flatten this array at some point to facilitate for pagination
+            $filteredchildrenidarr = hsuforum_get_discussion_post_hierarchy($discussion->id);
+
+            if (isset($filteredchildrenidarr[$discussion->id][$postid]["secondlevelposts"])) {
+                $secondlevelposts = $filteredchildrenidarr[$discussion->id][$postid]["secondlevelposts"];
+                foreach ($secondlevelposts as $post) {
+                    $replies[] = hsuforum_get_post_full($post['id']);
+                    if (count($post['children'])) {
+                        foreach ($post['children'] as $child) {
+                            if ($childpost = hsuforum_get_post_full($child['id'])) {
+                                $childpost->depth = $child['depth'];
+                                $replies[] = $childpost;
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            $replies = hsuforum_get_all_discussion_posts($discussion->id, $repliesparams);
+        }
 
     /// Populating replies with virtual props needed for template
         foreach ($replies as &$reply) {
