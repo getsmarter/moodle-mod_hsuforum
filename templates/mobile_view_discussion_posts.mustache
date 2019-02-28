@@ -55,7 +55,7 @@
             <%#likedescription%>
                 <ion-row>
                     <ion-item>
-                        <p style="color: #2f6473; background-color: #def2f8; border-color: #d1edf6; padding: 3px 0px;">
+                        <p text-wrap style="color: #2f6473; background-color: #def2f8; border-color: #d1edf6; padding: 3px 0px;">
                             <% likedescription %>
                         </p>
                     </ion-item>
@@ -243,7 +243,7 @@
             </button>
             <!-- Who liked section -->
             <ion-item *ngIf="reply.likedescription">
-                <p style="color: #2f6473; background-color: #def2f8; border-color: #d1edf6; padding: 3px 0px;">
+                <p text-wrap style="color: #2f6473; background-color: #def2f8; border-color: #d1edf6; padding: 3px 0px;">
                     {{reply.likedescription}}
                 </p>
             </ion-item>
