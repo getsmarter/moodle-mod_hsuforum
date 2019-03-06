@@ -17,6 +17,16 @@ use local_mention_users_observer;
  */
 class mobile {
 
+    public static function app_init(array $args) : array {
+        global $CFG;
+        return [
+                'templates' => [],
+                'javascript' => file_get_contents($CFG->dirroot . '/mod/hsuforum/appjs/app_init.js'),
+                'otherdata' => '',
+                'files' => []
+        ];
+    }
+
     /**
      * Returns the hsuforum discussion view for a given forum.
      * Note use as much logic and functions from view.php as possible (view.php uses renderer.php and lib.php to build view)
@@ -328,12 +338,6 @@ class mobile {
         $tagusers = ($tagusers->result && count($tagusers->content)) ? build_allowed_tag_users($tagusers->content) : [];
         $showtaguserul = count($tagusers) ? true : false;
 
-    /// Getting javascript file for injection
-        $tagusersfile = $CFG->dirroot . '/mod/hsuforum/mention_users.js';
-        $handle = fopen($tagusersfile, "r");
-        $tagusersjs = fread($handle, filesize($tagusersfile));
-        fclose($handle);
-
     /// Setting additional labels
         // @todo - convert additional lables to an array then pass to context var if we get to many labels
         $replylabel = count($replies) >= 2 || count($replies) == 0 ? get_string('replies', 'hsuforum') : get_string('reply', 'hsuforum');
@@ -373,11 +377,12 @@ class mobile {
                     'html' => $OUTPUT->render_from_template('mod_hsuforum/mobile_view_discussion_posts', $data),
                 ),
             ),
-            'javascript'        => $tagusersjs,
-            'otherdata'         => array(
-                'replies'       => json_encode(array_values($replies)),
-                'firstpost'     => json_encode($firstpost),
-                'sectionbody'   => '',
+            'javascript'          => file_get_contents($CFG->dirroot . '/mod/hsuforum/appjs/mention_users.js'),
+            'otherdata'           => array(
+                'replies'         => json_encode(array_values($replies)),
+                'firstpost'       => json_encode($firstpost),
+                'sectionbody'     => '',
+                'discussiontitle' => $discussion->name,
             ),
             'files' => ''
         );
@@ -430,12 +435,6 @@ class mobile {
         $tagusers = ($tagusers->result && count($tagusers->content)) ? build_allowed_tag_users($tagusers->content) : [];
         $showtaguserul = count($tagusers) ? true : false;
 
-        // Getting javascript file for injection
-        $tagusersfile = $CFG->dirroot . '/mod/hsuforum/mention_users.js';
-        $handle = fopen($tagusersfile, "r");
-        $tagusersjs = fread($handle, filesize($tagusersfile));
-        fclose($handle);
-
         return array(
             'templates' => array(
                 array(
@@ -450,7 +449,7 @@ class mobile {
                     ),
                 ),
             ),
-            'javascript' => $tagusersjs,
+            'javascript' => file_get_contents($CFG->dirroot . '/mod/hsuforum/appjs/mention_users.js'),
             'otherdata' => array(
                 'groupsections' => json_encode($allowedgroups),
                 'groupselection' => (is_array($allowedgroups) && count($allowedgroups)) ? $allowedgroups[0]->id : -1,
@@ -567,12 +566,6 @@ class mobile {
         $tagusers = ($tagusers->result && count($tagusers->content)) ? build_allowed_tag_users($tagusers->content) : [];
         $showtaguserul = count($tagusers) ? true : false;
 
-    /// Getting javascript file for injection
-        $tagusersfile = $CFG->dirroot . '/mod/hsuforum/mention_users.js';
-        $handle = fopen($tagusersfile, "r");
-        $tagusersjs = fread($handle, filesize($tagusersfile));
-        fclose($handle);
-
     /// Setting additional labels
         // @todo - convert additional lables to an array then pass to context var if we get to many labels
         $replylabel = count($replies) >= 2 || count($replies) == 0 ? get_string('replies', 'hsuforum') : get_string('reply', 'hsuforum');
@@ -605,7 +598,7 @@ class mobile {
                     'html' => $OUTPUT->render_from_template('mod_hsuforum/mobile_view_post_replies', $data),
                 ),
             ),
-            'javascript'        => $tagusersjs,
+            'javascript'        => file_get_contents($CFG->dirroot . '/mod/hsuforum/appjs/mention_users.js'),
             'otherdata'         => array(
                 'replies'       => json_encode(array_values($replies)),
                 'sectionbody'   => '',
