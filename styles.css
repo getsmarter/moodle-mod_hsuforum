@@ -988,6 +988,10 @@ FUN WITH FORMS
     padding: 0 !important;
 }
 
+#page-mod-hsuforum-discuss .hsuforum-post-filterandsort label[for="id_sort_no_filter"] {
+    margin-left: 30px !important;
+}
+
 @media only screen and (max-width: 500px){
     .hsuforum-post.depth0:before {
       margin-left: 30px;

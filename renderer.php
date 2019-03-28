@@ -411,7 +411,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                         </select>
                     </div>
                     <div class='form-group col-md-12 col-lg-8'>
-                        <label for='id_sort' class=''> <span id='id_plus'>+</span> Sort:</label>
+                        <label for='".($filter > 0 || $sort > 0 ? 'id_sort' : 'id_sort_no_filter')."' class=''> <span id='id_plus'>+</span> Sort:</label>
                         <select class='custom-select' name='sort' id='id_sort'>
                             <option value='0'>".get_string('sortdefault','hsuforum')."</option>
                             <option ".($sort == 1 ? 'selected' : '')." value='1'>".get_string('sortnewestfirst','hsuforum')."</option>
