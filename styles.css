@@ -27,7 +27,6 @@
     display:none;
 }
 
-
 .hsuforum_postincontext_dialog .yui3-widget-hd { cursor: move; }
 
 /* Activity instance has a height set to 2em. This is madness, and we need to reset it or it causes lots of issues. */
@@ -35,11 +34,8 @@
     height:auto !important;
 }
 
-
 .path-mod-hsuforum #gradetype_warning.hidden { display: none; }
 .path-mod-hsuforum #gradetype_warning { color: #660000; padding-left: 5px; }
-
-
 
 /* Hide things in the main view */
 .hsuforum-thread .hsuforum-footer-reply,
@@ -980,6 +976,14 @@ FUN WITH FORMS
     font-weight: 600 !important;
 }
 
+#page-mod-hsuforum-discuss ul.hsuforum-thread-filter_sort_list li::before {
+    display: none;
+}
+
+#page-mod-hsuforum-discuss .hsuforum-post-filterandsort label[for="id_sort"] {
+    margin-left: 10px;
+}
+
 @media only screen and (max-width: 500px){
     .hsuforum-post.depth0:before {
       margin-left: 30px;
@@ -1079,6 +1083,10 @@ FUN WITH FORMS
     .hsuforum-post-figure.depth9{margin-left:28%;}
     .hsuforum-post-figure.depth10{margin-left:28%;}
     .hsuforum-post-figure.depth11{margin-left:28%;}
+
+    #page-mod-hsuforum-discuss .hsuforum-post-filterandsort [type="submit"] {
+        margin: 6px 3px !important;
+    }
 
 }
 
