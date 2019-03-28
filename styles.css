@@ -653,11 +653,11 @@ FUN WITH FORMS
     .hsuforum-thread-figure,
     .hsuform-post-date,
     .hsuforum-postflagging {
-		clear: both;
+        clear: both;
     display: block;
-		width: 100%;
-		float: none;
-	}
+        width: 100%;
+        float: none;
+    }
     .hsuforum-post-figure{
         float:left;
     }
@@ -981,7 +981,11 @@ FUN WITH FORMS
 }
 
 #page-mod-hsuforum-discuss .hsuforum-post-filterandsort label[for="id_sort"] {
-    margin-left: 10px;
+    margin-left: 15px !important;
+}
+
+#page-mod-hsuforum-discuss ul.hsuforum-thread-filter_sort_list {
+    padding: 0 !important;
 }
 
 @media only screen and (max-width: 500px){
