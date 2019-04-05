@@ -691,3 +691,5 @@ $string['sortmostreplies'] = 'Replies: Most to Least';
 $string['sortmostlikes'] = 'Likes: Most to Least';
 
 $string['posttimeago'] = 'Posted {$a}';
+
+$string['mobileappnotification']= '{student_full_name} posted in {course_short_name}: {hsuforum_name} - {discussion_name}';
