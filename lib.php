@@ -841,6 +841,12 @@ function hsuforum_cron() {
                 $a->forumname = $cleanforumname;
                 $a->subject = $data->get_subject();
                 $postsubject = html_to_text(get_string('postmailsubject', 'hsuforum', $a), 0);
+                
+                $postfullmessage = get_string('mobileappnotification', 'hsuforum');
+                $postfullmessage = str_replace("{student_full_name}", fullname($postuser), $postfullmessage);
+                $postfullmessage = str_replace("{course_short_name}", $a->courseshortname, $postfullmessage);
+                $postfullmessage = str_replace("{hsuforum_name}", $cleanforumname, $postfullmessage);
+                $postfullmessage = str_replace("{discussion_name}", $discussion->name, $postfullmessage);
 
                 // Send the post now!
 
@@ -852,7 +858,7 @@ function hsuforum_cron() {
                 $eventdata->userfrom         = $postuser;
                 $eventdata->userto           = $userto;
                 $eventdata->subject          = $postsubject;
-                $eventdata->fullmessage      = $textout->render($data);
+                $eventdata->fullmessage      = $postfullmessage;
                 $eventdata->fullmessageformat = FORMAT_PLAIN;
                 $eventdata->fullmessagehtml  = $htmlout->render($data);
                 $eventdata->notification = 1;
