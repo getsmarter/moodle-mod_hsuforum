@@ -689,6 +689,8 @@ $string['sortdefault'] = 'Oldest first (Default)';
 $string['sortnewestfirst'] = 'Newest first';
 $string['sortmostreplies'] = 'Replies: Most to Least';
 $string['sortmostlikes'] = 'Likes: Most to Least';
+$string['sortmobiledefault'] = 'Newest first (Default)';
+$string['sortoldestfirst'] = 'Oldest first';
 
 $string['posttimeago'] = 'Posted {$a}';
 

@@ -198,6 +198,8 @@ class mobile {
         $courseroleassignments = hsuforum_get_course_roles_and_assignments($course->id);
         $unreadpostids         = [];
         $attachmentclass       = new \mod_hsuforum\attachments($forum, $modcontext);
+        $filter                = 1;
+        $sort                  = 1;
 
     /// Getting firstpost and root replies for the firstpost
         // Note there can only be one post(when user created discussion) in a discussion and then additional posts are regarged as replies(api data structure reflects this concept). Very confusing...
@@ -262,74 +264,87 @@ class mobile {
         }
 
         $repliesparams = array('p.parent' => $discussion->firstpost);
-        $replies = hsuforum_get_all_discussion_posts($discussion->id, $repliesparams);
+        $repliesraw = hsuforum_get_all_discussion_posts($discussion->id, $repliesparams);
+
+        // Filter replies
+        if (isset($args['filter']) || isset($args['sort']) ) {
+            $sort = isset($args['sort']) ? $args['sort'] : $sort;
+            $filter = isset($args['filter']) ? $args['filter'] : $filter;
+
+            $repliesraw = $PAGE->get_renderer('mod_hsuforum')->filter_sort_posts($repliesraw, $filter, $sort, $course);
+        }
 
         // Populating replies with virtual props needed for template
-        foreach ($replies as &$reply) {
-            // Avatar section
-            $postuser = hsuforum_extract_postuser($reply, $forum, context_module::instance($cm->id));
-            $postuser->user_picture->size = 100;
-            $reply->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
-            $reply->postuserid = $postuser->id;
+        foreach ($repliesraw as &$reply) {
+            // Filter_sort_posts() sometimes returns empty arrays thus checking for id.
+            if ($reply->id) {
+                // Avatar section
+                $postuser = hsuforum_extract_postuser($reply, $forum, context_module::instance($cm->id));
+                $postuser->user_picture->size = 100;
+                $reply->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
+                $reply->postuserid = $postuser->id;
 
-            // Like section
-            $reply->likes = array_values(getpostlikes($reply));
-            $reply->likecount = count($reply->likes);
-            if ($reply->likecount) {
-                $reply->likedescription = getlikedescription($reply->likes);
+                // Like section
+                $reply->likes = array_values(getpostlikes($reply));
+                $reply->likecount = count($reply->likes);
+                if ($reply->likecount) {
+                    $reply->likedescription = getlikedescription($reply->likes);
+                }
+                $reply->created = hsuforum_relative_time($reply->created);
+                $reply->likelabel = userlikedpost($reply->id, $USER->id) ? get_string('unlike', 'hsuforum') : get_string('like', 'hsuforum');
+                $reply->textareaid = "textarea_id".$reply->id;
+                $reply->postformid = "postform_id".$reply->id;
+
+                // Blank reply post section
+                $reply->replybody = ' ';
+
+                // Check for unread reply posts and updating the unreadpostids array
+                if (!in_array($reply->id, $readpostids)) {
+                    $reply->unread = true;
+                    array_push($unreadpostids, $reply->id);
+                }
+
+                // Getting role colors
+                switch (true) {
+                    case in_array($postuser->id, $courseroleassignments['htutor']):
+                    case in_array($postuser->id, $courseroleassignments['tutor']):
+                    case in_array($postuser->id, $courseroleassignments['gsmanager']):
+                        $reply->rolecolor = '#333';
+                        break;
+                    case in_array($postuser->id, $courseroleassignments['smanager']):
+                        $reply->rolecolor = '#f42684';
+                        break;
+                    case (in_array($postuser->id, $courseroleassignments['student'])) && ($postuser->id == $USER->id):
+                        $reply->rolecolor = '#bbb';
+                        break;
+                    default:
+                        $reply->rolecolor = false;
+                        break;
+                }
+
+                // Getting attachments files
+                $filesraw = $attachmentclass->get_attachments($reply->id);
+                $reply->files = [];
+                foreach ($filesraw as $file) {
+                    $fileobj = new \stdClass;
+                    $fileobj->id = $file->get_itemid();
+                    $fileobj->filename = $file->get_filename();
+                    $fileobj->filepath = $file->get_filepath();
+                    $fileobj->fileurl = moodle_url::make_pluginfile_url(
+                        $modcontext->id, 'mod_hsuforum', "attachment", $fileobj->id, '/', $fileobj->filename)->out(false);
+                    $fileobj->filesize = $file->get_filesize();
+                    $fileobj->timemodified = $file->get_timemodified();
+                    $fileobj->mimetype = $file->get_mimetype();
+                    $fileobj->isexternalfile = $file->get_repository_type();
+        
+                    array_push($reply->files, $fileobj);
+                }
+
+                // Check for nested replies
+                $reply->havereplies = hsuforum_count_replies($reply, $children=true);
+
+                $replies[] = $reply;
             }
-            $reply->created = hsuforum_relative_time($reply->created);
-            $reply->likelabel = userlikedpost($reply->id, $USER->id) ? get_string('unlike', 'hsuforum') : get_string('like', 'hsuforum');
-            $reply->textareaid = "textarea_id".$reply->id;
-            $reply->postformid = "postform_id".$reply->id;
-
-            // Blank reply post section
-            $reply->replybody = ' ';
-
-            // Check for unread reply posts and updating the unreadpostids array
-            if (!in_array($reply->id, $readpostids)) {
-                $reply->unread = true;
-                array_push($unreadpostids, $reply->id);
-            }
-
-            // Getting role colors
-            switch (true) {
-                case in_array($postuser->id, $courseroleassignments['htutor']):
-                case in_array($postuser->id, $courseroleassignments['tutor']):
-                case in_array($postuser->id, $courseroleassignments['gsmanager']):
-                    $reply->rolecolor = '#333';
-                    break;
-                case in_array($postuser->id, $courseroleassignments['smanager']):
-                    $reply->rolecolor = '#f42684';
-                    break;
-                case (in_array($postuser->id, $courseroleassignments['student'])) && ($postuser->id == $USER->id):
-                    $reply->rolecolor = '#bbb';
-                    break;
-                default:
-                    $reply->rolecolor = false;
-                    break;
-            }
-
-            // Getting attachments files
-            $filesraw = $attachmentclass->get_attachments($reply->id);
-            $reply->files = [];
-            foreach ($filesraw as $file) {
-                $fileobj = new \stdClass;
-                $fileobj->id = $file->get_itemid();
-                $fileobj->filename = $file->get_filename();
-                $fileobj->filepath = $file->get_filepath();
-                $fileobj->fileurl = moodle_url::make_pluginfile_url(
-                    $modcontext->id, 'mod_hsuforum', "attachment", $fileobj->id, '/', $fileobj->filename)->out(false);
-                $fileobj->filesize = $file->get_filesize();
-                $fileobj->timemodified = $file->get_timemodified();
-                $fileobj->mimetype = $file->get_mimetype();
-                $fileobj->isexternalfile = $file->get_repository_type();
-    
-                array_push($reply->files, $fileobj);
-            }
-
-            // Check for nested replies
-            $reply->havereplies = hsuforum_count_replies($reply, $children=true);
         }
 
     /// Getting tagable users
@@ -339,10 +354,14 @@ class mobile {
         $showtaguserul = count($tagusers) ? true : false;
 
     /// Setting additional labels
-        // @todo - convert additional lables to an array then pass to context var if we get to many labels
-        $replylabel = count($replies) >= 2 || count($replies) == 0 ? get_string('replies', 'hsuforum') : get_string('reply', 'hsuforum');
-        $replyfromlabel = get_string('replyfrom', 'hsuforum');
-        $unreadlabel = get_string('unread', 'hsuforum');
+        $replylabel         = count($replies) >= 2 || count($replies) == 0 ? get_string('replies', 'hsuforum') : get_string('reply', 'hsuforum');
+        $replyfromlabel     = get_string('replyfrom', 'hsuforum');
+        $filterdefault      = get_string('filterdefault', 'hsuforum');
+        $filtertutorreplies = get_string('filtertutorreplies', 'hsuforum');
+        $filtermyreplies    = get_string('filtermyreplies', 'hsuforum');
+        $sortdefault        = get_string('sortmobiledefault', 'hsuforum');
+        $sortoldestfirst    = get_string('sortoldestfirst', 'hsuforum');
+        $sortmostlikes      = get_string('sortmostlikes', 'hsuforum');
 
     /// Handling Events
         hsuforum_discussion_view($modcontext, $forum, $discussion);
@@ -368,6 +387,12 @@ class mobile {
             'canreply'       => $cm->groupmode == 0 ? true : $canreply,
             'showtaguserul'  => $showtaguserul,
             'tagusers'       => $tagusers,
+            'filterdefaultlabel'        => $filterdefault,
+            'filtertutorreplieslabel'   => $filtertutorreplies,
+            'filtermyreplieslabel'      => $filtermyreplies,
+            'sortdefaultlabel'          => $sortdefault,
+            'sortoldestlabel'           => $sortoldestfirst,
+            'sortmostlikeslabel'        => $sortmostlikes,
         );
 
         return array(
@@ -377,12 +402,15 @@ class mobile {
                     'html' => $OUTPUT->render_from_template('mod_hsuforum/mobile_view_discussion_posts', $data),
                 ),
             ),
-            'javascript'          => file_get_contents($CFG->dirroot . '/mod/hsuforum/appjs/mention_users.js'),
-            'otherdata'           => array(
-                'replies'         => json_encode(array_values($replies)),
-                'firstpost'       => json_encode($firstpost),
-                'sectionbody'     => '',
-                'discussiontitle' => $discussion->name,
+            'javascript'            => file_get_contents($CFG->dirroot . '/mod/hsuforum/appjs/mention_users.js'),
+            'otherdata'             => array(
+                'replies'           => json_encode(array_values($replies)),
+                'firstpost'         => json_encode($firstpost),
+                'sectionbody'       => '',
+                'discussiontitle'   => $discussion->name,
+                'sort'              => $sort,
+                'filter'            => $filter,
+                'sortfilterdefault' => true ? ($sort == 1 && $filter == 1) : false,
             ),
             'files' => ''
         );
