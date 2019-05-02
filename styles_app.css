@@ -1,0 +1,13 @@
+/* Filter boxes */
+@media screen and (max-width: 429px) {
+    .hsu-filter-box ion-col {
+        width: 100%;
+    }
+    .hsu-filter-box .select-text {
+        text-align: left !important;
+    }
+
+    .hsu-filter-box ion-item {
+        padding-left: 0 !important;
+    }
+}
