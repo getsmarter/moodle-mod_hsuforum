@@ -160,7 +160,7 @@
 
 
     <!-- FILTER POSTS SECTION -->
-    <ion-grid *ngIf="CONTENT_OTHERDATA.replies.length > 1" class="hsu-filter-box">
+    <ion-grid class="hsu-filter-box">
         <ion-row>
 
             <ion-col col-auto>
@@ -188,8 +188,8 @@
                         interface="alert" 
                         [(ngModel)]="CONTENT_OTHERDATA.sort" 
                         >
-                    <ion-option value="1"><% sortdefaultlabel %></ion-option>
-                    <ion-option value="2"><% sortoldestlabel %></ion-option>
+                    <ion-option value="4"><% sortdefaultlabel %></ion-option>
+                    <ion-option value="5"><% sortnewestfirstlabel %></ion-option>
                     <ion-option value="3"><% sortmostlikeslabel %></ion-option>
                     </ion-select>
                 </ion-item>
@@ -214,7 +214,7 @@
                     (click)="updateContent({
                         cmid: <% cmid %>, 
                         courseid: <% courseid %>, 
-                        sort: 1, 
+                        sort: 4, 
                         filter: 1, 
                         discussionid: <% discussionid %>})">
                     Reset

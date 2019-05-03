@@ -2021,9 +2021,7 @@ HTML;
                     $this->addallparentpostsmyreplies($post, $posts, $myposts);
                 }
             }
-            if (!empty($myposts)) {
-                $posts = $myposts;
-            }
+            $posts = $myposts;
         } elseif ($filter == 3) {
             $tutorposts = array();
             $roletutor = $DB->get_record('role', array('shortname' => 'tutor'));
@@ -2048,28 +2046,35 @@ HTML;
                                 $this->addallparentposts($post, $posts, $tutorposts);
                             }
                         }
-
-                        if (!empty($tutorposts)) {
-                            $posts = $tutorposts;
-                        }
+                        $posts = $tutorposts;
                     }
                 }
             }
         }
 
-        if ($sort == 1) {
-            $posts = array_reverse($posts, true);
-        } else if ($sort == 2) {
-            uasort($posts, function ($a, $b) {
-                return $b->children <=> $a->children;
-            });
-        } else if ($sort == 3) {
-            uasort($posts, function ($a, $b) {
-                global $DB;
-                $alikes = sizeof($DB->get_records('hsuforum_actions', array('postid' => $a->id, 'action' => 'like')));
-                $blikes = sizeof($DB->get_records('hsuforum_actions', array('postid' => $b->id, 'action' => 'like')));
-                return $blikes <=> $alikes;
-            });
+        if (!empty($posts)) {
+            if ($sort == 1) {
+                $posts = array_reverse($posts, true);
+            } else if ($sort == 2) {
+                uasort($posts, function ($a, $b) {
+                    return $b->children <=> $a->children;
+                });
+            } else if ($sort == 3) {
+                uasort($posts, function ($a, $b) {
+                    global $DB;
+                    $alikes = sizeof($DB->get_records('hsuforum_actions', array('postid' => $a->id, 'action' => 'like')));
+                    $blikes = sizeof($DB->get_records('hsuforum_actions', array('postid' => $b->id, 'action' => 'like')));
+                    return $blikes <=> $alikes;
+                });
+            } else if ($sort == 4) {
+                uasort($posts, function ($a, $b) {
+                    return $a->created <=> $b->created;
+                });
+            } else if ($sort == 5) {
+                uasort($posts, function ($a, $b) {
+                    return $b->created <=> $a->created;
+                });
+            }
         }
 
         return $posts;

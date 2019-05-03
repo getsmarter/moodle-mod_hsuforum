@@ -199,13 +199,13 @@ class mobile {
         $unreadpostids         = [];
         $attachmentclass       = new \mod_hsuforum\attachments($forum, $modcontext);
         $filter                = 1;
-        $sort                  = 1;
+        $sort                  = 4;
 
     /// Getting firstpost and root replies for the firstpost
         // Note there can only be one post(when user created discussion) in a discussion and then additional posts are regarged as replies(api data structure reflects this concept). Very confusing...
             // Note that a reply(post) can have children which are replies on a reply essentially.
         $firstpost = false;
-        $replies = false;
+        $replies = [];
 
         $firstpostcondition = array('p.id' => $discussion->firstpost);
         $firstpostresult = hsuforum_get_all_discussion_posts($discussion->id, $firstpostcondition, $USER->id);
@@ -266,16 +266,15 @@ class mobile {
         $repliesparams = array('p.parent' => $discussion->firstpost);
         $repliesraw = hsuforum_get_all_discussion_posts($discussion->id, $repliesparams);
 
-        // Filter replies
+        // Filter posts if other than defaults
         if (isset($args['filter']) || isset($args['sort']) ) {
             $sort = isset($args['sort']) ? $args['sort'] : $sort;
             $filter = isset($args['filter']) ? $args['filter'] : $filter;
-
-            $repliesraw = $PAGE->get_renderer('mod_hsuforum')->filter_sort_posts($repliesraw, $filter, $sort, $course);
         }
+        $repliessorted = $PAGE->get_renderer('mod_hsuforum')->filter_sort_posts($repliesraw, $filter, $sort, $course);
 
         // Populating replies with virtual props needed for template
-        foreach ($repliesraw as &$reply) {
+        foreach ($repliessorted as &$reply) {
             // Filter_sort_posts() sometimes returns empty arrays thus checking for id.
             if ($reply->id) {
                 // Avatar section
@@ -359,8 +358,8 @@ class mobile {
         $filterdefault      = get_string('filterdefault', 'hsuforum');
         $filtertutorreplies = get_string('filtertutorreplies', 'hsuforum');
         $filtermyreplies    = get_string('filtermyreplies', 'hsuforum');
-        $sortdefault        = get_string('sortmobiledefault', 'hsuforum');
-        $sortoldestfirst    = get_string('sortoldestfirst', 'hsuforum');
+        $sortdefault        = get_string('sortdefault', 'hsuforum');
+        $sortnewestfirst    = get_string('sortnewestfirst', 'hsuforum');
         $sortmostlikes      = get_string('sortmostlikes', 'hsuforum');
 
     /// Handling Events
@@ -391,7 +390,7 @@ class mobile {
             'filtertutorreplieslabel'   => $filtertutorreplies,
             'filtermyreplieslabel'      => $filtermyreplies,
             'sortdefaultlabel'          => $sortdefault,
-            'sortoldestlabel'           => $sortoldestfirst,
+            'sortnewestfirstlabel'      => $sortnewestfirst,
             'sortmostlikeslabel'        => $sortmostlikes,
         );
 
@@ -410,7 +409,7 @@ class mobile {
                 'discussiontitle'   => $discussion->name,
                 'sort'              => $sort,
                 'filter'            => $filter,
-                'sortfilterdefault' => true ? ($sort == 1 && $filter == 1) : false,
+                'sortfilterdefault' => true ? ($sort == 4 && $filter == 1) : false,
             ),
             'files' => ''
         );
