@@ -1,9 +1,10 @@
 {{=<% %>=}}
-<ion-card style="margin: 12px 0; padding: 1rem; width: 100%;">
-    <p>
-        <span><% replycount %> <% replylabel %> for post</span>
-    </p>
-</ion-card>
+<ion-row class="hsu-view-post-replies-page">
+    <ion-card style="margin: 12px 0; padding: 1rem; width: 100%;">
+        <p>
+            <span><% replycount %> <% replylabel %> for post</span>
+        </p>
+    </ion-card>
 
 <!-- REPLIES ON FIRSTPOST -->
     <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies" id="cardid_{{reply.id}}" 
@@ -79,13 +80,9 @@
         <%#canreply%>
         <ion-card *ngIf="reply.showform">
             <form #f="ngForm" id="{{reply.postformid}}">
-                <div id="{{reply.textareaid}}"
-                    style="min-height: 200px; -webkit-user-select: text; user-select: text;"
-                    contenteditable="true"
-                    [innerHTML]=CONTENT_OTHERDATA.replybody 
-                    (keyup)="reply.replybody = $event.target.innerHTML"
-                    (keypress)="reply.replybody = $event.target.innerHTML">
-                </div>
+                <ion-item class="hsu-text-editor-wrapper">
+                    <core-rich-text-editor item-content [control]=controls[reply.id] name="rte_new_post_{{reply.id}}"></core-rich-text-editor>
+                </ion-item>
             </form>
             <ion-row text-center>
                 <!-- Form submit button -->
@@ -94,8 +91,8 @@
                         ion-button small clear type="submit" core-site-plugins-call-ws 
                         name="mod_hsuforum_add_discussion_post" 
                         *ngIf="reply.showform"
-                        [disabled]="reply.replybody <= 3"
-                        [params]="{postid: reply.id, subject: 'RE:' + reply.subject, message: reply.replybody}" 
+                        [disabled]="controls[reply.id].value <= 3"
+                        [params]="{postid: reply.id, subject: 'RE:' + reply.subject, message: controls[reply.id].value}" 
                         [preSets]="{getFromCache: 0, saveToCache: 0}" 
                         successMessage 
                         refreshOnSuccess="true" 
@@ -134,3 +131,4 @@
         </ion-card>
         <%/canreply%>
     </ion-card>
+</ion-row>

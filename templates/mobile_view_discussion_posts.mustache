@@ -1,5 +1,6 @@
 {{=<% %>=}}
     <%#firstpost%>
+    <ion-row class="hsu-view-discussion-posts-page">
         <ion-card id="cardid_<% id %>">
             <ion-card-header no-padding text-wrap class="card-header card-header-md">
                 <ion-item style="background-color: #eeeeee;" text-wrap>
@@ -67,13 +68,9 @@
                 <%#canreply%>
                 <ion-card *ngIf="CONTENT_OTHERDATA.showform_<% id %>">
                     <form #f="ngForm" id="postformid_<% id %>">
-                        <div id="textarea_id<% id %>"
-                            style="min-height: 200px; -webkit-user-select: text; user-select: text;"
-                            contenteditable="true"
-                            [innerHTML]=CONTENT_OTHERDATA.firstpostreplybody 
-                            (keypress)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML"
-                            (keyup)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML">
-                        </div>
+                        <ion-item class="hsu-text-editor-wrapper">
+                            <core-rich-text-editor item-content [control]=controls[CONTENT_OTHERDATA.firstpost.id] name="rte_new_post_{{CONTENT_OTHERDATA.firstpost.id}}"></core-rich-text-editor>
+                        </ion-item>
                     </form>
 
                     <ion-row text-center>
@@ -82,8 +79,8 @@
                             <button
                                 ion-button small clear core-site-plugins-call-ws
                                 name="mod_hsuforum_add_discussion_post" 
-                                [disabled]="CONTENT_OTHERDATA.sectionbody <= 3"
-                                [params]="{postid: <% id %>, subject: 'RE: <% subject %>', message: CONTENT_OTHERDATA.sectionbody}" 
+                                [disabled]="controls[CONTENT_OTHERDATA.firstpost.id].value <= 3"
+                                [params]="{postid: <% id %>, subject: 'RE: <% subject %>', message: controls[CONTENT_OTHERDATA.firstpost.id].value}" 
                                 [preSets]="{getFromCache: 0, saveToCache: 0}" 
                                 successMessage 
                                 refreshOnSuccess="true" 
@@ -110,14 +107,14 @@
                         </ion-col>
                     </ion-row>
                     <!-- Mention user search element -->
-                    <div class="searchfilter" style="display:none;">
+                    <ion-row class="searchfilter" style="display:none;">
                         <ion-searchbar></ion-searchbar>
                         <ion-list class="filter_list" style="max-height:150px; overflow-y: scroll;">
                             <%#tagusers%>
                                 <ion-item id="<% id %>"><% name %></ion-item>
                             <%/tagusers%>
                         </ion-list>
-                    </div>
+                    </ion-row>
                 </ion-card>
                 <%/canreply%>
             </ion-row>
@@ -316,13 +313,9 @@
             <%#canreply%>
             <ion-card *ngIf="reply.showform">
                 <form #f="ngForm" id="{{reply.postformid}}">
-                    <div id="{{reply.textareaid}}"
-                        style="min-height: 200px; -webkit-user-select: text; user-select: text;"
-                        contenteditable="true"
-                        [innerHTML]=CONTENT_OTHERDATA.replybody 
-                        (keyup)="reply.replybody = $event.target.innerHTML"
-                        (keypress)="reply.replybody = $event.target.innerHTML">
-                    </div>
+                    <ion-item class="hsu-text-editor-wrapper">
+                        <core-rich-text-editor item-content [control]=controls[reply.id] name="rte_new_post_{{reply.id}}"></core-rich-text-editor>
+                    </ion-item>
                 </form>
                 <ion-row text-center>
                     <!-- Form submit button -->
@@ -331,8 +324,8 @@
                             ion-button small clear type="submit" core-site-plugins-call-ws 
                             name="mod_hsuforum_add_discussion_post" 
                             *ngIf="reply.showform"
-                            [disabled]="reply.replybody <= 3"
-                            [params]="{postid: reply.id, subject: 'RE:' + reply.subject, message: reply.replybody}" 
+                            [disabled]="controls[reply.id].value <= 3"
+                            [params]="{postid: reply.id, subject: 'RE:' + reply.subject, message: controls[reply.id].value}" 
                             [preSets]="{getFromCache: 0, saveToCache: 0}" 
                             successMessage 
                             refreshOnSuccess="true" 
@@ -372,3 +365,4 @@
             <%/canreply%>
         </ion-card>
     </ion-list>
+</ion-row>

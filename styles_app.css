@@ -1,3 +1,21 @@
+/* GLOBAL STYLING */
+.hsu-text-editor-wrapper {
+    padding: 0 !important;
+}
+
+/* ADD DISCUSSION PAGE */
+.hsu-add-discussion .hsu-text-editor-wrapper .item-inner,
+.add-discussion-button-wrapper .item-inner {
+    padding-right: 0 !important;
+}
+
+/* VIEW DISCUSSION POSTS PAGE */
+.hsu-view-discussion-posts-page .hsu-text-editor-wrapper .item-inner,
+.hsu-view-discussion-posts-page .hsu-text-editor-wrapper .item-inner .input-wrapper {
+    margin: 0 !important;
+}
+
+/* MEDIA QUERIES */
 /* Filter boxes */
 @media screen and (max-width: 429px) {
     .hsu-filter-box ion-col {

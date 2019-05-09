@@ -7,6 +7,26 @@
  * @author JJ Swanevelder
  */
 
+// WYSIWYG formcontrol added with anonymous function
+(function (t) {
+    t.controls = [];
+    // 1. Setting up firstpost formcontrol
+    if (t.CONTENT_OTHERDATA.firstpost !== undefined) {
+        t.controls[t.CONTENT_OTHERDATA.firstpost.id] = t.FormBuilder.control('');
+    }
+
+    // 2. Setting up formcontrol for replies
+    if (t.CONTENT_OTHERDATA.replies && t.CONTENT_OTHERDATA.replies.length) {
+        t.CONTENT_OTHERDATA.replies.forEach((reply) => {
+            t.controls[reply.id] = t.FormBuilder.control('');
+        });
+    }
+    // 3. Setting up formcontrol for an add discussion page
+    if (t.CONTENT_OTHERDATA.firstpost == undefined && t.CONTENT_OTHERDATA.replies == undefined) {
+        t.controls[1] = t.FormBuilder.control('');
+    }
+})(this);
+
 /* ------------------------------------------------------------------------------------------- /
     MAIN FUNCTIONS
     1. Set window object with a usable click function ("activate_mention_users") then call init() on click for that func
