@@ -1,32 +1,143 @@
 /**
- * Mod_hsuforum mobile tag js library written in vanilla js. The library needs to be echo'd into the return array 
- * for mobile functions in order for it to work. Vanilla js is mandatory in the ammendment of this library because
+ * Mod_hsuforum mobile js library written in vanilla js and ES6. The library needs to be echo'd into the return array 
+ * for mobile functions in order for it to work. Vanilla js or ES6 is mandatory in the ammendment of this library because
  * of the angular involvement of the mobile app.
  *
  * @package	mod_hsuforum
  * @author JJ Swanevelder
  */
 
-// WYSIWYG formcontrol added with anonymous function
-(function (t) {
-    t.controls = [];
-    // 1. Setting up firstpost formcontrol
-    if (t.CONTENT_OTHERDATA.firstpost !== undefined) {
-        t.controls[t.CONTENT_OTHERDATA.firstpost.id] = t.FormBuilder.control('');
-    }
+(function (mobile) {
+    mobile.mod_hsuforum = {
+        //-----------------------------------//
+        // Class helper functions definitions
+        //-----------------------------------//
 
-    // 2. Setting up formcontrol for replies
-    if (t.CONTENT_OTHERDATA.replies && t.CONTENT_OTHERDATA.replies.length) {
-        t.CONTENT_OTHERDATA.replies.forEach((reply) => {
-            t.controls[reply.id] = t.FormBuilder.control('');
-        });
-    }
-    // 3. Setting up formcontrol for an add discussion page
-    if (t.CONTENT_OTHERDATA.firstpost == undefined && t.CONTENT_OTHERDATA.replies == undefined) {
-        t.controls[1] = t.FormBuilder.control('');
+        /**
+         * Function to add a new discussion
+         * @param {object} that The this object when calling this function.
+         * @return {void}
+         */
+        addDiscussion: (that) => {
+            let subject = that.CONTENT_OTHERDATA.discussiontitle;
+            let message = that.controls[1].value;
+            let groupId = that.CONTENT_OTHERDATA.groupselection;
+            let forumId = that.CONTENT_OTHERDATA.forumid;
+            let attachments = that.CONTENT_OTHERDATA.files;
+            let modal;
+            let promise;
+
+            if (!subject) {
+                that.CoreUtilsProvider.domUtils.showErrorModal(that.CONTENT_OTHERDATA.errormessages['erroremptysubject'], true);
+                return;
+            }
+
+            modal = that.CoreUtilsProvider.domUtils.showModalLoading('core.sending', true);
+            message = that.CoreTextUtilsProvider.formatHtmlLines(message);
+
+            // Upload draft attachments first if any.
+            if (attachments.length) {
+                promise = that.CoreFileUploaderProvider.uploadOrReuploadFiles(attachments, 'mod_hsuforum', forumId);
+            } else {
+                promise = Promise.resolve(1);
+            }
+
+            promise.then(draftAreaId => {
+                // Try to send it to server.
+                let site = that.CoreSitesProvider.getCurrentSite();
+                let params = {
+                    forumid: forumId,
+                    subject: subject,
+                    message: message,
+                    groupid: groupId,
+                    draftid: draftAreaId,
+                };
+                return site.write('mod_hsuforum_add_discussion', params).then(response => {
+                    // Other errors ocurring.
+                    if (!response || !response.discussionid) {
+                        return Promise.reject(that.CoreWSProvider.createFakeWSError(response.warnings));
+                    } else {
+                        return response.discussionid;
+                    }
+                });
+            }).then(() => {
+                that.NavController.pop();
+            }).catch(msg => {
+                that.CoreUtilsProvider.domUtils.showErrorModalDefault(msg, 'addon.mod_forum.cannotcreatediscussion', true);
+            }).finally(() => {
+                modal.dismiss();
+            });
+        },
+
+        /**
+         * Function to build formcontrols for all the advanced editors on the page
+         * @param {object} mobile The moodlemobile instance
+         * @return {void}
+         */
+        buildFormControls: (mobile) => {
+            mobile.controls = [];
+            // 1. Setting up firstpost formcontrol
+            if (mobile.CONTENT_OTHERDATA.firstpost !== undefined) {
+                mobile.controls[mobile.CONTENT_OTHERDATA.firstpost.id] = mobile.FormBuilder.control('');
+            }
+        
+            // 2. Setting up formcontrol for replies
+            if (mobile.CONTENT_OTHERDATA.replies && mobile.CONTENT_OTHERDATA.replies.length) {
+                mobile.CONTENT_OTHERDATA.replies.forEach((reply) => {
+                    mobile.controls[reply.id] = mobile.FormBuilder.control('');
+                });
+            }
+            // 3. Setting up formcontrol for an add discussion page
+            if (mobile.CONTENT_OTHERDATA.firstpost == undefined && mobile.CONTENT_OTHERDATA.replies == undefined) {
+                mobile.controls[1] = mobile.FormBuilder.control('');
+            }
+        },
+
+
+        //-------------------//
+        // Init declarations
+        //-------------------//
+
+        /**
+         * Initialisation for the discussions page.
+         * @param {object} mobile The moodlemobile instance
+         * @return {void}
+         */
+        addDiscussionInit: function(mobile) {
+            window.addDiscussion = function() {
+                mobile.mod_hsuforum.addDiscussion(mobile);
+            };
+        },
+
+        /**
+         * Function to initialize formcontrols for all pages
+         * @param {object} mobile The moodlemobile instance
+         * @return {void}
+         */
+        formControlInit: function(mobile) {
+            this.buildFormControls(mobile);
+        },
+    };
+
+
+    //------------------------------------------------//
+    // Inits being called based on page variables set.
+    //------------------------------------------------//
+
+    switch(mobile.CONTENT_OTHERDATA.page) { 
+        case 'add_discussion': { 
+            mobile.mod_hsuforum.addDiscussionInit(mobile);
+        }
+        // Case for if page is undefined or inits that should run on all pages
+        default: { 
+            mobile.mod_hsuforum.formControlInit(mobile);
+            break; 
+        }
     }
 })(this);
 
+// @TODO - Convert below legacy code into class based definitions as above. Then rename file to app_pageload.js 
+// so it makes more sense to distinguish between app_init and app_pageload
 /* ------------------------------------------------------------------------------------------- /
     MAIN FUNCTIONS
     1. Set window object with a usable click function ("activate_mention_users") then call init() on click for that func

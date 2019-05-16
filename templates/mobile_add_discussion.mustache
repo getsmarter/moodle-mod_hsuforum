@@ -38,16 +38,25 @@
                 </ion-select>
             </ion-item>
         <%/showgroupsections%>
+        
+        <!-- Attachement section -->
+        <core-attachments 
+            [files]="CONTENT_OTHERDATA.files" 
+            [maxSize]="<% maxsize %>" 
+            [maxSubmissions]="<% maxattachments %>" 
+            [component]="mod_hsuforum" 
+            [componentId]="<% cmid %>" 
+            [acceptedTypes]="image/jpeg" 
+            [allowOffline]="false">
+        </core-attachments>
 
         <ion-item class="add-discussion-button-wrapper">
-            <button ion-button full core-site-plugins-call-ws 
-                name="mod_hsuforum_add_discussion" 
-                [params]="{forumid: <% forumid %>, subject: CONTENT_OTHERDATA.discussiontitle, message: controls[1].value, groupid: CONTENT_OTHERDATA.groupselection}" 
-                [preSets]="{getFromCache: 0, saveToCache: 0}" 
+            <button ion-button full
+                [disabled]="CONTENT_OTHERDATA.discussiontitle == '' || controls[1].value == null || controls[1].value == ''"
+                onclick="addDiscussion()"
                 successMessage 
-                goBackOnSuccess="true"
-                [disabled]="CONTENT_OTHERDATA.discussiontitle.length <= 3">
-                <h3>POST TO FORUM</h3>
+                goBackOnSuccess="true">
+                <h3><% posttoforumlabel %></h3>
             </button>
         </ion-item>
     </form>

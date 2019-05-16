@@ -472,15 +472,22 @@ class mobile {
                         'showtaguserul'     => $showtaguserul,
                         'tagusers'          => $tagusers,
                         'forumid'           => $forum->id,
+                        'posttoforumlabel'  => get_string('posttoforum', 'hsuforum'),
+                        'maxsize'           => $forum->maxbytes,
+                        'maxattachments'    => $forum->maxattachments,
                         )
                     ),
                 ),
             ),
             'javascript' => file_get_contents($CFG->dirroot . '/mod/hsuforum/appjs/mention_users.js'),
             'otherdata' => array(
-                'groupsections' => json_encode($allowedgroups),
-                'groupselection' => (is_array($allowedgroups) && count($allowedgroups)) ? $allowedgroups[0]->id : -1,
+                'page'            => 'add_discussion',
+                'forumid'         => $forum->id,
+                'files'           => json_encode([]),
+                'groupsections'   => json_encode($allowedgroups),
+                'groupselection'  => (is_array($allowedgroups) && count($allowedgroups)) ? $allowedgroups[0]->id : -1,
                 'discussiontitle' => '',
+                'errormessages'   => json_encode(['erroremptysubject' => get_string('erroremptysubject', 'hsuforum')]),
             ),
             'files' => ''
         );
