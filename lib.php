@@ -4298,6 +4298,15 @@ function hsuforum_add_discussion($discussion, $mform=null, $unused=null, $userid
         $draftid = file_get_submitted_draft_itemid('message');
     }
 
+    // Handle mobile app file upload references
+    if ($discussion->mobiledraftid && $discussion->mobiledraftid > 0) {
+        $fileoptions = array('subdirs' => false, 'maxbytes' => $forum->maxbytes, 'maxfiles' => $forum->maxattachments);
+        $context = context_module::instance($cm->id);
+
+        file_save_draft_area_files($discussion->mobiledraftid, $context->id, 'mod_hsuforum',
+            'attachment', $post->id, $fileoptions);
+    }
+
     if ($draftid) {
         $context = context_module::instance($cm->id);
         $post->message = file_save_draft_area_files($draftid, $context->id, 'mod_hsuforum', 'post', $post->id,
