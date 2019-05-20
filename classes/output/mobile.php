@@ -72,13 +72,35 @@ class mobile {
          * Reference lib.php line :5399 to implement when required
          * UX requirements need to be defined in terms of pagination and limits on the page (infinite scroll maybe?)
          */
-        $sortorder = hsuforum_get_default_sort_order();
         $getuserlastmodified = true;
         $fullpost = true;
         $maxdiscussions = -1;
         $page = -1;
         $perpage = 20;
         $discussions = false;
+
+    /// Sorting the discussions
+        $args->sort = !isset($args->sort) ? 'recent' : $args->sort;
+        switch ($args->sort) {
+            case 'recent':
+                $sortorder = "d.pinned DESC, d.timemodified DESC";
+                break;
+            case 'mostactive':
+                $sortorder = "d.pinned DESC, extra.replies DESC, d.timemodified DESC";
+                break;
+            case 'created':
+                $sortorder = "d.pinned DESC, p.created DESC";
+                break;
+            case 'subscribe':
+                $sortorder = "d.pinned DESC, sd.id DESC, d.timemodified DESC";
+                break;
+            case 'like':
+                $sortorder = "d.pinned DESC, likes DESC";
+                break;
+            default:
+                $sortorder = '';
+                break;
+        }
 
         try {
             $discussions = hsuforum_get_discussions($cm, $sortorder, $fullpost, null, $maxdiscussions, $getuserlastmodified, $page, $perpage, HSUFORUM_POSTS_ALL_USER_GROUPS, false);
@@ -144,6 +166,12 @@ class mobile {
         $discussionlabel = count($discussions) >= 2 || count($discussions) == 0 ? get_string('discussions', 'hsuforum') : get_string('discussion', 'hsuforum');
         $unreadlabel = get_string('unread', 'hsuforum');
         $postedbylabel = get_string('postedby', 'hsuforum');
+        $recentlabel = get_string('discussionsortkey:lastreply', 'hsuforum');
+        $mostactivelabel = get_string('discussionsortkey:replies', 'hsuforum');
+        $createdlabel = get_string('discussionsortkey:created', 'hsuforum');
+        $subscribelabel = get_string('discussionsortkey:subscribe', 'hsuforum');
+        $likelabel = get_string('discussionsortkey:like', 'hsuforum');
+        $sortlabel = get_string('sortdiscussionsby', 'hsuforum');
 
         // Build data array to output in the template
         $data = array(
@@ -156,6 +184,12 @@ class mobile {
             'postedbylabel' => $postedbylabel,
             'discussioncount' => count($discussions),
             'showgroupsections' => $showgroupsections,
+            'recentlabel' => $recentlabel,
+            'mostactivelabel' => $mostactivelabel,
+            'createdlabel' => $createdlabel,
+            'subscribelabel' => $subscribelabel,
+            'likelabel' => $likelabel,
+            'sortlabel' => $sortlabel,
         );
 
         return array(
@@ -170,6 +204,7 @@ class mobile {
                 'allowedgroups' => json_encode($allowedgroups),
                 'discussions' => json_encode(array_values($discussions)),
                 'forum' => json_encode($forum),
+                'sort' => $args->sort,
             ),
             'files' => ''
         );

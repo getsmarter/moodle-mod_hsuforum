@@ -22,6 +22,39 @@
     </ion-card-content>
 </ion-card>
 
+    <!-- Sort discussions -->
+    <ion-grid class="hsu-filter-box">
+        <ion-row>
+            <ion-col col-auto>
+                <ion-label>Filter by:</ion-label>
+                <ion-item>
+                    <ion-select 
+                        interface="popover" 
+                        name="sort" 
+                        interface="alert" 
+                        [(ngModel)]="CONTENT_OTHERDATA.sort" 
+                        >
+                        <ion-option value="recent"><% recentlabel %></ion-option>
+                        <ion-option value="mostactive"><% mostactivelabel %></ion-option>
+                        <ion-option value="created"><% createdlabel %></ion-option>
+                        <ion-option value="subscribe"><% subscribelabel %></ion-option>
+                        <ion-option value="like"><% likelabel %></ion-option>
+                    </ion-select>
+                </ion-item>
+            </ion-col>
+            <ion-col align-self-end col-auto>
+                <button
+                    ion-button 
+                    small
+                    (click)="updateContent({
+                        cmid: <% cmid %>, 
+                        sort: CONTENT_OTHERDATA.sort})">
+                    <% sortlabel %>
+                </button>
+            </ion-col>
+        </ion-row>
+    </ion-grid>
+
 <!-- Discussion cards -->
 <ion-card *ngFor="let discussion of CONTENT_OTHERDATA.discussions" 
     [ngStyle]="{'border-left': (discussion.rolecolor) ? '3px solid': '0', 'border-color': discussion.rolecolor}"
