@@ -25,8 +25,26 @@
     <!-- Sort discussions -->
     <ion-grid class="hsu-filter-box">
         <ion-row>
+            <ion-col col-auto *ngIf="CONTENT_OTHERDATA.allowedgroups && CONTENT_OTHERDATA.allowedgroups.length > 1">
+                    <ion-label>Filter by:</ion-label>
+                    <ion-item>
+                        <ion-select 
+                            interface="popover" 
+                            name="filter" 
+                            interface="alert" 
+                            [(ngModel)]="CONTENT_OTHERDATA.filter" 
+                            >
+                            <ion-option value="<% allparticipantsid %>"><% allparticipants %></ion-option>
+                            <ion-option 
+                                *ngFor="let group of CONTENT_OTHERDATA.allowedgroups" 
+                                value={{group.id}}>
+                                {{group.name}}
+                            </ion-option>
+                        </ion-select>
+                    </ion-item>
+            </ion-col>
             <ion-col col-auto>
-                <ion-label>Filter by:</ion-label>
+                <ion-label>Sort by:</ion-label>
                 <ion-item>
                     <ion-select 
                         interface="popover" 
@@ -48,8 +66,9 @@
                     small
                     (click)="updateContent({
                         cmid: <% cmid %>, 
+                        filter: CONTENT_OTHERDATA.filter,
                         sort: CONTENT_OTHERDATA.sort})">
-                    <% sortlabel %>
+                    <% filterlabel %>
                 </button>
             </ion-col>
         </ion-row>

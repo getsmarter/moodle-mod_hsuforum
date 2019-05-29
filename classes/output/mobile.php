@@ -61,9 +61,27 @@ class mobile {
         $allgroups              = groups_get_all_groups($cm->course, 0, $cm->groupingid);
         $allowedgroups          = groups_get_activity_allowed_groups($cm, $USER->id);
 
-        if (count($allowedgroups) && (int) $cm->groupmode > 0) {
-            $showgroupsections = true;
+        // Check what groups the user is allowed to see/post to.
+        if ((int) $cm->groupmode > 0) {
+            $groupstopostto = [];
+            foreach ($allgroups as $groupid => $group) {
+                if (hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $modcontext)) {
+                    $groupstopostto[] = $group;
+                }
+            }
+            if (count($groupstopostto) === count($allgroups)) {
+                $all_participants = new \stdClass;
+                $all_participants->id = '-1';
+                $all_participants->name = 'All Participants';
+                array_unshift($groupstopostto, $all_participants);
+            }
+            $allowedgroups = $groupstopostto;
+        } else {
+            $allowedgroups = [];
         }
+
+        // Check if we will show the select box on template
+        $showgroupsections = count($allowedgroups) && (int) $cm->groupmode > 0 ? true : false;
 
     /// Get all the recent discussions we're allowed to see
         /**
@@ -79,7 +97,8 @@ class mobile {
         $perpage = 20;
         $discussions = false;
 
-    /// Sorting the discussions
+        // Sorting/filter the discussions
+        $args->filter = !isset($args->filter) ? HSUFORUM_POSTS_ALL_USER_GROUPS : $args->filter;
         $args->sort = !isset($args->sort) ? 'recent' : $args->sort;
         switch ($args->sort) {
             case 'recent':
@@ -102,8 +121,10 @@ class mobile {
                 break;
         }
 
+    /// Getting discussions
         try {
-            $discussions = hsuforum_get_discussions($cm, $sortorder, $fullpost, null, $maxdiscussions, $getuserlastmodified, $page, $perpage, HSUFORUM_POSTS_ALL_USER_GROUPS, false);
+            // $discussions = hsuforum_get_discussions($cm, $sortorder, $fullpost, null, $maxdiscussions, $getuserlastmodified, $page, $perpage, HSUFORUM_POSTS_ALL_USER_GROUPS, false);
+            $discussions = hsuforum_get_discussions($cm, $sortorder, $fullpost, null, $maxdiscussions, $getuserlastmodified, $page, $perpage, $args->filter, false);
         } catch (Exception $e) {
             // @TODO handle exceptions properly in the app context
             print_r($e->getMessage());
@@ -171,7 +192,8 @@ class mobile {
         $createdlabel = get_string('discussionsortkey:created', 'hsuforum');
         $subscribelabel = get_string('discussionsortkey:subscribe', 'hsuforum');
         $likelabel = get_string('discussionsortkey:like', 'hsuforum');
-        $sortlabel = get_string('sortdiscussionsby', 'hsuforum');
+        $filterlabel = get_string('filter', 'hsuforum');
+        $allparticipants = get_string('allparticipants', 'hsuforum');
 
         // Build data array to output in the template
         $data = array(
@@ -189,7 +211,9 @@ class mobile {
             'createdlabel' => $createdlabel,
             'subscribelabel' => $subscribelabel,
             'likelabel' => $likelabel,
-            'sortlabel' => $sortlabel,
+            'filterlabel' => $filterlabel,
+            'allparticipants' => $allparticipants,
+            'allparticipantsid' => HSUFORUM_POSTS_ALL_USER_GROUPS,
         );
 
         return array(
@@ -203,8 +227,10 @@ class mobile {
             'otherdata' => array(
                 'allowedgroups' => json_encode($allowedgroups),
                 'discussions' => json_encode(array_values($discussions)),
+                'groupselection'  => (is_array($allowedgroups) && count($allowedgroups)) ? $allowedgroups[0]->id : -1,
                 'forum' => json_encode($forum),
                 'sort' => $args->sort,
+                'filter' => $args->filter,
             ),
             'files' => ''
         );
