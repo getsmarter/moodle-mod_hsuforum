@@ -30,8 +30,19 @@
         this.pattern = /\/mod\/hsuforum\/discuss\.php.*([\&\?]d=\d+)/;
         this.name = "AddonModHsuforumLinkHandler";
     }
+
+    function AddonModHsuforumModuleViewLinkHandler() {
+        t.CoreContentLinksModuleIndexHandler.call(this, t.CoreCourseHelperProvider, 'mmaModHsuforum', 'hsuforum');
+
+        this.pattern = /\/mod\/hsuforum\/view\.php.*([\&\?]id=\d+)/;
+        this.name = "AddonModHsuforumViewLinkHandler";
+    }
+
     AddonModHsuforumModuleLinkHandler.prototype = Object.create(t.CoreContentLinksModuleIndexHandler.prototype);
     AddonModHsuforumModuleLinkHandler.prototype.constructor = AddonModHsuforumModuleLinkHandler;
+
+    AddonModHsuforumModuleViewLinkHandler.prototype = Object.create(t.CoreContentLinksModuleIndexHandler.prototype);
+    AddonModHsuforumModuleViewLinkHandler.prototype.constructor = AddonModHsuforumModuleViewLinkHandler;
 
     AddonModHsuforumModuleLinkHandler.prototype.getActions = function (siteIds, url, params, courseId) {
         return [{
@@ -60,5 +71,31 @@
 
     t.CoreContentLinksDelegate.registerHandler(new AddonModHsuforumModuleLinkHandler());
 
-})(this);
+    AddonModHsuforumModuleViewLinkHandler.prototype.getActions = function (siteIds, url, params, courseId) {
+        return [{
+            action: function() {
+                let site = t.CoreSitesProvider.getCurrentSite();
+                let navigation = site.appProvider.getRootNavController();
 
+                const pageParams = {
+                    cmid: parseInt(params.id, 10),
+                };
+
+                return Promise.resolve(t.CoreSitePluginsProvider.getContent('mod_hsuforum', 'forum_discussions_view', pageParams)).then((contentResult) => {
+                    // Do some tests here on the contentResult if need be since we have all the data.
+                    return Promise.resolve(navigation.push('CoreSitePluginsPluginPage', {
+                        title: (contentResult['otherdata']['discussiontitle'] !== undefined) ? contentResult['otherdata']['discussiontitle'] : '',
+                        component: 'mod_hsuforum',
+                        method: 'forum_discussions_view',
+                        args: pageParams,
+                        initResult: {},
+                        jsData: {},
+                    }));
+                });
+            }
+        }];
+    }
+
+    t.CoreContentLinksDelegate.registerHandler(new AddonModHsuforumModuleViewLinkHandler());
+    
+})(this);
