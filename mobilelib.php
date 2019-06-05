@@ -595,139 +595,113 @@ function hsuforum_get_course_role_assignment_ids($coursecontextid, $roleid) {
 }
 
 /**
- * Function to get an orginised post/child structured array used in mobile.
- * @param int $discussionid the discussion id
- * @param string $order the SQL order by
+ * Internal method to walk over a list of posts, rendering
+ * each post and their children.
  *
- * @return array the filtered array:
+ * @param array $posts
+ * @param int $parentid The current parent
+ * @param int $depth The post depth level
+ * @param array $post_map The map array
+ * @return array
  */
-function hsuforum_get_discussion_post_hierarchy($discussionid, $order = "ASC") {
+function hsuforum_mobile_post_walker($posts, $parentid, $depth = 0, $post_map=array()) {
+    foreach ($posts as $post) {
+        if ($post->parent != $parentid) {
+            continue;
+        }
+
+        $post_map[$post->id] = array('id' => $post->id,'depth' => $depth);
+
+        if (!empty($post->children)) {
+            $post_map = hsuforum_mobile_post_walker($post->children, $post->id, ($depth + 1), $post_map);
+        }
+    }
+    return $post_map;
+}
+
+/**
+ * Function to get discussion posts by field
+ * @param int $discussionid The discussion id
+ * @param string $fields The selected fields to return
+ * @param string $order The SQL order by
+ *
+ * @return array The discussion posts
+ */
+function hsuforum_mobile_get_all_discussion_posts_by_field($discussionid, $fields="*", $order = "ASC") {
     global $DB, $USER;
 
-    $postssql        = "SELECT p.id, p.parent, p.created 
-                            FROM {hsuforum_posts} p 
-                            WHERE discussion = ? 
-                                AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
-                            ORDER BY p.created " . $order;
-    $postsparams     = array('discussion' => $discussionid, 'privatereply' => $USER->id, 'user' => $USER->id);
-    $discussionposts = $DB->get_records_sql($postssql, $postsparams);
-    $filteredposts   = [];
-    $firstpost       = [];
+    $postssql = "SELECT " . $fields . "
+                    FROM {hsuforum_posts} p 
+                    WHERE discussion = ? 
+                        AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
+                    ORDER BY p.created " . $order;
 
-    foreach ($discussionposts as $key => $post) {
-        // Firstpost
-        if (!$post->parent) {
-            $filteredposts[$post->id] = [];
-            $firstpost = $post;
-        // Firstlevel posts
-        } elseif (isset($filteredposts[$post->parent])) {
-            $filteredposts[$post->parent][$post->id] = [];
-        // Secondlevel posts - essentially a reply on the firstlevel
-        } elseif (isset($filteredposts[$firstpost->id][$post->parent])) {
-            $filteredposts[$firstpost->id][$post->parent]['secondlevelposts'][$post->id] = [
-                'id'      => $post->id,
-                'parent'  => $post->parent,
-                'depth'   => 2,
-                'created' => $post->created
-            ];
-        // Third level and deeper will be grouped as children of second level
+    $postsparams = array(
+                    'discussion' => $discussionid, 
+                    'privatereply' => $USER->id, 
+                    'user' => $USER->id
+                    );
+
+    $posts = $DB->get_records_sql($postssql, $postsparams);
+
+    foreach ($posts as $pid=>$p) {
+        if (!$p->parent) {
+            continue;
+        }
+        if (!isset($posts[$p->parent])) {
+            continue; // parent does not exist??
+        }
+        if (!isset($posts[$p->parent]->children)) {
+            $posts[$p->parent]->children = array();
+        }
+        $posts[$p->parent]->children[$pid] =& $posts[$pid];
+    }
+
+    // Start with the last child of the first post.
+    $post = &$posts[reset($posts)->id];
+
+    $lastpost = false;
+    while (!$lastpost) {
+        if (!isset($post->children)) {
+            $post->lastpost = true;
+            $lastpost = true;
         } else {
-            $firstlevelpost = hsuforum_get_firstlevel_post($post->id, $discussionposts);
-            if ($firstreplyparent = hsuforum_get_secondlevel_post($post->id, $discussionposts, $filteredposts[$firstpost->id][$firstlevelpost->id]['secondlevelposts'])) {
-                    $filteredposts[$firstpost->id][$firstlevelpost->id]['secondlevelposts'][$firstreplyparent->id]['children'][$post->id] = [
-                    'id'      => $post->id,
-                    'parent'  => $post->parent,
-                    'depth'   => $firstlevelpost->depth,
-                    'created' => $post->created
-                ];
-            }
+             // Go to the last child of this post.
+            $post = &$posts[end($post->children)->id];
         }
     }
 
-    return $filteredposts;
+    return $posts;
 }
 
 /**
- * Function find the first level posts on the firstpost
- * @param int $postid the post id
- * @param array $unfilteredposts the posts for a discussion
+ * Function to determine the margin level for a post card depending on depth level
+ * @param int $depthlevel The post depth level
  *
- * @return object the firstlevel post
+ * @return string The margin style
  */
-function hsuforum_get_firstlevel_post($postid, $unfilteredposts = array()) {
-    $firstlevelpost = false;
-    $depth = 0;
-
-    // Check if post id in arr.
-    if (isset($unfilteredposts[$postid])) {
-        $parentid = (int) $unfilteredposts[$postid]->parent;
-        $postid = -1;
-        while ($parentid !== 0) {
-            foreach ($unfilteredposts as $key => $value) {
-                // Found a parent for current search
-                if ($key == $parentid) {
-                    $parent = $unfilteredposts[$unfilteredposts[$parentid]->parent];
-                    // Exit search if parent parent is 0
-                    if ((int) $parent->parent == 0) {
-                        $parentid = 0;
-                        $depth++;
-                        // Setting return values
-                        $firstlevelpost = new stdClass();
-                        $firstlevelpost->id = $key;
-                        $firstlevelpost->depth = $depth;
-                    // Else continue search
-                    } else {
-                        $parentid = (int) $unfilteredposts[$key]->parent;
-                        $postid = (int) $unfilteredposts[$key];
-                        $depth++;
-                    }
-                }
-            }
-        }
+function hsuforum_mobile_get_style_margin(int $depthlevel) {
+    $margin = 'auto';
+    switch (true) {
+        case $depthlevel == 2:
+            $margin = '6%';
+            break;
+        case $depthlevel == 3:
+            $margin = '8%';
+            break;
+        case $depthlevel == 4:
+            $margin = '10%';
+            break;
+        case $depthlevel == 5:
+            $margin = '12%';
+            break;
+        case $depthlevel > 5:
+            $margin = '14%';
+            break;
+        default:
+            $margin = 'auto';
+            break;
     }
 
-    return $firstlevelpost;
-}
-
-/**
- * Function find the second level post parent for a post deeper than second level.
- * @param int $postid the post id
- * @param array $unfilteredposts the posts for a discussion
- * @param array $firstreplies the firstlevel posts on a firstpost.
- *
- * @return object the secondlevel post
- */
-function hsuforum_get_secondlevel_post($postid, $unfilteredposts = array(), $firstreplies = array()) {
-    $secondlevelpost = false;
-    $depth = 0;
-
-    // Check if post id in arr.
-    if (isset($unfilteredposts[$postid]) && count($firstreplies)) {
-        $parentid = (int) $unfilteredposts[$postid]->parent;
-        $postid = -1;
-        while ($parentid !== 0) {
-            foreach ($unfilteredposts as $pid => $post) {
-                // Found a parent for current search
-                if ($pid == $parentid) {
-                    $parent = $unfilteredposts[$unfilteredposts[$parentid]->parent];
-                    // Exit search if parent parent is 0
-                    if (array_key_exists($pid, $firstreplies)) {
-                        $parentid = 0;
-                        $depth++;
-                        // Setting return values
-                        $secondlevelpost = new stdClass();
-                        $secondlevelpost->id = $pid;
-                        $secondlevelpost->depth = $depth;
-                    // Else continue search
-                    } else {
-                        $parentid = (int) $unfilteredposts[$pid]->parent;
-                        $postid = (int) $unfilteredposts[$pid];
-                        $depth++;
-                    }
-                }
-            }
-        }
-    }
-
-    return $secondlevelpost;
+    return $margin;
 }
