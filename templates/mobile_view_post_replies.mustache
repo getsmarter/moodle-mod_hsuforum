@@ -8,7 +8,7 @@
 
 <!-- REPLIES ON FIRSTPOST -->
     <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies" id="cardid_{{reply.id}}" 
-        [ngStyle]="{'border-left': (reply.rolecolor) ? '3px solid': '0', 'border-color': reply.rolecolor}">
+        [ngStyle]="{'border-left': (reply.rolecolor) ? '3px solid': '0', 'border-color': reply.rolecolor, 'margin-left': reply.cardmargin}">
         <ion-card-header no-padding text-wrap class="card-header card-header-md">
             <ion-item text-wrap>
                 <ion-avatar item-start>

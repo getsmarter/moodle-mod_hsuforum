@@ -585,23 +585,18 @@ class mobile {
         $repliesparams = array('p.parent' => $postid);
         $replies = [];
 
-    /// Build replies structure where posts deeper that second level will be nested as children in the secondlevelpost
+    /// Build reply structure where posts will have an indicated depth level in relation to its root parent.
         if ($havechildren > 0) {
-            // @TODO - we can flatten this array at some point to facilitate for pagination
-            $filteredchildrenidarr = hsuforum_get_discussion_post_hierarchy($discussion->id);
+            $unfilteredposts = hsuforum_mobile_get_all_discussion_posts_by_field($discussion->id, 'p.id, p.parent');
+            $filteredposts = [];
+            $firstpost = $unfilteredposts[$discussion->firstpost]->id;
+            $filteredposts = hsuforum_mobile_post_walker($unfilteredposts, $firstpost);
 
-            if (isset($filteredchildrenidarr[$discussion->firstpost][$postid]["secondlevelposts"])) {
-                $secondlevelposts = $filteredchildrenidarr[$discussion->firstpost][$postid]["secondlevelposts"];
-                foreach ($secondlevelposts as $post) {
-                    $replies[] = hsuforum_get_post_full($post['id']);
-                    if (count($post['children'])) {
-                        foreach ($post['children'] as $child) {
-                            if ($childpost = hsuforum_get_post_full($child['id'])) {
-                                $childpost->depth = $child['depth'];
-                                $replies[] = $childpost;
-                            }
-                        }
-                    }
+            foreach ($filteredposts as $filteredpost) {
+                if ($post = hsuforum_get_post_full($filteredpost['id'])) {
+                    $post->depth = $filteredpost['depth'];
+                    $post->cardmargin = hsuforum_mobile_get_style_margin($filteredpost['depth']);
+                    $replies[] = $post;
                 }
             }
         } else {
