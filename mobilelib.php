@@ -7,6 +7,10 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+define('SORT_REPLIES_MOST_TO_LEAST', 2);
+define('SORT_LIKES_MOST_TO_LEAST', 3);
+define('SORT_OLDEST', 4);
+define('SORT_NEWEST', 5);
 
 /**
  * Function to check a message for potential tagged users
@@ -623,11 +627,12 @@ function hsuforum_mobile_post_walker($posts, $parentid, $depth = 0, $post_map=ar
  * Function to get discussion posts by field
  * @param int $discussionid The discussion id
  * @param string $fields The selected fields to return
+ * @param bool Option to get nested children for post
  * @param string $order The SQL order by
  *
  * @return array The discussion posts
  */
-function hsuforum_mobile_get_all_discussion_posts_by_field($discussionid, $fields="*", $order = "ASC") {
+function hsuforum_mobile_get_all_discussion_posts_by_field($discussionid, $fields="*", $children=false, $order = "ASC") {
     global $DB, $USER;
 
     $postssql = "SELECT " . $fields . "
@@ -644,30 +649,32 @@ function hsuforum_mobile_get_all_discussion_posts_by_field($discussionid, $field
 
     $posts = $DB->get_records_sql($postssql, $postsparams);
 
-    foreach ($posts as $pid=>$p) {
-        if (!$p->parent) {
-            continue;
+    if ($children) {
+        foreach ($posts as $pid=>$p) {
+            if (!$p->parent) {
+                continue;
+            }
+            if (!isset($posts[$p->parent])) {
+                continue; // parent does not exist??
+            }
+            if (!isset($posts[$p->parent]->children)) {
+                $posts[$p->parent]->children = array();
+            }
+            $posts[$p->parent]->children[$pid] =& $posts[$pid];
         }
-        if (!isset($posts[$p->parent])) {
-            continue; // parent does not exist??
-        }
-        if (!isset($posts[$p->parent]->children)) {
-            $posts[$p->parent]->children = array();
-        }
-        $posts[$p->parent]->children[$pid] =& $posts[$pid];
-    }
 
-    // Start with the last child of the first post.
-    $post = &$posts[reset($posts)->id];
+        // Start with the last child of the first post.
+        $post = &$posts[reset($posts)->id];
 
-    $lastpost = false;
-    while (!$lastpost) {
-        if (!isset($post->children)) {
-            $post->lastpost = true;
-            $lastpost = true;
-        } else {
-             // Go to the last child of this post.
-            $post = &$posts[end($post->children)->id];
+        $lastpost = false;
+        while (!$lastpost) {
+            if (!isset($post->children)) {
+                $post->lastpost = true;
+                $lastpost = true;
+            } else {
+                // Go to the last child of this post.
+                $post = &$posts[end($post->children)->id];
+            }
         }
     }
 
@@ -704,4 +711,180 @@ function hsuforum_mobile_get_style_margin(int $depthlevel) {
     }
 
     return $margin;
+}
+
+/**
+ * Function to filter/sort discussion rootposts. The function will iterate through the discussion
+ * posts and automatically add the filtered posts to its respective rootpost for the discussion in
+ * array 'filteredposts'. The function will also work out the amount of likes for a rootpost.
+ * @param array $discussionrootposts The discussion root posts
+ * @param int $discussionid The discussion id
+ * @param int $firstpostid The firstpost for the discussion
+ * @param int $filter The filter option
+ * @param int $filter The sort option
+ * @param object $course The course related to the discussion
+ *
+ * @return array The filtered/sorted posts
+ */
+function hsuforum_mobile_filter_sort_posts($discussionrootposts, $discussionid, $firstpostid, $filter, $sort, $course) {
+    global $DB, $USER, $PAGE;
+
+    try {
+        $returnposts = [];
+        $discussionposts = hsuforum_mobile_get_all_discussion_posts_by_field($discussionid, 'p.id,p.parent, p.userid');
+        $filteredposts = $PAGE->get_renderer('mod_hsuforum')->filter_sort_posts($discussionposts, $filter, $sort, $course, true, false);
+
+        foreach ($filteredposts as $postid => $post) {
+            if ($postid) {
+                if (in_array($post->parent, array_keys($discussionrootposts))) {
+                    hsuforum_mobile_add_filteredpost_to_posts_array($discussionrootposts, $post->parent, $postid);
+                } else {
+                    // Run up the chain to see if the filtered post is in one of the discussionrootposts
+                    if ($rootpost = hsuforum_get_firstlevel_post($postid, $discussionposts)) {
+                        hsuforum_mobile_add_filteredpost_to_posts_array($discussionrootposts, $rootpost->id, $postid);
+                    }
+                }
+            }
+        }
+
+        // With above algorithm we will also have an array 'filteredposts' for the firstpost which is the filtered rootposts
+        if (isset($discussionrootposts[$firstpostid]->filteredposts) && count($discussionrootposts[$firstpostid]->filteredposts)) {
+            foreach ($discussionrootposts[$firstpostid]->filteredposts as $filteredrootpost) {
+                array_push($returnposts, $discussionrootposts[$filteredrootpost]);
+            }
+        } else {
+            // Failsafe is something goes wrong
+            $returnposts = $discussionrootposts;
+        }
+
+        // Sort the posts
+        $sortedposts = hsuforum_mobile_sort_posts($returnposts, $sort);
+        return $sortedposts;
+
+    } catch (\Exception $e) {
+        print($e->getMessage());
+        // Last failsafe if something goes wrong
+        return $discussionrootposts;
+    }
+}
+
+/**
+ * Function to handle adding filtered post results to rootposts and like counts
+ * @param array $posts The rootposts for the discussion
+ * @param int $rootpostid The rootpost id
+ * @param int $postid The filtered post id
+ *
+ * @return array The rootposts
+ */
+function hsuforum_mobile_add_filteredpost_to_posts_array(&$rootposts, $rootpostid, $postid) {
+    global $DB;
+
+    // Adding post id to filteredposts array to highlight posts
+    if (isset($rootposts[$rootpostid]->filteredposts)) {
+        array_push($rootposts[$rootpostid]->filteredposts, $postid);
+    } else {
+        $rootposts[$rootpostid]->filteredposts = [];
+        array_push($rootposts[$rootpostid]->filteredposts, $postid);
+    }
+    // Add likes for sorting options
+    $postlikes = sizeof($DB->get_records('hsuforum_actions', array('postid' => $postid, 'action' => 'like')));
+    if ($postlikes) {
+        $rootposts[$rootpostid]->rootpostlikes += $postlikes;
+    }
+
+    return $rootposts;
+}
+
+/**
+ * Function to sort posts
+ * @param array $posts The posts to be sorted
+ * @param int $sort The sort option
+ *
+ * @return array The sorted posts
+ */
+function hsuforum_mobile_sort_posts($posts, $sort) {
+    if ($posts) {
+        switch ($sort) {
+            case SORT_OLDEST:
+                uasort($posts, function ($a, $b) {
+                    return $a->created <=> $b->created;
+                });
+                break;
+            
+            case SORT_NEWEST:
+                uasort($posts, function ($a, $b) {
+                    return $b->created <=> $a->created;
+                });
+                break;
+            
+            case SORT_LIKES_MOST_TO_LEAST:
+                uasort($posts, function ($a, $b) {
+                    $a->rootpostlikes = !$a->rootpostlikes ? 0 : $a->rootpostlikes;
+                    $b->rootpostlikes = !$b->rootpostlikes ? 0 : $b->rootpostlikes;
+
+                    return $b->rootpostlikes <=> $a->rootpostlikes;
+                });
+                break;
+
+            case SORT_REPLIES_MOST_TO_LEAST:
+                uasort($posts, function ($a, $b) {
+                    $a->filteredposts = !$a->filteredposts ? 0 : $a->filteredposts;
+                    $b->filteredposts = !$b->filteredposts ? 0 : $b->filteredposts;
+
+                    return $b->filteredposts <=> $a->filteredposts;
+                });
+                break;
+
+            default:
+                // Sort oldest as an default
+                uasort($posts, function ($a, $b) {
+                    return $a->created <=> $b->created;
+                });
+                break;
+        }
+    }
+
+    return $posts;
+}
+
+/**
+ * Function find the first level posts on the firstpost
+ * @param int $postid the post id
+ * @param array $unfilteredposts the posts for a discussion
+ *
+ * @return object the firstlevel post
+ */
+function hsuforum_get_firstlevel_post($postid, $unfilteredposts = array()) {
+    $firstlevelpost = false;
+    $depth = 0;
+
+    // Check if post id in arr.
+    if (isset($unfilteredposts[$postid])) {
+        $parentid = (int) $unfilteredposts[$postid]->parent;
+        $postid = -1;
+        while ($parentid !== 0) {
+            foreach ($unfilteredposts as $key => $value) {
+                // Found a parent for current search
+                if ($key == $parentid) {
+                    $parent = $unfilteredposts[$unfilteredposts[$parentid]->parent];
+                    // Exit search if parent parent is 0
+                    if ((int) $parent->parent == 0) {
+                        $parentid = 0;
+                        $depth++;
+                        // Setting return values
+                        $firstlevelpost = new stdClass();
+                        $firstlevelpost->id = $key;
+                        $firstlevelpost->depth = $depth;
+                    // Else continue search
+                    } else {
+                        $parentid = (int) $unfilteredposts[$key]->parent;
+                        $postid = (int) $unfilteredposts[$key];
+                        $depth++;
+                    }
+                }
+            }
+        }
+    }
+
+    return $firstlevelpost;
 }

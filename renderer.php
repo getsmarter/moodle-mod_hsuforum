@@ -1985,92 +1985,96 @@ HTML;
         </svg>';
     }
 
-    public function filter_sort_posts($posts, $filter, $sort, $course) {
+    public function filter_sort_posts($posts, $filter, $sort, $course, $runfilter=true, $runsort=true) {
         global $DB, $USER;
-        if ($filter == 1) {
-            $unreadpostchildren = array();
+        if ($runfilter) {
+            if ($filter == 1) {
+                $unreadpostchildren = array();
 
-            foreach ($posts as $post) {
-                if ($post->postread == null || $post->parent == 0) {
-                    $unreadpostchildren[$post->id] = $post;
-                }
-                foreach ($post->children as $childpost) {
-                    if ($childpost->postread == null) {
+                foreach ($posts as $post) {
+                    if ($post->postread == null || $post->parent == 0) {
                         $unreadpostchildren[$post->id] = $post;
                     }
-                }
-            }
-
-            if (!empty($unreadpostchildren)) {
-                $posts = $unreadpostchildren;
-            }
-        } elseif ($filter == 2) {
-            $myposts = array();
-
-            foreach ($posts as $post) {
-                if ($post->parent == 0) {
-                    $myposts[$post->id] = $post;
-                    continue;
-                }
-
-                if ($post->userid == $USER->id) {
-                    $myposts[$post->id] = $post;
-                    $this->addallparentpostsmyreplies($post, $posts, $myposts);
-                }
-            }
-            $posts = $myposts;
-        } elseif ($filter == 3) {
-            $tutorposts = array();
-            $roletutor = $DB->get_record('role', array('shortname' => 'tutor'));
-            $rolehtutor = $DB->get_record('role', array('shortname' => 'headtutor'));
-
-            if ($roletutor || $rolehtutor) {
-                $context = $DB->get_record('context', array('instanceid' => $course->id, 'contextlevel' => '50'));
-                if ($context) {
-                    $roleassigntutor = $DB->get_records('role_assignments', array('contextid' => $context->id, 'roleid' => $roletutor->id), '', 'userid');
-                    $roleassignheadtutor = $DB->get_records('role_assignments', array('contextid' => $context->id, 'roleid' => $rolehtutor->id), '', 'userid');
-                    if ($roleassigntutor || $roleassignheadtutor) {
-                        foreach ($posts as $post) {
-                            if ($post->parent == 0) {
-                                $tutorposts[$post->id] = $post;
-                                continue;
-                            }
-
-                            if (isset($roleassigntutor[$post->userid]) || isset($roleassignheadtutor[$post->userid])) {
-
-                                $tutorposts[$post->id] = $post;
-
-                                $this->addallparentposts($post, $posts, $tutorposts);
-                            }
+                    foreach ($post->children as $childpost) {
+                        if ($childpost->postread == null) {
+                            $unreadpostchildren[$post->id] = $post;
                         }
-                        $posts = $tutorposts;
+                    }
+                }
+
+                if (!empty($unreadpostchildren)) {
+                    $posts = $unreadpostchildren;
+                }
+            } elseif ($filter == 2) {
+                $myposts = array();
+
+                foreach ($posts as $post) {
+                    if ($post->parent == 0) {
+                        $myposts[$post->id] = $post;
+                        continue;
+                    }
+
+                    if ($post->userid == $USER->id) {
+                        $myposts[$post->id] = $post;
+                        $this->addallparentpostsmyreplies($post, $posts, $myposts);
+                    }
+                }
+                $posts = $myposts;
+            } elseif ($filter == 3) {
+                $tutorposts = array();
+                $roletutor = $DB->get_record('role', array('shortname' => 'tutor'));
+                $rolehtutor = $DB->get_record('role', array('shortname' => 'headtutor'));
+
+                if ($roletutor || $rolehtutor) {
+                    $context = $DB->get_record('context', array('instanceid' => $course->id, 'contextlevel' => '50'));
+                    if ($context) {
+                        $roleassigntutor = $DB->get_records('role_assignments', array('contextid' => $context->id, 'roleid' => $roletutor->id), '', 'userid');
+                        $roleassignheadtutor = $DB->get_records('role_assignments', array('contextid' => $context->id, 'roleid' => $rolehtutor->id), '', 'userid');
+                        if ($roleassigntutor || $roleassignheadtutor) {
+                            foreach ($posts as $post) {
+                                if ($post->parent == 0) {
+                                    $tutorposts[$post->id] = $post;
+                                    continue;
+                                }
+
+                                if (isset($roleassigntutor[$post->userid]) || isset($roleassignheadtutor[$post->userid])) {
+
+                                    $tutorposts[$post->id] = $post;
+
+                                    $this->addallparentposts($post, $posts, $tutorposts);
+                                }
+                            }
+                            $posts = $tutorposts;
+                        }
                     }
                 }
             }
         }
 
-        if (!empty($posts)) {
-            if ($sort == 1) {
-                $posts = array_reverse($posts, true);
-            } else if ($sort == 2) {
-                uasort($posts, function ($a, $b) {
-                    return $b->children <=> $a->children;
-                });
-            } else if ($sort == 3) {
-                uasort($posts, function ($a, $b) {
-                    global $DB;
-                    $alikes = sizeof($DB->get_records('hsuforum_actions', array('postid' => $a->id, 'action' => 'like')));
-                    $blikes = sizeof($DB->get_records('hsuforum_actions', array('postid' => $b->id, 'action' => 'like')));
-                    return $blikes <=> $alikes;
-                });
-            } else if ($sort == 4) {
-                uasort($posts, function ($a, $b) {
-                    return $a->created <=> $b->created;
-                });
-            } else if ($sort == 5) {
-                uasort($posts, function ($a, $b) {
-                    return $b->created <=> $a->created;
-                });
+        if ($runsort) {
+            if (!empty($posts)) {
+                if ($sort == 1) {
+                    $posts = array_reverse($posts, true);
+                } else if ($sort == 2) {
+                    uasort($posts, function ($a, $b) {
+                        return $b->children <=> $a->children;
+                    });
+                } else if ($sort == 3) {
+                    uasort($posts, function ($a, $b) {
+                        global $DB;
+                        $alikes = sizeof($DB->get_records('hsuforum_actions', array('postid' => $a->id, 'action' => 'like')));
+                        $blikes = sizeof($DB->get_records('hsuforum_actions', array('postid' => $b->id, 'action' => 'like')));
+                        return $blikes <=> $alikes;
+                    });
+                } else if ($sort == 4) {
+                    uasort($posts, function ($a, $b) {
+                        return $a->created <=> $b->created;
+                    });
+                } else if ($sort == 5) {
+                    uasort($posts, function ($a, $b) {
+                        return $b->created <=> $a->created;
+                    });
+                }
             }
         }
 
