@@ -478,6 +478,7 @@ class mobile {
                 'sort'              => $sort,
                 'filter'            => $filter,
                 'sortfilterdefault' => ($sort == 4 && $filter == 1) ? 1 : 0,
+                'filterdefault'     => $filter == 1 ? 1 : 0,
             ),
             'files' => ''
         );
@@ -585,6 +586,7 @@ class mobile {
         $havechildren          = isset($args['havechildren']) ? $args['havechildren'] : false;
         $unreadpostids         = [];
         $sortfilterdefault     = isset($args['sortfilterdefault']) ? (bool) $args['sortfilterdefault'] : false;
+        $filterdefault         = isset($args['filterdefault']) ? (bool) $args['filterdefault'] : false;
         $highlightposts        = isset($args['filteredids']) ? JSON_DECODE($args['filteredids']) : false;
 
     /// Getting all nested unread ids for root post in discussion
@@ -661,7 +663,7 @@ class mobile {
             }
 
             // Check if post needs to be highlighted - temporary demonstration
-            if (!$sortfilterdefault && ($highlightposts && in_array($reply->id, $highlightposts))) {
+            if (!$filterdefault && ($highlightposts && in_array($reply->id, $highlightposts))) {
                 $reply->highlightcolor = 'lightskyblue';
             } else {
                 $reply->highlightcolor = '#fff';
