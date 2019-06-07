@@ -188,6 +188,7 @@
                     <ion-option value="4"><% sortdefaultlabel %></ion-option>
                     <ion-option value="5"><% sortnewestfirstlabel %></ion-option>
                     <ion-option value="3"><% sortmostlikeslabel %></ion-option>
+                    <ion-option value="2"><% sortmostreplieslabel %></ion-option>
                     </ion-select>
                 </ion-item>
             </ion-col>
@@ -300,7 +301,12 @@
                 title="Reply to <% discussionname %>"
                 component="mod_hsuforum" 
                 method="view_post_replies"
-                [args]="{'postid':reply.id, 'discussionid':reply.discussion, 'havechildren': reply.havereplies}">
+                [args]="{
+                    'postid':reply.id,
+                    'discussionid':reply.discussion,
+                    'havechildren': reply.havereplies,
+                    'sortfilterdefault': CONTENT_OTHERDATA.sortfilterdefault,
+                    'filteredids': reply.filteredids}">
                 View replies 
             </button>
             <!-- Who liked section -->

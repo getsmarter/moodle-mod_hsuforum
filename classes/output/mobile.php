@@ -332,7 +332,7 @@ class mobile {
             $sort = isset($args['sort']) ? $args['sort'] : $sort;
             $filter = isset($args['filter']) ? $args['filter'] : $filter;
         }
-        $repliessorted = $PAGE->get_renderer('mod_hsuforum')->filter_sort_posts($repliesraw, $filter, $sort, $course);
+        $repliessorted = hsuforum_mobile_filter_sort_posts($repliesraw, $discussion->id, $firstpost->id, $filter, $sort, $course);
 
         // Populating replies with virtual props needed for template
         foreach ($repliessorted as &$reply) {
@@ -404,6 +404,11 @@ class mobile {
                 $reply->havereplies = hsuforum_count_replies($reply, $children=true);
 
                 $replies[] = $reply;
+                
+                // Check for filteredposts and encode the array to be passed to next view as param
+                if ($reply->filteredposts && count($reply->filteredposts)) {
+                    $reply->filteredids = JSON_ENCODE($reply->filteredposts);
+                }
             }
         }
 
@@ -422,6 +427,7 @@ class mobile {
         $sortdefault        = get_string('sortdefault', 'hsuforum');
         $sortnewestfirst    = get_string('sortnewestfirst', 'hsuforum');
         $sortmostlikes      = get_string('sortmostlikes', 'hsuforum');
+        $sortmostreplies    = get_string('sortmostreplies', 'hsuforum');
 
     /// Handling Events
         hsuforum_discussion_view($modcontext, $forum, $discussion);
@@ -453,6 +459,7 @@ class mobile {
             'sortdefaultlabel'          => $sortdefault,
             'sortnewestfirstlabel'      => $sortnewestfirst,
             'sortmostlikeslabel'        => $sortmostlikes,
+            'sortmostreplieslabel'      => $sortmostreplies,
         );
 
         return array(
@@ -470,7 +477,7 @@ class mobile {
                 'discussiontitle'   => $discussion->name,
                 'sort'              => $sort,
                 'filter'            => $filter,
-                'sortfilterdefault' => true ? ($sort == 4 && $filter == 1) : false,
+                'sortfilterdefault' => ($sort == 4 && $filter == 1) ? 1 : 0,
             ),
             'files' => ''
         );
@@ -577,6 +584,8 @@ class mobile {
         $courseroleassignments = hsuforum_get_course_roles_and_assignments($course->id);
         $havechildren          = isset($args['havechildren']) ? $args['havechildren'] : false;
         $unreadpostids         = [];
+        $sortfilterdefault     = isset($args['sortfilterdefault']) ? (bool) $args['sortfilterdefault'] : false;
+        $highlightposts        = isset($args['filteredids']) ? JSON_DECODE($args['filteredids']) : false;
 
     /// Getting all nested unread ids for root post in discussion
         $readpostids = hsuforum_get_unread_nested_postids($discussion->id, $postid, $USER->id);
@@ -587,10 +596,12 @@ class mobile {
 
     /// Build reply structure where posts will have an indicated depth level in relation to its root parent.
         if ($havechildren > 0) {
-            $unfilteredposts = hsuforum_mobile_get_all_discussion_posts_by_field($discussion->id, 'p.id, p.parent');
+            // This is all the posts for the discussion in a slimmed down version for processing
+            $unfilteredposts = hsuforum_mobile_get_all_discussion_posts_by_field($discussion->id, 'p.id, p.parent', true);
+            // The post we clicked on to view the nested replies
+            $post = $unfilteredposts[$discussion->firstpost]->children[$postid];
             $filteredposts = [];
-            $firstpost = $unfilteredposts[$discussion->firstpost]->id;
-            $filteredposts = hsuforum_mobile_post_walker($unfilteredposts, $firstpost);
+            $filteredposts = hsuforum_mobile_post_walker($post->children, $postid);
 
             foreach ($filteredposts as $filteredpost) {
                 if ($post = hsuforum_get_post_full($filteredpost['id'])) {
@@ -647,6 +658,13 @@ class mobile {
                 default:
                     $reply->rolecolor = false;
                     break;
+            }
+
+            // Check if post needs to be highlighted - temporary demonstration
+            if (!$sortfilterdefault && ($highlightposts && in_array($reply->id, $highlightposts))) {
+                $reply->highlightcolor = 'lightskyblue';
+            } else {
+                $reply->highlightcolor = '#fff';
             }
         }
 
