@@ -22,9 +22,10 @@
     </ion-card-content>
 </ion-card>
 
-    <!-- Sort discussions -->
+    <!-- Sort/Filter discussions -->
     <ion-grid class="hsu-filter-box">
         <ion-row>
+            <!-- Filter discussions -->
             <ion-col col-auto *ngIf="CONTENT_OTHERDATA.allowedgroups && CONTENT_OTHERDATA.allowedgroups.length > 1">
                     <ion-label>Filter by:</ion-label>
                     <ion-item>
@@ -34,15 +35,15 @@
                             interface="alert" 
                             [(ngModel)]="CONTENT_OTHERDATA.filter" 
                             >
-                            <ion-option value="<% allparticipantsid %>"><% allparticipants %></ion-option>
                             <ion-option 
-                                *ngFor="let group of CONTENT_OTHERDATA.allowedgroups" 
+                                *ngFor="let group of CONTENT_OTHERDATA.allgroups" 
                                 value={{group.id}}>
                                 {{group.name}}
                             </ion-option>
                         </ion-select>
                     </ion-item>
             </ion-col>
+            <!-- Sort discussions -->
             <ion-col col-auto>
                 <ion-label>Sort by:</ion-label>
                 <ion-item>

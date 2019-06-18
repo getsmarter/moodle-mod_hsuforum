@@ -98,7 +98,12 @@ class mobile {
         $discussions = false;
 
         // Sorting/filter the discussions
-        $args->filter = !isset($args->filter) ? HSUFORUM_POSTS_ALL_USER_GROUPS : $args->filter;
+        if ($cm->groupmode == VISIBLEGROUPS && (!empty($allowedgroups) && count($allowedgroups))) {
+            $args->filter = !isset($args->filter) ? $allowedgroups[0]->id : $args->filter;
+        } else {
+            $args->filter = !isset($args->filter) ? HSUFORUM_POSTS_ALL_USER_GROUPS : $args->filter;
+        }
+
         $args->sort = !isset($args->sort) ? 'recent' : $args->sort;
         switch ($args->sort) {
             case 'recent':
@@ -123,7 +128,6 @@ class mobile {
 
     /// Getting discussions
         try {
-            // $discussions = hsuforum_get_discussions($cm, $sortorder, $fullpost, null, $maxdiscussions, $getuserlastmodified, $page, $perpage, HSUFORUM_POSTS_ALL_USER_GROUPS, false);
             $discussions = hsuforum_get_discussions($cm, $sortorder, $fullpost, null, $maxdiscussions, $getuserlastmodified, $page, $perpage, $args->filter, false);
         } catch (Exception $e) {
             // @TODO handle exceptions properly in the app context
@@ -226,6 +230,7 @@ class mobile {
             'javascript' => '',
             'otherdata' => array(
                 'allowedgroups' => json_encode($allowedgroups),
+                'allgroups' => json_encode(array_values($allgroups)),
                 'discussions' => json_encode(array_values($discussions)),
                 'groupselection'  => (is_array($allowedgroups) && count($allowedgroups)) ? $allowedgroups[0]->id : -1,
                 'forum' => json_encode($forum),
