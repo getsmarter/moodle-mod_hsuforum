@@ -69,12 +69,14 @@ class mobile {
                     $groupstopostto[] = $group;
                 }
             }
-            if (count($groupstopostto) === count($allgroups)) {
-                $all_participants = new \stdClass;
-                $all_participants->id = '-1';
-                $all_participants->name = 'All Participants';
-                array_unshift($groupstopostto, $all_participants);
-            }
+
+            // Adding 'All Participants entry 
+            $all_participants = new \stdClass;
+            $all_participants->id = '-1';
+            $all_participants->name = 'All Participants';
+            $allgroups = array('-1' => $all_participants) + $allgroups;
+
+            // Setting allowed groups to verified groups you can post to
             $allowedgroups = $groupstopostto;
         } else {
             $allowedgroups = [];
@@ -98,7 +100,8 @@ class mobile {
         $discussions = false;
 
         // Sorting/filter the discussions
-        if ($cm->groupmode == VISIBLEGROUPS && (!empty($allowedgroups) && count($allowedgroups))) {
+        if ($cm->groupmode > 0 && (!empty($allowedgroups) && count($allowedgroups))) {
+            // Choose first allowed group as first option if not on all groups mode.
             $args->filter = !isset($args->filter) ? $allowedgroups[0]->id : $args->filter;
         } else {
             $args->filter = !isset($args->filter) ? HSUFORUM_POSTS_ALL_USER_GROUPS : $args->filter;
