@@ -307,6 +307,10 @@ class mobile {
             $firstpost->latestpost = strlen($stats['latestpost']) ? $stats['latestpost'] : false;
             $firstpost->contribs = $stats['contribs'];
 
+            if(empty($firstpost->replies)) {
+                $firstpost->createdfiltered = '';
+            }
+
             // Set ribbon labels
             $firstpost->viewslabel = ($stats['views'] == 0) || ($stats['views'] > 1) ? get_string('views', 'hsuforum') : get_string('view', 'hsuforum');
             $firstpost->contribslabel = ($stats['contribs'] == 0) || ($stats['contribs'] > 1) ? get_string('contributors', 'hsuforum') : get_string('contributor', 'hsuforum');
