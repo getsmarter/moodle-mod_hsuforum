@@ -1529,8 +1529,7 @@ HTML;
             }
             $groupcount = count($groupinfo);
 
-            $canposttoowngroups = empty($postid)
-                                    && $groupcount > 1
+            $canposttoowngroups = $groupcount > 1
                                     && empty($post->parent)
                                     && has_capability('mod/hsuforum:canposttomygroups', $context);
 
