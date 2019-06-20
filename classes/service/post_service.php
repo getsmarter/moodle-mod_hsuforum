@@ -114,7 +114,7 @@ class post_service {
      * @param array $options These override default post values, EG: set the post message with this
      * @return json_response
      */
-    public function handle_update_post($course, $cm, $forum, $context, $discussion, $post, array $deletefiles = array(), array $options) {
+    public function handle_update_post($course, $cm, $forum, $context, $discussion, $post, array $deletefiles = array(), $posttomygroups, array $options) {
 
         $this->require_can_edit_post($forum, $context, $discussion, $post);
 
@@ -149,6 +149,34 @@ class post_service {
         // If the user has access to all groups and they are changing the group, then update the post.
         if (empty($post->parent) && has_capability('mod/hsuforum:movediscussions', $context)) {
             $this->db->set_field('hsuforum_discussions', 'groupid', $options['groupid'], array('id' => $discussion->id));
+        }
+
+        // Handle templating if 'post to my groups' checkbox enabled.
+        if (!empty($posttomygroups)) {
+            $allowedgroups = groups_get_activity_allowed_groups($cm);
+            foreach ($allowedgroups as $groupid => $group) {
+                if (hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $context)) {
+                    $groupstopostto[] = $groupid;
+                } else {
+                    $groupstopostto[] = $options['groupid'];
+                }
+            }
+
+            foreach ($groupstopostto as $groupid) {
+                $options['groupid'] = $groupid;
+
+                $copydiscussion = $this->discussionservice->create_discussion_object($forum, $context, $options);
+                $errors = $this->discussionservice->validate_discussion($cm, $forum, $context, $copydiscussion, $uploader);
+
+                if (!empty($errors)) {
+                    $renderer = $PAGE->get_renderer('mod_hsuforum');
+                    return new json_response((object) array(
+                        'errors' => true,
+                        'html'   => $renderer->validation_errors($errors),
+                    ));
+                }
+                $this->discussionservice->save_discussion($copydiscussion, $uploader);
+            }
         }
 
         $this->trigger_post_updated($context, $forum, $discussion, $post);
