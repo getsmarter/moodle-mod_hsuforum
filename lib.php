@@ -4127,13 +4127,20 @@ function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload
         $post->mailnow    = 0;
     }
 
+    $filearea = 'post';
     $draftid = file_get_submitted_draft_itemid('hiddenadvancededitor');
     if (!$draftid) {
         $draftid = file_get_submitted_draft_itemid('message');
     }
 
+    // Handle draftid's that has been passed via the post (typically mobile).
+    if ($post->draftid) { 
+        $draftid = $post->draftid;
+        $filearea = 'attachment';
+    }
+
     $post->id = $DB->insert_record("hsuforum_posts", $post);
-    $post->message = file_save_draft_area_files($draftid, $context->id, 'mod_hsuforum', 'post', $post->id,
+    $post->message = file_save_draft_area_files($draftid, $context->id, 'mod_hsuforum', $filearea, $post->id,
             mod_hsuforum_post_form::editor_options($context, $post->id), $post->message);
     $DB->set_field('hsuforum_posts', 'message', $post->message, array('id'=>$post->id));
     hsuforum_add_attachment($post, $forum, $cm, $mform, null, $uploader);

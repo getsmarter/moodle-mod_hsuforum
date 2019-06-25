@@ -320,6 +320,7 @@ class mobile {
             // Getting attachments files
             $filesraw = $attachmentclass->get_attachments($firstpost->id);
             $firstpost->files = [];
+            $firstpost->attachments = [];
             foreach ($filesraw as $file) {
                 $fileobj = new \stdClass;
                 $fileobj->id = $file->get_itemid();
@@ -334,6 +335,10 @@ class mobile {
     
                 array_push($firstpost->files, $fileobj);
             }
+
+            // Set forumid and groupid
+            $firstpost->forumid = $forum->id;
+            $firstpost->groupid = $discussion->groupid;
         }
 
         $repliesparams = array('p.parent' => $discussion->firstpost);
@@ -376,6 +381,10 @@ class mobile {
                     array_push($unreadpostids, $reply->id);
                 }
 
+                // Set forumid and groupid
+                $reply->forumid = $forum->id;
+                $reply->groupid = $discussion->groupid;
+
                 // Getting role colors
                 switch (true) {
                     case in_array($postuser->id, $courseroleassignments['htutor']):
@@ -397,6 +406,7 @@ class mobile {
                 // Getting attachments files
                 $filesraw = $attachmentclass->get_attachments($reply->id);
                 $reply->files = [];
+                $reply->attachments = [];
                 foreach ($filesraw as $file) {
                     $fileobj = new \stdClass;
                     $fileobj->id = $file->get_itemid();
@@ -465,6 +475,8 @@ class mobile {
             'canreply'       => $cm->groupmode == 0 ? true : $canreply,
             'showtaguserul'  => $showtaguserul,
             'tagusers'       => $tagusers,
+            'maxsize'        => $forum->maxbytes,
+            'maxattachments' => $forum->maxattachments,
             'filterdefaultlabel'        => $filterdefault,
             'filtertutorreplieslabel'   => $filtertutorreplies,
             'filtermyreplieslabel'      => $filtermyreplies,
@@ -491,6 +503,7 @@ class mobile {
                 'filter'            => $filter,
                 'sortfilterdefault' => ($sort == 4 && $filter == 1) ? 1 : 0,
                 'filterdefault'     => $filter == 1 ? 1 : 0,
+                'page'              => 'discussion_posts',
             ),
             'files' => ''
         );
@@ -600,6 +613,7 @@ class mobile {
         $sortfilterdefault     = isset($args['sortfilterdefault']) ? (bool) $args['sortfilterdefault'] : false;
         $filterdefault         = isset($args['filterdefault']) ? (bool) $args['filterdefault'] : false;
         $highlightposts        = isset($args['filteredids']) ? JSON_DECODE($args['filteredids']) : false;
+        $attachmentclass       = new \mod_hsuforum\attachments($forum, $modcontext);
 
     /// Getting all nested unread ids for root post in discussion
         $readpostids = hsuforum_get_unread_nested_postids($discussion->id, $postid, $USER->id);
@@ -680,6 +694,25 @@ class mobile {
             } else {
                 $reply->highlightcolor = '#fff';
             }
+
+            // Getting attachments files
+            $filesraw = $attachmentclass->get_attachments($reply->id);
+            $reply->files = [];
+            $reply->attachments = [];
+            foreach ($filesraw as $file) {
+                $fileobj = new \stdClass;
+                $fileobj->id = $file->get_itemid();
+                $fileobj->filename = $file->get_filename();
+                $fileobj->filepath = $file->get_filepath();
+                $fileobj->fileurl = moodle_url::make_pluginfile_url(
+                    $modcontext->id, 'mod_hsuforum', "attachment", $fileobj->id, '/', $fileobj->filename)->out(false);
+                $fileobj->filesize = $file->get_filesize();
+                $fileobj->timemodified = $file->get_timemodified();
+                $fileobj->mimetype = $file->get_mimetype();
+                $fileobj->isexternalfile = $file->get_repository_type();
+    
+                array_push($reply->files, $fileobj);
+            }
         }
 
     /// Getting tagable users
@@ -711,6 +744,8 @@ class mobile {
             'canreply'       => $cm->groupmode == 0 ? true : $canreply,
             'showtaguserul'  => $showtaguserul,
             'tagusers'       => $tagusers,
+            'maxsize'        => $forum->maxbytes,
+            'maxattachments' => $forum->maxattachments,
         );
 
         return array(
@@ -724,6 +759,7 @@ class mobile {
             'otherdata'         => array(
                 'replies'       => json_encode(array_values($replies)),
                 'sectionbody'   => '',
+                'page'          => 'discussion_posts_replies',
             ),
             'files' => ''
         );
