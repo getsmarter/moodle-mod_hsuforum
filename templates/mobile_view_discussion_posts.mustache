@@ -71,22 +71,25 @@
                         <ion-item class="hsu-text-editor-wrapper">
                             <core-rich-text-editor item-content [control]=controls[CONTENT_OTHERDATA.firstpost.id] name="rte_new_post_{{CONTENT_OTHERDATA.firstpost.id}}"></core-rich-text-editor>
                         </ion-item>
+                        <core-attachments 
+                            [files]="CONTENT_OTHERDATA.firstpost.attachments" 
+                            [maxSize]="<% maxsize %>"
+                            [maxSubmissions]="<% maxattachments %>"
+                            [component]="mod_hsuforum" 
+                            [componentId]="<% cmid %>" 
+                            [acceptedTypes]="image/jpeg" 
+                            [allowOffline]="false">
+                        </core-attachments>
                     </form>
 
                     <ion-row text-center>
                         <!-- Form submit button -->
                         <ion-col>
-                            <button
-                                ion-button small clear core-site-plugins-call-ws
-                                name="mod_hsuforum_add_discussion_post" 
-                                [disabled]="controls[CONTENT_OTHERDATA.firstpost.id].value <= 3"
-                                [params]="{postid: <% id %>, subject: 'RE: <% subject %>', message: controls[CONTENT_OTHERDATA.firstpost.id].value}" 
-                                [preSets]="{getFromCache: 0, saveToCache: 0}" 
-                                successMessage 
-                                refreshOnSuccess="true" 
-                                (click)="CONTENT_OTHERDATA.showform_<% id %> = true"
-                                >
-                                Submit reply
+                            <button ion-button small clear type="submit"
+                                [disabled]="controls[CONTENT_OTHERDATA.firstpost.id].value == null || controls[CONTENT_OTHERDATA.firstpost.id].value == ''"
+                                (click)="handlePost(CONTENT_OTHERDATA.firstpost)"
+                                successMessage>
+                                <h3>Submit reply</h3>
                             </button>
                         </ion-col>
 
@@ -323,22 +326,24 @@
                     <ion-item class="hsu-text-editor-wrapper">
                         <core-rich-text-editor item-content [control]=controls[reply.id] name="rte_new_post_{{reply.id}}"></core-rich-text-editor>
                     </ion-item>
+                    <core-attachments 
+                        [files]="reply.attachments" 
+                        [maxSize]="<% maxsize %>"
+                        [maxSubmissions]="<% maxattachments %>"
+                        [component]="mod_hsuforum" 
+                        [componentId]="<% cmid %>" 
+                        [acceptedTypes]="image/jpeg" 
+                        [allowOffline]="false">
+                    </core-attachments>
                 </form>
                 <ion-row text-center>
                     <!-- Form submit button -->
                     <ion-col>
-                        <button
-                            ion-button small clear type="submit" core-site-plugins-call-ws 
-                            name="mod_hsuforum_add_discussion_post" 
-                            *ngIf="reply.showform"
-                            [disabled]="controls[reply.id].value <= 3"
-                            [params]="{postid: reply.id, subject: 'RE:' + reply.subject, message: controls[reply.id].value}" 
-                            [preSets]="{getFromCache: 0, saveToCache: 0}" 
-                            successMessage 
-                            refreshOnSuccess="true" 
-                            (click)="reply.showform = true"
-                            >
-                            Submit reply
+                        <button ion-button small clear type="submit"
+                            [disabled]="controls[reply.id].value == null || controls[reply.id].value == ''"
+                            (click)="handlePost(reply)"
+                            successMessage>
+                            <h3>Submit reply</h3>
                         </button>
                     </ion-col>
 

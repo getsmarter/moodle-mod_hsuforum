@@ -14,16 +14,18 @@
         //-----------------------------------//
 
         /**
-         * Function to add a new discussion
+         * Function to handle posts. Can be for replies or new discussions.
+         * If no post id object then the function will handle adding a new discussion.
          * @param {object} that The this object when calling this function.
+         * @param {object} post The post for a reply
          * @return {void}
          */
-        addDiscussion: (that) => {
-            let subject = that.CONTENT_OTHERDATA.discussiontitle;
-            let message = that.controls[1].value;
+        handlePost: (that, post) => {
+            let subject = (post && post.id) ? post.subject : that.CONTENT_OTHERDATA.discussiontitle;
+            let message = (post && post.id) ? that.controls[post.id].value : that.controls[1].value;
             let groupId = that.CONTENT_OTHERDATA.groupselection;
-            let forumId = that.CONTENT_OTHERDATA.forumid;
-            let attachments = that.CONTENT_OTHERDATA.files;
+            let forumId = (post && post.forumid) ? post.forumid : that.CONTENT_OTHERDATA.forumid;
+            let attachments = (post && post.attachments) ? post.attachments : that.CONTENT_OTHERDATA.files;
             let modal;
             let promise;
 
@@ -45,23 +47,37 @@
             promise.then(draftAreaId => {
                 // Try to send it to server.
                 let site = that.CoreSitesProvider.getCurrentSite();
-                let params = {
-                    forumid: forumId,
-                    subject: subject,
-                    message: message,
-                    groupid: groupId,
-                    draftid: draftAreaId,
-                };
-                return site.write('mod_hsuforum_add_discussion', params).then(response => {
+                let webservice = (post && post.parent) ? 'mod_hsuforum_add_discussion_post' :'mod_hsuforum_add_discussion';
+                let params = {};
+                if (post && post.parent) {
+                    params.postid  = post.id;
+                    params.subject = subject;
+                    params.message = message;
+                    params.draftid = draftAreaId;
+                } else {
+                    params.forumid = forumId;
+                    params.subject = subject;
+                    params.message = message;
+                    params.groupid = groupId;
+                    params.draftid = draftAreaId;
+                }
+
+                return site.write(webservice, params).then(response => {
                     // Other errors ocurring.
-                    if (!response || !response.discussionid) {
+                    if (!response) {
                         return Promise.reject(that.CoreWSProvider.createFakeWSError(response.warnings));
                     } else {
-                        return response.discussionid;
+                        return response;
                     }
                 });
             }).then(() => {
-                that.NavController.pop();
+                if (!post && !post.id) {
+                    // Go back one level if adding a new discussion
+                    that.NavController.pop();
+                } else {
+                    // Refresh page if adding a reply
+                    that.refreshContent();
+                }
             }).catch(msg => {
                 that.CoreUtilsProvider.domUtils.showErrorModalDefault(msg, 'addon.mod_forum.cannotcreatediscussion', true);
             }).finally(() => {
@@ -92,45 +108,45 @@
                 mobile.controls[1] = mobile.FormBuilder.control('');
             }
         },
-
-
-        //-------------------//
-        // Init declarations
-        //-------------------//
-
-        /**
-         * Initialisation for the discussions page.
-         * @param {object} mobile The moodlemobile instance
-         * @return {void}
-         */
-        addDiscussionInit: function(mobile) {
-            window.addDiscussion = function() {
-                mobile.mod_hsuforum.addDiscussion(mobile);
-            };
-        },
-
-        /**
-         * Function to initialize formcontrols for all pages
-         * @param {object} mobile The moodlemobile instance
-         * @return {void}
-         */
-        formControlInit: function(mobile) {
-            this.buildFormControls(mobile);
-        },
     };
 
+    //-------------------//
+    // Init declarations
+    //-------------------//
+
+    /**
+     * Initialisation for the discussions page.
+     * @param {object} outerThis The main component.
+     * @return {void}
+     */
+    window.postServiceInit = function(outherThis) {
+        outherThis.handlePost = function(post = false) {
+            mobile.mod_hsuforum.handlePost(outherThis, post);
+        };
+    };
+
+    /**
+     * Function to initialize formcontrols for all pages
+     * @param {object} outerThis The main component.
+     * @return {void}
+     */
+    window.formControlInit = function(outerThis) {
+        mobile.mod_hsuforum.buildFormControls(outerThis);
+    };
 
     //------------------------------------------------//
     // Inits being called based on page variables set.
     //------------------------------------------------//
 
     switch(mobile.CONTENT_OTHERDATA.page) { 
-        case 'add_discussion': { 
-            mobile.mod_hsuforum.addDiscussionInit(mobile);
+        case 'add_discussion': 
+        case 'discussion_posts_replies': 
+        case 'discussion_posts': {
+            window.postServiceInit(mobile);
         }
         // Case for if page is undefined or inits that should run on all pages
         default: { 
-            mobile.mod_hsuforum.formControlInit(mobile);
+            window.formControlInit(mobile);
             break; 
         }
     }

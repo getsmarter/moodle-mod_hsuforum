@@ -49,6 +49,16 @@
         </ion-card-header>
 
         <ion-card-content padding-top class="card-content card-content-md">
+
+            <!-- Uploaded files -->
+            <ion-list *ngIf="reply.files.length">
+                <core-file *ngFor="let file of reply.files"
+                    [file]="{fileurl: file.fileurl, filename: file.filename, timemodified: file.timemodified, filesize: file.filesize}"
+                    component="mod_hsuforum"
+                    componentId="<% cmid %>">
+                </core-file>
+            </ion-list>
+
             <core-format-text maxHeight="127" fullOnClick="true" text="{{reply.message}}"></core-format-text>
         </ion-card-content>
 
@@ -87,22 +97,24 @@
                 <ion-item class="hsu-text-editor-wrapper">
                     <core-rich-text-editor item-content [control]=controls[reply.id] name="rte_new_post_{{reply.id}}"></core-rich-text-editor>
                 </ion-item>
+                <core-attachments 
+                    [files]="reply.attachments" 
+                    [maxSize]="<% maxsize %>"
+                    [maxSubmissions]="<% maxattachments %>"
+                    [component]="mod_hsuforum" 
+                    [componentId]="<% cmid %>" 
+                    [acceptedTypes]="image/jpeg" 
+                    [allowOffline]="false">
+                </core-attachments>
             </form>
             <ion-row text-center>
                 <!-- Form submit button -->
                 <ion-col>
-                    <button
-                        ion-button small clear type="submit" core-site-plugins-call-ws 
-                        name="mod_hsuforum_add_discussion_post" 
-                        *ngIf="reply.showform"
-                        [disabled]="controls[reply.id].value <= 3"
-                        [params]="{postid: reply.id, subject: 'RE:' + reply.subject, message: controls[reply.id].value}" 
-                        [preSets]="{getFromCache: 0, saveToCache: 0}" 
-                        successMessage 
-                        refreshOnSuccess="true" 
-                        (click)="reply.showform = true"
-                        >
-                        Submit reply
+                    <button ion-button small clear type="submit"
+                        [disabled]="controls[reply.id].value == null || controls[reply.id].value == ''"
+                        (click)="handlePost(reply)"
+                        successMessage>
+                        <h3>Submit reply</h3>
                     </button>
                 </ion-col>
 

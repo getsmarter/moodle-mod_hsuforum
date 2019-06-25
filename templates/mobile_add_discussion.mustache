@@ -53,7 +53,7 @@
         <ion-item class="add-discussion-button-wrapper">
             <button ion-button full
                 [disabled]="CONTENT_OTHERDATA.discussiontitle == '' || controls[1].value == null || controls[1].value == ''"
-                onclick="addDiscussion()"
+                (click)="handlePost()"
                 successMessage 
                 goBackOnSuccess="true">
                 <h3><% posttoforumlabel %></h3>
