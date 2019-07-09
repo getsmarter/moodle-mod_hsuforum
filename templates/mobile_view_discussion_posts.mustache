@@ -158,7 +158,6 @@
         </ion-card>
     <%/firstpost%>
 
-
     <!-- FILTER POSTS SECTION -->
     <ion-grid class="hsu-filter-box">
         <ion-row>
@@ -224,6 +223,13 @@
 
         </ion-row>
     </ion-grid>
+
+    <!-- NO POSTS ON FILTER -->
+    <ion-item 
+        class="hsu-filter-error"
+        *ngIf="!CONTENT_OTHERDATA.replies.length" text-wrap text-center>
+        <% filtererrorlabel %>
+    </ion-item>
 
     <!-- REPLIES ON FIRSTPOST -->
     <ion-list>

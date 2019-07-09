@@ -450,6 +450,7 @@ class mobile {
         $sortnewestfirst    = get_string('sortnewestfirst', 'hsuforum');
         $sortmostlikes      = get_string('sortmostlikes', 'hsuforum');
         $sortmostreplies    = get_string('sortmostreplies', 'hsuforum');
+        $filtererrorlabel   = get_string('filtererror', 'hsuforum');
 
     /// Handling Events
         hsuforum_discussion_view($modcontext, $forum, $discussion);
@@ -484,6 +485,7 @@ class mobile {
             'sortnewestfirstlabel'      => $sortnewestfirst,
             'sortmostlikeslabel'        => $sortmostlikes,
             'sortmostreplieslabel'      => $sortmostreplies,
+            'filtererrorlabel'          => $filtererrorlabel,
         );
 
         return array(

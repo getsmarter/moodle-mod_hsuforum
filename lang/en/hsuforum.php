@@ -681,7 +681,7 @@ $string['replyfrom'] = 'Reply from';
 $string['postedby'] = 'Posted by: ';
 $string['filter'] = 'Filter';
 $string['reset'] = 'Reset';
-
+$string['filtererror'] = 'There aren\'t any posts that match your filter selection. Reset to try again';
 // Deprecated since Moodle 3.0.
 $string['subscribersto'] = 'Subscribers to "{$a->name}"';
 
