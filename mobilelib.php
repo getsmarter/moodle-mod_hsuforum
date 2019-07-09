@@ -752,9 +752,6 @@ function hsuforum_mobile_filter_sort_posts($discussionrootposts, $discussionid, 
             foreach ($discussionrootposts[$firstpostid]->filteredposts as $filteredrootpost) {
                 array_push($returnposts, $discussionrootposts[$filteredrootpost]);
             }
-        } else {
-            // Failsafe is something goes wrong
-            $returnposts = $discussionrootposts;
         }
 
         // Sort the posts
