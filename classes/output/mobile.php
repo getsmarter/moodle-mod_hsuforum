@@ -153,7 +153,7 @@ class mobile {
                 $postuser = hsuforum_extract_postuser($discussion, $forum, context_module::instance($cm->id));
                 if ($postuser) {
                     $postuser->user_picture->size = 100;
-                    $discussion->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
+                    $discussion->profilesrc = hsuforum_mobile_get_user_profilepic_url($postuser);
                     $discussion->postuserid = $postuser->id;
                 }
                 // Getting footer stats
@@ -288,8 +288,7 @@ class mobile {
 
             // Avatar section
             $postuser = hsuforum_extract_postuser($firstpost, $forum, context_module::instance($cm->id));
-            $postuser->user_picture->size = 100;
-            $firstpost->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
+            $firstpost->profilesrc = hsuforum_mobile_get_user_profilepic_url($postuser);
             $firstpost->postuserid = $postuser->id;
 
             // Like section
@@ -357,8 +356,7 @@ class mobile {
             if ($reply->id) {
                 // Avatar section
                 $postuser = hsuforum_extract_postuser($reply, $forum, context_module::instance($cm->id));
-                $postuser->user_picture->size = 100;
-                $reply->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
+                $reply->profilesrc = hsuforum_mobile_get_user_profilepic_url($postuser);
                 $reply->postuserid = $postuser->id;
 
                 // Like section
@@ -649,7 +647,7 @@ class mobile {
             // Avatar section
             $postuser = hsuforum_extract_postuser($reply, $forum, context_module::instance($cm->id));
             $postuser->user_picture->size = 100;
-            $reply->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
+            $reply->profilesrc = hsuforum_mobile_get_user_profilepic_url($postuser);
             $reply->postuserid = $postuser->id;
 
             // Like section
