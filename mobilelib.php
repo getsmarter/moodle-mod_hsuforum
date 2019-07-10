@@ -11,6 +11,7 @@ define('SORT_REPLIES_MOST_TO_LEAST', 2);
 define('SORT_LIKES_MOST_TO_LEAST', 3);
 define('SORT_OLDEST', 4);
 define('SORT_NEWEST', 5);
+define('MOBILE_WEBSERVICE_USER_TOKEN', hsuforum_mobile_get_user_token());
 
 /**
  * Function to check a message for potential tagged users
@@ -884,4 +885,40 @@ function hsuforum_get_firstlevel_post($postid, $unfilteredposts = array()) {
     }
 
     return $firstlevelpost;
+}
+
+/**
+ * Function to generate a token for the mobile webservice.
+ * Note this is bound to the constant MOBILE_WEBSERVICE_USER_TOKEN so that it can be used anywhere
+ * 
+ * @return string the token
+ */
+function hsuforum_mobile_get_user_token() : string {
+    global $DB;
+
+    $service = $DB->get_record('external_services', array('shortname' => 'moodle_mobile_app', 'enabled' => 1));
+    $tokenarr = external_generate_token_for_current_user($service);
+
+    return $tokenarr->token;
+}
+
+/**
+ * Function to get the url for a profile picture
+ * @param object $postuser the postuser
+ *
+ * @return string the profile pic url
+ */
+function hsuforum_mobile_get_user_profilepic_url(object $postuser) : string {
+    global $PAGE, $CFG;
+
+    $postuser->user_picture->size = 100;
+    $imagepath = parse_url($postuser->user_picture->get_url($PAGE)->out())['path'];
+
+    if (strpos($imagepath, 'pluginfile.php')) {
+        $imageurl = $CFG->wwwroot.'/webservice'.$imagepath.'?token='.MOBILE_WEBSERVICE_USER_TOKEN;
+    } else {
+        $imageurl = $postuser->user_picture->get_url($PAGE)->out();
+    }
+
+    return $imageurl;
 }
