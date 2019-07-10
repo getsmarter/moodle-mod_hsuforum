@@ -914,5 +914,11 @@ function hsuforum_mobile_get_user_profilepic_url(object $postuser) : string {
     $postuser->user_picture->size = 100;
     $imagepath = parse_url($postuser->user_picture->get_url($PAGE)->out())['path'];
 
-    return $CFG->wwwroot.'/webservice'.$imagepath.'?token='.MOBILE_WEBSERVICE_USER_TOKEN;
+    if (strpos($imagepath, 'pluginfile.php')) {
+        $imageurl = $CFG->wwwroot.'/webservice'.$imagepath.'?token='.MOBILE_WEBSERVICE_USER_TOKEN;
+    } else {
+        $imageurl = $postuser->user_picture->get_url($PAGE)->out();
+    }
+
+    return $imageurl;
 }
