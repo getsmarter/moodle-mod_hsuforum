@@ -908,7 +908,7 @@ function hsuforum_mobile_get_user_token() : string {
  *
  * @return string the profile pic url
  */
-function hsuforum_mobile_get_user_profilepic_url(object $postuser) : string {
+function hsuforum_mobile_get_user_profilepic_url($postuser) : string {
     global $PAGE, $CFG;
 
     $postuser->user_picture->size = 100;
