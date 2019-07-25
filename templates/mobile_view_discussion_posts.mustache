@@ -233,7 +233,7 @@
 
     <!-- REPLIES ON FIRSTPOST -->
     <ion-list>
-        <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies" id="cardid_{{reply.id}}" 
+        <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies" id="cardid_{{reply.id}}"
             [ngStyle]="{'border-left': (reply.rolecolor) ? '3px solid': '0', 'border-color': reply.rolecolor}">
             <ion-card-header no-padding text-wrap class="card-header card-header-md">
                 <ion-item text-wrap>
@@ -272,10 +272,20 @@
 
             <!-- Uploaded files -->
             <core-file *ngFor="let file of reply.files"
-                [file]=file 
-                component="mod_hsuforum" 
+                [file]=file
+                component="mod_hsuforum"
                 componentId="<% cmid %>">
             </core-file>
+
+            <ion-item *ngIf="reply.imgtype">
+                <p text-wrap style="color: #2f6473; background-color: #def2f8; border-color: #d1edf6; padding: 3px 0px;">
+                    {{reply.imgtype}}
+                </p>
+                <p *ngFor="let image of reply.images">
+                    <img src={{image.fileurl}}>
+                </p>
+
+            </ion-item>
 
             <ion-card-content>
                 <core-format-text maxHeight="127" fullOnClick="true" text="{{reply.message}}"></core-format-text>
