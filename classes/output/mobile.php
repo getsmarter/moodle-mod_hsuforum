@@ -282,7 +282,6 @@ class mobile {
         // Populating firstpost with virtual props needed for template
         if ($firstpostresult) {
             $firstpost = array_pop($firstpostresult);
-
             // Getting all nested unread ids for root post in discussion
             $readpostids = hsuforum_get_unread_nested_postids($discussion->id, $firstpost->id, $USER->id);
 
@@ -405,6 +404,10 @@ class mobile {
                 $filesraw = $attachmentclass->get_attachments($reply->id);
                 $reply->files = [];
                 $reply->attachments = [];
+                $attachmenturl = null;
+                $reply->imgtype = null;
+                $reply->images = [];
+
                 foreach ($filesraw as $file) {
                     $fileobj = new \stdClass;
                     $fileobj->id = $file->get_itemid();
@@ -416,13 +419,28 @@ class mobile {
                     $fileobj->timemodified = $file->get_timemodified();
                     $fileobj->mimetype = $file->get_mimetype();
                     $fileobj->isexternalfile = $file->get_repository_type();
-        
+
                     array_push($reply->files, $fileobj);
+
+                    switch($fileobj->mimetype) {
+                        case 'image/png':
+                            $reply->imgtype = true;
+                            array_push($reply->images, $fileobj);
+                        case 'image/jpg':
+                            $reply->imgtype = true;
+                            array_push($reply->images, $fileobj);
+                        default:
+                            $reply->defaultfiletype = true;
+                    }
+                }
+
+                // If we find the @@PLUGIN@@ in a message string we know we need to get the correct embedded images
+                if(strpos($reply->message, '@@PLUGINFILE@@') !== false) {
+                    $reply->message = self::returnEmbeddedImageMessage($reply->message, $modcontext->id, $reply->id);
                 }
 
                 // Check for nested replies
                 $reply->havereplies = hsuforum_count_replies($reply, $children=true);
-
                 $replies[] = $reply;
                 
                 // Check for filteredposts and encode the array to be passed to next view as param
@@ -431,6 +449,7 @@ class mobile {
                 }
             }
         }
+
 
     /// Getting tagable users
         $tagusers = [];
@@ -764,4 +783,53 @@ class mobile {
             'files' => ''
         );
     }
+
+    /**
+     * @param $message
+     * @param $modulecontextid
+     * @param $postid
+     * returns the message with
+     * the correctly embedded images
+     * looks for each image, and builds the correct url
+     * to grab the image via webservices rest API
+     */
+    private static function returnEmbeddedImageMessage($message, $modulecontextid, $postid) {
+        global $CFG;
+
+        $baseuri = $CFG->wwwroot . '/webservice/pluginfile.php/' . $modulecontextid . '/mod_hsuforum/post/' . $postid;
+        // https://gist.github.com/vyspiansky/11285153.
+        preg_match_all( '@src="([^"]+)"@' , $message, $explodedmessage );
+        $goodbadimages = [];
+
+        foreach($explodedmessage as $images) {
+            if(sizeof($images) === 1) { // Handling post messages with a single image, example of data below.
+                // [0]=> string(64) "src="@@PLUGINFILE@@/Screenshot%202019-07-12%20at%2011.12.43.png"".
+                if (strpos($images[0], 'src=') !== false) {
+                    $output = null;
+                    preg_match('~src="(.*?)"~', $images[0], $output);
+                    $gooduri = str_replace('@@PLUGINFILE@@', $baseuri, $output[1]) . '?token='.MOBILE_WEBSERVICE_USER_TOKEN;
+                    $goodbadimages[] = array('bad_uri' => $output[0], 'good_uri' => $gooduri);
+                }
+            } else { // Handling post messages with a single image, example of data below.
+                // array( [0]=> string(64) "src="@@PLUGINFILE@@/Screenshot%202019-07-12%20at%2011.12.43.png"".
+                // [1]=> string(64) "src="@@PLUGINFILE@@/Screenshot%202019-07-12%20at%2011.12.43.png"" );.
+                foreach($images as $image) {
+                    if (strpos($image, 'src=') !== false) {
+                        $output = null;
+                        preg_match('~src="(.*?)"~', $image, $output);
+                        $gooduri = str_replace('@@PLUGINFILE@@', $baseuri, $output[1]) . '?token='.MOBILE_WEBSERVICE_USER_TOKEN;
+                        $goodbadimages[] = array('bad_uri' => $output[0], 'good_uri' => $gooduri);
+                    }
+                }
+            }
+        }
+
+        foreach($goodbadimages as $replacementimage) {
+            $message = str_replace($replacementimage['bad_uri'], 'src="' . $replacementimage['good_uri'] . '""', $message);
+        }
+
+        return $message;
+    }
+
+
 }
