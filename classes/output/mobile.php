@@ -269,7 +269,6 @@ class mobile {
         $attachmentclass       = new \mod_hsuforum\attachments($forum, $modcontext);
         $filter                = 1;
         $sort                  = 4;
-        $postid                = null;
 
     /// Getting firstpost and root replies for the firstpost
         // Note there can only be one post(when user created discussion) in a discussion and then additional posts are regarged as replies(api data structure reflects this concept). Very confusing...
@@ -406,13 +405,8 @@ class mobile {
                 $reply->files = [];
                 $reply->attachments = [];
                 $attachmenturl = null;
-                $messageimage = false;
                 $reply->imgtype = null;
                 $reply->images = [];
-
-                if (strpos($reply->message, '@@PLUGINFILE@@') !== false) {
-                    $messageimage = true;
-                }
 
                 foreach ($filesraw as $file) {
                     $fileobj = new \stdClass;
@@ -440,8 +434,9 @@ class mobile {
                     }
                 }
 
-                if($messageimage) {
-                    $reply->message = self::returnCorrectDisplayFile($reply->message, $modcontext->id, $reply->id);
+                // If we find the @@PLUGIN@@ in a message string we know we need to get the correct embedded images
+                if(strpos($reply->message, '@@PLUGINFILE@@') !== false) {
+                    $reply->message = self::returnEmbeddedImageMessage($reply->message, $modcontext->id, $reply->id);
                 }
 
                 // Check for nested replies
@@ -793,16 +788,18 @@ class mobile {
      * @param $message
      * @param $modulecontextid
      * @param $postid
+     * returns the message with
+     * the correctly embedded images
+     * looks for each image, and builds the correct url
+     * to grab the image via webservices rest API
      */
-    private static function returnCorrectDisplayFile($message, $modulecontextid, $postid) {
+    private static function returnEmbeddedImageMessage($message, $modulecontextid, $postid) {
         global $CFG;
 
         $baseuri = $CFG->wwwroot . '/webservice/pluginfile.php/' . $modulecontextid . '/mod_hsuforum/post/' . $postid;
         // https://gist.github.com/vyspiansky/11285153.
         preg_match_all( '@src="([^"]+)"@' , $message, $explodedmessage );
-
         $goodbadimages = [];
-        $newnicemessage = '';
 
         foreach($explodedmessage as $images) {
             if(sizeof($images) === 1) { // Handling post messages with a single image, example of data below.
@@ -813,8 +810,9 @@ class mobile {
                     $gooduri = str_replace('@@PLUGINFILE@@', $baseuri, $output[1]) . '?token='.MOBILE_WEBSERVICE_USER_TOKEN;
                     $goodbadimages[] = array('bad_uri' => $output[0], 'good_uri' => $gooduri);
                 }
-            } else {
-
+            } else { // Handling post messages with a single image, example of data below.
+                // array( [0]=> string(64) "src="@@PLUGINFILE@@/Screenshot%202019-07-12%20at%2011.12.43.png"".
+                // [1]=> string(64) "src="@@PLUGINFILE@@/Screenshot%202019-07-12%20at%2011.12.43.png"" );.
                 foreach($images as $image) {
                     if (strpos($image, 'src=') !== false) {
                         $output = null;
@@ -825,7 +823,6 @@ class mobile {
                 }
             }
         }
-
 
         foreach($goodbadimages as $replacementimage) {
             $message = str_replace($replacementimage['bad_uri'], 'src="' . $replacementimage['good_uri'] . '""', $message);
