@@ -833,9 +833,4 @@ class mobile {
         return $message;
     }
 
-    private static function returnAttachmentUrls($attachments, $modulecontextid, $postid) {
-
-    }
-
-
 }
