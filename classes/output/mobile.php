@@ -421,7 +421,7 @@ class mobile {
 
                     array_push($reply->files, $fileobj);
 
-                    switch($fileobj->mimetype) {
+                    switch($fileobj->mimetype) { // Setting the image type here, we handle images and other attachments differently.
                         case 'image/png':
                             $reply->imgtype = true;
                             array_push($reply->images, $fileobj);
