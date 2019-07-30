@@ -271,20 +271,18 @@
             </ion-card-header>
 
             <!-- Uploaded files -->
-            <core-file *ngFor="let file of reply.files"
-                [file]=file
-                component="mod_hsuforum"
-                componentId="<% cmid %>">
-            </core-file>
+            <ion-item *ngIf="reply.defaultfiletype">
+                <core-file *ngFor="let file of reply.files"
+                    [file]=file
+                    component="mod_hsuforum"
+                    componentId="<% cmid %>">
+                </core-file>
+            </ion-item>
 
             <ion-item *ngIf="reply.imgtype">
-                <p text-wrap style="color: #2f6473; background-color: #def2f8; border-color: #d1edf6; padding: 3px 0px;">
-                    {{reply.imgtype}}
-                </p>
                 <p *ngFor="let image of reply.images">
                     <img src={{image.fileurl}}>
                 </p>
-
             </ion-item>
 
             <ion-card-content>

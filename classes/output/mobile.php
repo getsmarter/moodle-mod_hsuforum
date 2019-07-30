@@ -348,7 +348,7 @@ class mobile {
             $filter = isset($args['filter']) ? $args['filter'] : $filter;
         }
         $repliessorted = hsuforum_mobile_filter_sort_posts($repliesraw, $discussion->id, $firstpost->id, $filter, $sort, $course);
-
+        $baseuriattachment = $CFG->wwwroot . '/webservice/pluginfile.php/' . $modcontext->id . '/mod_hsuforum/attachment/';
         // Populating replies with virtual props needed for template
         foreach ($repliessorted as &$reply) {
             // Filter_sort_posts() sometimes returns empty arrays thus checking for id.
@@ -413,24 +413,26 @@ class mobile {
                     $fileobj->id = $file->get_itemid();
                     $fileobj->filename = $file->get_filename();
                     $fileobj->filepath = $file->get_filepath();
-                    $fileobj->fileurl = moodle_url::make_pluginfile_url(
-                        $modcontext->id, 'mod_hsuforum', "attachment", $fileobj->id, '/', $fileobj->filename)->out(false);
                     $fileobj->filesize = $file->get_filesize();
                     $fileobj->timemodified = $file->get_timemodified();
                     $fileobj->mimetype = $file->get_mimetype();
                     $fileobj->isexternalfile = $file->get_repository_type();
+                    $fileobj->fileurl = $baseuriattachment . $reply->id . '/' . rawurlencode($fileobj->filename) . '?token='.MOBILE_WEBSERVICE_USER_TOKEN;
 
                     array_push($reply->files, $fileobj);
 
-                    switch($fileobj->mimetype) {
+                    switch($fileobj->mimetype) { // Setting the image type here, we handle images and other attachments differently.
                         case 'image/png':
                             $reply->imgtype = true;
                             array_push($reply->images, $fileobj);
+                            break;
                         case 'image/jpg':
                             $reply->imgtype = true;
                             array_push($reply->images, $fileobj);
+                            break;
                         default:
                             $reply->defaultfiletype = true;
+                            break;
                     }
                 }
 
@@ -830,6 +832,5 @@ class mobile {
 
         return $message;
     }
-
 
 }
