@@ -776,6 +776,9 @@ function hsuforum_mobile_filter_sort_posts($discussionrootposts, $discussionid, 
  */
 function hsuforum_mobile_add_filteredpost_to_posts_array(&$rootposts, $rootpostid, $postid) {
     global $DB;
+    $isrootpost = false;
+    $isrootpost = isset($rootposts[$postid]) ? 1 : 0;
+    $postlikes = sizeof($DB->get_records('hsuforum_actions', array('postid' => $postid, 'action' => 'like')));
 
     // Adding post id to filteredposts array to highlight posts
     if (isset($rootposts[$rootpostid]->filteredposts)) {
@@ -784,10 +787,14 @@ function hsuforum_mobile_add_filteredpost_to_posts_array(&$rootposts, $rootposti
         $rootposts[$rootpostid]->filteredposts = [];
         array_push($rootposts[$rootpostid]->filteredposts, $postid);
     }
+
     // Add likes for sorting options
-    $postlikes = sizeof($DB->get_records('hsuforum_actions', array('postid' => $postid, 'action' => 'like')));
-    if ($postlikes) {
-        $rootposts[$rootpostid]->rootpostlikes += $postlikes;
+    if (count($postlikes) > 0) {
+        if ($isrootpost) {
+            $rootposts[$postid]->rootpostlikes = $postlikes;
+        } else {
+            $rootposts[$rootpostid]->nestedreplylikes += $postlikes;
+        }        
     }
 
     return $rootposts;
