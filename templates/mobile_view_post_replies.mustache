@@ -51,13 +51,18 @@
         <ion-card-content padding-top class="card-content card-content-md">
 
             <!-- Uploaded files -->
-            <ion-list *ngIf="reply.files.length">
+            <ion-item *ngIf="reply.defaultfiletype">
                 <core-file *ngFor="let file of reply.files"
-                    [file]="{fileurl: file.fileurl, filename: file.filename, timemodified: file.timemodified, filesize: file.filesize}"
-                    component="mod_hsuforum"
-                    componentId="<% cmid %>">
+                           [file]=file
+                           component="mod_hsuforum"
+                           componentId="<% cmid %>">
                 </core-file>
-            </ion-list>
+            </ion-item>
+            <ion-item *ngIf="reply.imgtype">
+                <p *ngFor="let image of reply.images">
+                    <img src={{image.fileurl}}>
+                </p>
+            </ion-item>
 
             <core-format-text maxHeight="127" fullOnClick="true" text="{{reply.message}}"></core-format-text>
         </ion-card-content>
