@@ -426,7 +426,7 @@ class mobile {
                             $reply->imgtype = true;
                             array_push($reply->images, $fileobj);
                             break;
-                        case 'image/jpg':
+                        case 'image/jpeg':
                             $reply->imgtype = true;
                             array_push($reply->images, $fileobj);
                             break;
@@ -635,6 +635,7 @@ class mobile {
         $filterdefault         = isset($args['filterdefault']) ? (bool) $args['filterdefault'] : false;
         $highlightposts        = isset($args['filteredids']) ? JSON_DECODE($args['filteredids']) : false;
         $attachmentclass       = new \mod_hsuforum\attachments($forum, $modcontext);
+        $baseuriattachment = $CFG->wwwroot . '/webservice/pluginfile.php/' . $modcontext->id . '/mod_hsuforum/attachment/';
 
     /// Getting all nested unread ids for root post in discussion
         $readpostids = hsuforum_get_unread_nested_postids($discussion->id, $postid, $USER->id);
@@ -665,6 +666,11 @@ class mobile {
 
     /// Populating replies with virtual props needed for template
         foreach ($replies as &$reply) {
+            $reply->attachments = [];
+            $attachmenturl = null;
+            $reply->imgtype = null;
+            $reply->images = [];
+
             // Avatar section
             $postuser = hsuforum_extract_postuser($reply, $forum, context_module::instance($cm->id));
             $postuser->user_picture->size = 100;
@@ -725,14 +731,32 @@ class mobile {
                 $fileobj->id = $file->get_itemid();
                 $fileobj->filename = $file->get_filename();
                 $fileobj->filepath = $file->get_filepath();
-                $fileobj->fileurl = moodle_url::make_pluginfile_url(
-                    $modcontext->id, 'mod_hsuforum', "attachment", $fileobj->id, '/', $fileobj->filename)->out(false);
                 $fileobj->filesize = $file->get_filesize();
                 $fileobj->timemodified = $file->get_timemodified();
                 $fileobj->mimetype = $file->get_mimetype();
                 $fileobj->isexternalfile = $file->get_repository_type();
+                $fileobj->fileurl = $baseuriattachment . $reply->id . '/' . rawurlencode($fileobj->filename) . '?token='.MOBILE_WEBSERVICE_USER_TOKEN;
     
                 array_push($reply->files, $fileobj);
+
+                switch($fileobj->mimetype) { // Setting the image type here, we handle images and other attachments differently.
+                    case 'image/png':
+                        $reply->imgtype = true;
+                        array_push($reply->images, $fileobj);
+                        break;
+                    case 'image/jpeg':
+                        $reply->imgtype = true;
+                        array_push($reply->images, $fileobj);
+                        break;
+                    default:
+                        $reply->defaultfiletype = true;
+                        break;
+                }
+            }
+
+            // If we find the @@PLUGIN@@ in a message string we know we need to get the correct embedded images
+            if(strpos($reply->message, '@@PLUGINFILE@@') !== false) {
+                $reply->message = self::returnEmbeddedImageMessage($reply->message, $modcontext->id, $reply->id);
             }
         }
 
