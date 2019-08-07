@@ -11,6 +11,10 @@
     margin: 10px !important;
 }
 
+.hsu_fabbutton_add_discussion {
+    box-shadow: none !important;
+}
+
 /* ADD DISCUSSION PAGE */
 .hsu-add-discussion .hsu-text-editor-wrapper .item-inner,
 .add-discussion-button-wrapper .item-inner {
