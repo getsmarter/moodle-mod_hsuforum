@@ -970,6 +970,7 @@ function returnEmbeddedImageMessage($message, $modulecontextid, $postid) {
         }
     }
 
+    // Replacing the bad URLs with the good ones.
     foreach($goodbadimages as $replacementimage) {
         $message = str_replace($replacementimage['bad_uri'], 'src="' . $replacementimage['good_uri'] . '""', $message);
     }
