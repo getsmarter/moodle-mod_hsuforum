@@ -929,3 +929,50 @@ function hsuforum_mobile_get_user_profilepic_url($postuser) : string {
 
     return $imageurl;
 }
+
+    /**
+     * @param $message
+     * @param $modulecontextid
+     * @param $postid
+     * returns the message with
+     * the correctly embedded images
+     * looks for each image, and builds the correct url
+     * to grab the image via webservices rest API
+     */
+function returnEmbeddedImageMessage($message, $modulecontextid, $postid) {
+    global $CFG;
+
+    $baseuri = $CFG->wwwroot . '/webservice/pluginfile.php/' . $modulecontextid . '/mod_hsuforum/post/' . $postid;
+    // https://gist.github.com/vyspiansky/11285153.
+    preg_match_all( '@src="([^"]+)"@' , $message, $explodedmessage );
+    $goodbadimages = [];
+
+    foreach($explodedmessage as $images) {
+        if(sizeof($images) === 1) { // Handling post messages with a single image, example of data below.
+            // [0]=> string(64) "src="@@PLUGINFILE@@/Screenshot%202019-07-12%20at%2011.12.43.png"".
+            if (strpos($images[0], 'src=') !== false) {
+                $output = null;
+                preg_match('~src="(.*?)"~', $images[0], $output);
+                $gooduri = str_replace('@@PLUGINFILE@@', $baseuri, $output[1]) . '?token='.MOBILE_WEBSERVICE_USER_TOKEN;
+                $goodbadimages[] = array('bad_uri' => $output[0], 'good_uri' => $gooduri);
+            }
+        } else { // Handling post messages with a single image, example of data below.
+            // array( [0]=> string(64) "src="@@PLUGINFILE@@/Screenshot%202019-07-12%20at%2011.12.43.png"".
+            // [1]=> string(64) "src="@@PLUGINFILE@@/Screenshot%202019-07-12%20at%2011.12.43.png"" );.
+            foreach($images as $image) {
+                if (strpos($image, 'src=') !== false) {
+                    $output = null;
+                    preg_match('~src="(.*?)"~', $image, $output);
+                    $gooduri = str_replace('@@PLUGINFILE@@', $baseuri, $output[1]) . '?token='.MOBILE_WEBSERVICE_USER_TOKEN;
+                    $goodbadimages[] = array('bad_uri' => $output[0], 'good_uri' => $gooduri);
+                }
+            }
+        }
+    }
+
+    foreach($goodbadimages as $replacementimage) {
+        $message = str_replace($replacementimage['bad_uri'], 'src="' . $replacementimage['good_uri'] . '""', $message);
+    }
+
+    return $message;
+}

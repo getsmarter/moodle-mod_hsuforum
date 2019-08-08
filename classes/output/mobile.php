@@ -186,6 +186,11 @@ class mobile {
                 $discussion->contribslabel = ($stats['contribs'] == 0) || ($stats['contribs'] > 1) ? get_string('contributors', 'hsuforum') : get_string('contributor', 'hsuforum');
                 $discussion->subscribedlabel = $discussion->subscriptionid ? get_string('toggled:subscribe', 'hsuforum') : get_string('toggle:subscribe', 'hsuforum');
                 $discussion->replylabel = ($discussion->replies == 0) || ($discussion->replies > 1) ? get_string('replies', 'hsuforum') : get_string('reply', 'hsuforum');
+                
+                // If we find the @@PLUGIN@@ in a message string we know we need to get the correct embedded images
+                if(strpos($discussion->message, '@@PLUGINFILE@@') !== false) {
+                    $discussion->message = returnEmbeddedImageMessage($discussion->message, $context->id, $discussion->id);
+                }
             }
         }
 
@@ -319,19 +324,50 @@ class mobile {
             $filesraw = $attachmentclass->get_attachments($firstpost->id);
             $firstpost->files = [];
             $firstpost->attachments = [];
+            $baseuriattachment = $CFG->wwwroot . '/webservice/pluginfile.php/' . $modcontext->id . '/mod_hsuforum/attachment/';
+            $firstpost->imgtype = null;
+            $firstpost->defaultfiletype = null;
+            $firstpost->images = [];
+
             foreach ($filesraw as $file) {
                 $fileobj = new \stdClass;
                 $fileobj->id = $file->get_itemid();
                 $fileobj->filename = $file->get_filename();
                 $fileobj->filepath = $file->get_filepath();
-                $fileobj->fileurl = moodle_url::make_pluginfile_url(
-                    $modcontext->id, 'mod_hsuforum', "attachment", $fileobj->id, '/', $fileobj->filename)->out(false);
                 $fileobj->filesize = $file->get_filesize();
                 $fileobj->timemodified = $file->get_timemodified();
                 $fileobj->mimetype = $file->get_mimetype();
                 $fileobj->isexternalfile = $file->get_repository_type();
-    
+                $fileobj->fileurl = $baseuriattachment . $firstpost->id . '/' . rawurlencode($fileobj->filename) . '?token='.MOBILE_WEBSERVICE_USER_TOKEN;
+
                 array_push($firstpost->files, $fileobj);
+
+                switch($fileobj->mimetype) { // Setting the image type here, we handle images and other attachments differently.
+                    case 'image/png':   
+                        $fileobj->imgtype = true;
+                        array_push($firstpost->images, $fileobj);
+                        break;
+                    case 'image/jpeg':
+                        $fileobj->imgtype = true;
+                        array_push($firstpost->images, $fileobj);
+                        break;
+                    default:
+                        $fileobj->defaultfiletype = true;
+                        array_push($firstpost->images, $fileobj);
+                        break;
+                }
+            }
+
+            // Need to check if single or multiple images, for loop with ionic components.
+            if(count($firstpost->images) > 1) {
+                $firstpost->imagescount = true;
+            } elseif(!empty(count($firstpost->images))) {
+                $firstpost->singleimage = true;
+            }
+
+            // If we find the @@PLUGIN@@ in a message string we know we need to get the correct embedded images
+            if(strpos($firstpost->message, '@@PLUGINFILE@@') !== false) {
+                $firstpost->message = returnEmbeddedImageMessage($firstpost->message, $modcontext->id, $firstpost->id);
             }
 
             // Set forumid and groupid
@@ -438,9 +474,8 @@ class mobile {
 
                 // If we find the @@PLUGIN@@ in a message string we know we need to get the correct embedded images
                 if(strpos($reply->message, '@@PLUGINFILE@@') !== false) {
-                    $reply->message = self::returnEmbeddedImageMessage($reply->message, $modcontext->id, $reply->id);
+                    $reply->message = returnEmbeddedImageMessage($reply->message, $modcontext->id, $reply->id);
                 }
-
                 // Check for nested replies
                 $reply->havereplies = hsuforum_count_replies($reply, $children=true);
                 $replies[] = $reply;
@@ -756,7 +791,7 @@ class mobile {
 
             // If we find the @@PLUGIN@@ in a message string we know we need to get the correct embedded images
             if(strpos($reply->message, '@@PLUGINFILE@@') !== false) {
-                $reply->message = self::returnEmbeddedImageMessage($reply->message, $modcontext->id, $reply->id);
+                $reply->message = returnEmbeddedImageMessage($reply->message, $modcontext->id, $reply->id);
             }
         }
 
@@ -808,53 +843,6 @@ class mobile {
             ),
             'files' => ''
         );
-    }
-
-    /**
-     * @param $message
-     * @param $modulecontextid
-     * @param $postid
-     * returns the message with
-     * the correctly embedded images
-     * looks for each image, and builds the correct url
-     * to grab the image via webservices rest API
-     */
-    private static function returnEmbeddedImageMessage($message, $modulecontextid, $postid) {
-        global $CFG;
-
-        $baseuri = $CFG->wwwroot . '/webservice/pluginfile.php/' . $modulecontextid . '/mod_hsuforum/post/' . $postid;
-        // https://gist.github.com/vyspiansky/11285153.
-        preg_match_all( '@src="([^"]+)"@' , $message, $explodedmessage );
-        $goodbadimages = [];
-
-        foreach($explodedmessage as $images) {
-            if(sizeof($images) === 1) { // Handling post messages with a single image, example of data below.
-                // [0]=> string(64) "src="@@PLUGINFILE@@/Screenshot%202019-07-12%20at%2011.12.43.png"".
-                if (strpos($images[0], 'src=') !== false) {
-                    $output = null;
-                    preg_match('~src="(.*?)"~', $images[0], $output);
-                    $gooduri = str_replace('@@PLUGINFILE@@', $baseuri, $output[1]) . '?token='.MOBILE_WEBSERVICE_USER_TOKEN;
-                    $goodbadimages[] = array('bad_uri' => $output[0], 'good_uri' => $gooduri);
-                }
-            } else { // Handling post messages with a single image, example of data below.
-                // array( [0]=> string(64) "src="@@PLUGINFILE@@/Screenshot%202019-07-12%20at%2011.12.43.png"".
-                // [1]=> string(64) "src="@@PLUGINFILE@@/Screenshot%202019-07-12%20at%2011.12.43.png"" );.
-                foreach($images as $image) {
-                    if (strpos($image, 'src=') !== false) {
-                        $output = null;
-                        preg_match('~src="(.*?)"~', $image, $output);
-                        $gooduri = str_replace('@@PLUGINFILE@@', $baseuri, $output[1]) . '?token='.MOBILE_WEBSERVICE_USER_TOKEN;
-                        $goodbadimages[] = array('bad_uri' => $output[0], 'good_uri' => $gooduri);
-                    }
-                }
-            }
-        }
-
-        foreach($goodbadimages as $replacementimage) {
-            $message = str_replace($replacementimage['bad_uri'], 'src="' . $replacementimage['good_uri'] . '""', $message);
-        }
-
-        return $message;
     }
 
 }

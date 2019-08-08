@@ -14,16 +14,15 @@
 
             <ion-card-content padding-top class="card-content card-content-md">
                 <core-format-text singleline="false" text="{{CONTENT_OTHERDATA.firstpost.message}}"></core-format-text>
-
-            <!-- Uploaded files -->
-            <%#files%>
-                <core-file
-                    [file]="{fileurl: '<% fileurl %>', filename: '<% filename %>', timemodified: '<% timemodified %>', filesize: '<% filesize %>'}"
-                    component="mod_hsuforum" 
-                    componentId="<% cmid %>">
-                </core-file>
-            <%/files%>
-
+                <!-- Uploaded files -->
+                <ion-row *ngIf="CONTENT_OTHERDATA.firstpost.singleimage"> 
+                    <img src={{CONTENT_OTHERDATA.firstpost.images[0].fileurl}}>
+                </ion-row>
+                <ion-row *ngIf="CONTENT_OTHERDATA.firstpost.imagescount">
+                    <p *ngFor="let image of CONTENT_OTHERDATA.firstpost.images">
+                        <img src={{image.fileurl}}>
+                    </p>
+                </ion-row>
             </ion-card-content>
 
             <ion-row>
