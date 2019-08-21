@@ -38,6 +38,12 @@
         this.name = "AddonModHsuforumViewLinkHandler";
     }
 
+    /**
+     * Function to handle marking a notification as read.
+     * @param {string} urlHash The hash in the context url for the notification
+     * @return {void}
+     * @throws {try/catch} If the promise fails
+     */
     function AddonModHsuforumMarkNotificationRead(urlHash) {
         let site = t.CoreSitesProvider.getCurrentSite();
         let toUser = site.getUserId();
