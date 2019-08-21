@@ -38,6 +38,49 @@
         this.name = "AddonModHsuforumViewLinkHandler";
     }
 
+    /**
+     * Function to handle marking a notification as read.
+     * @param {string} urlHash The hash in the context url for the notification
+     * @return {void}
+     * @throws {try/catch} If the promise fails
+     */
+    function AddonModHsuforumMarkNotificationRead(urlHash) {
+        let site = t.CoreSitesProvider.getCurrentSite();
+        let toUser = site.getUserId();
+
+        const data = {
+            useridto: toUser,
+            useridfrom: 0,
+            type: 'notifications',
+            read: 0,
+            newestfirst: 1,
+            limitfrom: 0,
+            limitnum: 0
+        };
+
+        // Check if there is an unread notification that matches urlHash. Below todo will fix this section.
+        site.read('core_message_get_messages', data).then((response) => {
+            if (response.messages) {
+                let unreadNotification = response.messages.filter(notification => notification.contexturl.includes(urlHash));
+
+                // Mark notification as read if found
+                if (unreadNotification.length) {
+                    let params = {
+                        messageid: unreadNotification[0].id, 
+                        userid: toUser,
+                        markallnotifications: 0, 
+                    };
+                    Promise.resolve(site.write('theme_legend_custom_notifications', params)).catch((err) => {
+                        // TODO refactor above function to include notification id in urlcontext and change return type to json
+                        // This will throw an error at this point due to the moodle mobile post function only accepts json as 
+                        // a return type.
+                        console.log(err);
+                    });
+                }
+            }
+        });
+    }
+
     AddonModHsuforumModuleLinkHandler.prototype = Object.create(t.CoreContentLinksModuleIndexHandler.prototype);
     AddonModHsuforumModuleLinkHandler.prototype.constructor = AddonModHsuforumModuleLinkHandler;
 
@@ -52,6 +95,7 @@
 
                 const pageParams = {
                     discussionid: parseInt(params.d, 10),
+                    urlHash: params.urlHash
                 };
 
                 return Promise.resolve(t.CoreSitePluginsProvider.getContent('mod_hsuforum', 'view_discussion', pageParams)).then((contentResult) => {
@@ -63,6 +107,11 @@
                         args: pageParams,
                         initResult: {},
                         jsData: {},
+                    }).then((success) => {
+                        // Handle marking notification as read if not already read
+                        if (success && pageParams.urlHash.match(/p(\d+)/)) {
+                            AddonModHsuforumMarkNotificationRead(pageParams.urlHash);
+                        }
                     }));
                 });
             }
