@@ -27,7 +27,7 @@
         <ion-grid class="hsu-filter-box">
             <ion-row>
                 <!-- Filter discussions -->
-                <ion-col col-auto *ngIf="CONTENT_OTHERDATA.allowedgroups && CONTENT_OTHERDATA.allowedgroups.length > 1">
+                <ion-col col-auto *ngIf="CONTENT_OTHERDATA.allowedgroups && CONTENT_OTHERDATA.allowedgroups.length >= 1">
                         <ion-label>Filter by:</ion-label>
                         <ion-item>
                             <ion-select 
