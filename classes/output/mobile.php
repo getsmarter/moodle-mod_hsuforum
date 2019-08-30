@@ -78,7 +78,7 @@ class mobile {
         if ((int) $cm->groupmode !== HSUFORUM_POSTS_SEPARATE_GROUPS && count($filtergroups) > 0) {
             // Adding 'All Participants entry
             $all_participants = new \stdClass;
-            $all_participants->id = '-1222';
+            $all_participants->id = '-1';
             $all_participants->name = 'All Participants';
             $filtergroups = array('-1' => $all_participants) + $filtergroups;
             $filtergroups = array_values($filtergroups);
