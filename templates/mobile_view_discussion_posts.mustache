@@ -25,31 +25,31 @@
                 </ion-row>
             </ion-card-content>
 
-            <ion-row>
-                <ion-col>
-                    <%#canreply%>
+            <%#canreply%>
+                <ion-row>
+                    <ion-col>
+                            <button
+                                ion-button small clear class="js_reply"
+                                (click)="CONTENT_OTHERDATA.showform_<% id %> = true"
+                                onclick="window.activate_mention_users(event)">
+                                <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
+                                <span id="<% id %>">Reply</span>
+                            </button>
+                        <!-- Like button -->
                         <button
-                            ion-button small clear class="js_reply"
-                            (click)="CONTENT_OTHERDATA.showform_<% id %> = true"
-                            onclick="window.activate_mention_users(event)">
-                            <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
-                            <span id="<% id %>">Reply</span>
+                            ion-button small clear style="padding: 0"
+                            core-site-plugins-call-ws 
+                            name="mod_hsuforum_like_post" 
+                            [params]="{postid: <% id %>}"
+                            [preSets]="{getFromCache: 0, saveToCache: 0}" 
+                            successMessage 
+                            refreshOnSuccess="true">
+                            <ion-icon class="icon icon-md ion-md-thumbs-up" style="margin-right: 4px;"></ion-icon>
+                            <% likelabel %>
                         </button>
-                    <%/canreply%>
-                    <!-- Like button -->
-                    <button
-                        ion-button small clear style="padding: 0"
-                        core-site-plugins-call-ws 
-                        name="mod_hsuforum_like_post" 
-                        [params]="{postid: <% id %>}"
-                        [preSets]="{getFromCache: 0, saveToCache: 0}" 
-                        successMessage 
-                        refreshOnSuccess="true">
-                        <ion-icon class="icon icon-md ion-md-thumbs-up" style="margin-right: 4px;"></ion-icon>
-                        <% likelabel %>
-                    </button>
-                </ion-col>
-            </ion-row>
+                    </ion-col>
+                </ion-row>
+            <%/canreply%>
 
             <!-- Who liked section -->
             <%#likedescription%>
@@ -231,7 +231,7 @@
     </ion-item>
 
     <!-- REPLIES ON FIRSTPOST -->
-    <ion-list>
+    <ion-list class="w-100">
         <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies" id="cardid_{{reply.id}}"
             [ngStyle]="{'border-left': (reply.rolecolor) ? '3px solid': '0', 'border-color': reply.rolecolor}">
             <ion-card-header no-padding text-wrap class="card-header card-header-md">
@@ -289,27 +289,27 @@
             </ion-card-content>
             
             <%#canreply%>
-            <!-- Button to show reply box -->
-            <button
-                ion-button small clear style="float: left;" class="js_reply"
-                (click)="reply.showform = true"
-                onclick="window.activate_mention_users(event)">
-                <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
-                <span id="{{reply.id}}">Reply</span>
-            </button>
+                <!-- Button to show reply box -->
+                <button
+                    ion-button small clear style="float: left;" class="js_reply"
+                    (click)="reply.showform = true"
+                    onclick="window.activate_mention_users(event)">
+                    <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
+                    <span id="{{reply.id}}">Reply</span>
+                </button>
+                <!-- Like button -->
+                <button
+                    ion-button small clear style="padding: 0"
+                    core-site-plugins-call-ws 
+                    name="mod_hsuforum_like_post" 
+                    [params]="{postid: reply.id}"
+                    [preSets]="{getFromCache: 0, saveToCache: 0}" 
+                    successMessage 
+                    refreshOnSuccess="true">
+                    <ion-icon class="icon icon-md ion-md-thumbs-up" style="margin-right: 4px;"></ion-icon>
+                    {{reply.likelabel}}
+                </button>
             <%/canreply%>
-            <!-- Like button -->
-            <button
-                ion-button small clear style="padding: 0"
-                core-site-plugins-call-ws 
-                name="mod_hsuforum_like_post" 
-                [params]="{postid: reply.id}"
-                [preSets]="{getFromCache: 0, saveToCache: 0}" 
-                successMessage 
-                refreshOnSuccess="true">
-                <ion-icon class="icon icon-md ion-md-thumbs-up" style="margin-right: 4px;"></ion-icon>
-                {{reply.likelabel}}
-            </button>
             <!-- View reply button -->
             <button
                 *ngIf="reply.havereplies"

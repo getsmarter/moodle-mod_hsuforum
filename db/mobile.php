@@ -35,7 +35,7 @@ $addons = array(
                 'init' => 'app_init', // Function that will run on runtime of the app
                 'styles' => array(
                     'url' => $CFG->wwwroot . '/mod/hsuforum/styles_app.css',
-                    'version' => '2019080700'
+                    'version' => '2019300800'
                 ),
             )
         ),

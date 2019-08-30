@@ -68,27 +68,27 @@
         </ion-card-content>
 
         <%#canreply%>
-        <!-- Button to show reply box -->
-        <button
-            ion-button small clear style="float: left;" class="js_reply"
-            (click)="reply.showform = true"
-            onclick="window.activate_mention_users(event)">
-            <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
-            <span id="{{reply.id}}">Reply</span>
-        </button>
+            <!-- Button to show reply box -->
+            <button
+                ion-button small clear style="float: left;" class="js_reply"
+                (click)="reply.showform = true"
+                onclick="window.activate_mention_users(event)">
+                <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
+                <span id="{{reply.id}}">Reply</span>
+            </button>
+            <!-- Like button -->
+            <button
+                ion-button small clear style="padding: 0"
+                core-site-plugins-call-ws 
+                name="mod_hsuforum_like_post" 
+                [params]="{postid: reply.id}"
+                [preSets]="{getFromCache: 0, saveToCache: 0}" 
+                successMessage 
+                refreshOnSuccess="true">
+                <ion-icon class="icon icon-md ion-md-thumbs-up" style="margin-right: 4px;"></ion-icon>
+                {{reply.likelabel}}
+            </button>
         <%/canreply%>
-        <!-- Like button -->
-        <button
-            ion-button small clear style="padding: 0"
-            core-site-plugins-call-ws 
-            name="mod_hsuforum_like_post" 
-            [params]="{postid: reply.id}"
-            [preSets]="{getFromCache: 0, saveToCache: 0}" 
-            successMessage 
-            refreshOnSuccess="true">
-            <ion-icon class="icon icon-md ion-md-thumbs-up" style="margin-right: 4px;"></ion-icon>
-            {{reply.likelabel}}
-        </button>
         <!-- Who liked section -->
         <ion-item *ngIf="reply.likedescription">
             <p text-wrap style="color: #2f6473; background-color: #def2f8; border-color: #d1edf6; padding: 3px 0px;">
