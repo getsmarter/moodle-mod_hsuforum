@@ -15,6 +15,10 @@
     box-shadow: none !important;
 }
 
+.w-100 {
+    width: 100%;    
+}
+
 /* ADD DISCUSSION PAGE */
 .hsu-add-discussion .hsu-text-editor-wrapper .item-inner,
 .add-discussion-button-wrapper .item-inner {
