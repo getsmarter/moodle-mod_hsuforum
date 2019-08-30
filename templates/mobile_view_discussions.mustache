@@ -27,7 +27,7 @@
         <ion-grid class="hsu-filter-box">
             <ion-row>
                 <!-- Filter discussions -->
-                <ion-col col-auto *ngIf="CONTENT_OTHERDATA.allowedgroups && CONTENT_OTHERDATA.allowedgroups.length >= 1">
+                <ion-col col-auto *ngIf="CONTENT_OTHERDATA.filtergroups && CONTENT_OTHERDATA.filtergroups.length >= 1">
                         <ion-label>Filter by:</ion-label>
                         <ion-item>
                             <ion-select 
@@ -37,7 +37,7 @@
                                 [(ngModel)]="CONTENT_OTHERDATA.filter" 
                                 >
                                 <ion-option 
-                                    *ngFor="let group of CONTENT_OTHERDATA.allgroups" 
+                                    *ngFor="let group of CONTENT_OTHERDATA.filtergroups" 
                                     value={{group.id}}>
                                     {{group.name}}
                                 </ion-option>

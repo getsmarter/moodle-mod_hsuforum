@@ -57,6 +57,10 @@ define('HSUFORUM_POSTS_ALL_USER_GROUPS', -2);
 define('HSUFORUM_DISCUSSION_PINNED', 1);
 define('HSUFORUM_DISCUSSION_UNPINNED', 0);
 
+define('HSUFORUM_POSTS_NO_GROUPS', 0);
+define('HSUFORUM_POSTS_SEPARATE_GROUPS', 1);
+define('HSUFORUM_POSTS_VISIBLE_GROUPS', 2);
+
 /// STANDARD FUNCTIONS ///////////////////////////////////////////////////////////
 
 /**

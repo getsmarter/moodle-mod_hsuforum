@@ -54,36 +54,38 @@ class mobile {
 
     /// Group permission logic
         $showgroupsections      = false;
-        $allowedgroups          = false;
         $currentgroup           = groups_get_activity_group($cm);
         $groupmode              = groups_get_activity_groupmode($cm, $course);
         $canstart               = hsuforum_user_can_post_discussion($forum, $currentgroup, $groupmode, $cm, $context);
         $allgroups              = groups_get_all_groups($cm->course, 0, $cm->groupingid);
-        $allowedgroups          = groups_get_activity_allowed_groups($cm, $USER->id);
+        $allowedactivitygroups  = groups_get_activity_allowed_groups($cm, $USER->id);
+        $allowedusergroups      = mobile_hsu_get_allowed_user_post_groups($cm, $forum, $modcontext, $allowedactivitygroups);
 
-        // Check what groups the user is allowed to see/post to.
-        if ((int) $cm->groupmode > 0) {
-            $groupstopostto = [];
-            foreach ($allgroups as $groupid => $group) {
-                if (hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $modcontext)) {
-                    $groupstopostto[] = $group;
-                }
-            }
+        // Set filtergroup here that will be an option on the selection box
+        $filtergroups = [];
+        switch ((int) $cm->groupmode) {
+            case HSUFORUM_POSTS_SEPARATE_GROUPS:
+                $filtergroups = $allowedusergroups;
+                break;
+            case HSUFORUM_POSTS_VISIBLE_GROUPS:
+                $filtergroups = $allgroups;
+                break;
+            default:
+                $filtergroups = [];
+                break;
+        }
 
-            // Adding 'All Participants entry 
+        if ((int) $cm->groupmode !== HSUFORUM_POSTS_SEPARATE_GROUPS && count($filtergroups) > 0) {
+            // Adding 'All Participants entry
             $all_participants = new \stdClass;
-            $all_participants->id = '-1';
+            $all_participants->id = '-1222';
             $all_participants->name = 'All Participants';
-            $allgroups = array('-1' => $all_participants) + $allgroups;
-
-            // Setting allowed groups to verified groups you can post to
-            $allowedgroups = $groupstopostto;
-        } else {
-            $allowedgroups = [];
+            $filtergroups = array('-1' => $all_participants) + $filtergroups;
+            $filtergroups = array_values($filtergroups);
         }
 
         // Check if we will show the select box on template
-        $showgroupsections = count($allowedgroups) && (int) $cm->groupmode > 0 ? true : false;
+        $showgroupsections = count($allowedactivitygroups) && (int) $cm->groupmode > 0 ? 1 : 0;
 
     /// Get all the recent discussions we're allowed to see
         /**
@@ -100,9 +102,9 @@ class mobile {
         $discussions = false;
 
         // Sorting/filter the discussions
-        if ($cm->groupmode > 0 && (!empty($allowedgroups) && count($allowedgroups))) {
+        if ($cm->groupmode > 0 && (!empty($allowedusergroups) && count($allowedusergroups))) {
             // Choose first allowed group as first option if not on all groups mode.
-            $args->filter = !isset($args->filter) ? $allowedgroups[0]->id : $args->filter;
+            $args->filter = !isset($args->filter) ? $allowedusergroups[0]->id : $args->filter;
         } else {
             $args->filter = !isset($args->filter) ? HSUFORUM_POSTS_ALL_USER_GROUPS : $args->filter;
         }
@@ -237,10 +239,8 @@ class mobile {
             ),
             'javascript' => '',
             'otherdata' => array(
-                'allowedgroups' => json_encode($allowedgroups),
-                'allgroups' => json_encode(array_values($allgroups)),
+                'filtergroups' => json_encode($filtergroups),
                 'discussions' => json_encode(array_values($discussions)),
-                'groupselection'  => (is_array($allowedgroups) && count($allowedgroups)) ? $allowedgroups[0]->id : -1,
                 'forum' => json_encode($forum),
                 'sort' => $args->sort,
                 'filter' => $args->filter,

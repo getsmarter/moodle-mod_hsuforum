@@ -977,3 +977,23 @@ function returnEmbeddedImageMessage($message, $modulecontextid, $postid) {
 
     return $message;
 }
+
+/**
+ * Check what groups the user is allowed to post to.
+ * @param object $cm the course module
+ * @param object $forum the forum
+ * @param object $modcontext the module context
+ * @param array $activitygroups the available activity groups
+ * @return array $allowedgroups the groups you are allowed to view/post to
+ */
+function mobile_hsu_get_allowed_user_post_groups($cm, $forum, $modcontext, $activitygroups) {
+        $allowedgroups = [];
+
+        foreach ($activitygroups as $groupid => $group) {
+            if (hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $modcontext)) {
+                $allowedgroups[] = $group;
+            }
+        }
+
+        return array_values($allowedgroups);
+}
