@@ -4123,7 +4123,6 @@ function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload
     $post->created    = $post->modified = time();
     $post->mailed     = HSUFORUM_MAILED_PENDING;
     $post->userid     = $USER->id;
-    $post->attachment = "";
     if (!isset($post->totalscore)) {
         $post->totalscore = 0;
     }
