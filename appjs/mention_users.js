@@ -28,6 +28,7 @@
             let attachments = (post && post.attachments) ? post.attachments : that.CONTENT_OTHERDATA.files;
             let modal;
             let promise;
+            let attachmentflag = 0;
 
             if (!subject) {
                 that.CoreUtilsProvider.domUtils.showErrorModal(that.CONTENT_OTHERDATA.errormessages['erroremptysubject'], true);
@@ -40,6 +41,7 @@
             // Upload draft attachments first if any.
             if (attachments.length) {
                 promise = that.CoreFileUploaderProvider.uploadOrReuploadFiles(attachments, 'mod_hsuforum', forumId);
+                attachmentflag = 1;
             } else {
                 promise = Promise.resolve(1);
             }
@@ -54,12 +56,15 @@
                     params.subject = subject;
                     params.message = message;
                     params.draftid = draftAreaId;
+                    params.attachment = attachmentflag;
+                    
                 } else {
                     params.forumid = forumId;
                     params.subject = subject;
                     params.message = message;
                     params.groupid = groupId;
                     params.draftid = draftAreaId;
+                    params.attachment = attachmentflag;
                 }
 
                 return site.write(webservice, params).then(response => {
