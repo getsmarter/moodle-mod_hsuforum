@@ -1019,6 +1019,7 @@ class mod_hsuforum_external extends external_api {
                 'message' => new external_value(PARAM_RAW, 'New Discussion message (only html format allowed)'),
                 'groupid' => new external_value(PARAM_INT, 'The group, default to -1', VALUE_DEFAULT, -1),
                 'draftid' => new external_value(PARAM_INT, 'The file upload draftid', VALUE_DEFAULT, 0),
+                'attachment' => new external_value(PARAM_INT, 'attachment upload', VALUE_DEFAULT, 0),
                 'options' => new external_multiple_structure (
                     new external_single_structure(
                         array(
@@ -1048,7 +1049,7 @@ class mod_hsuforum_external extends external_api {
      * @since Moodle 3.0
      * @throws moodle_exception
      */
-    public static function add_discussion($forumid, $subject, $message, $groupid = -1, $draftid = 0, $options = array()) {
+    public static function add_discussion($forumid, $subject, $message, $groupid = -1, $draftid = 0, $attachment = 0, $options = array()) {
         global $DB, $CFG;
         require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
         require_once($CFG->dirroot . "/mod/hsuforum/mobilelib.php");
@@ -1060,6 +1061,7 @@ class mod_hsuforum_external extends external_api {
                                                 'message' => $message,
                                                 'groupid' => $groupid,
                                                 'draftid' => $draftid,
+                                                'attachment' => $attachment,
                                                 'options' => $options
                                             ));
         // Validate options.
@@ -1128,6 +1130,7 @@ class mod_hsuforum_external extends external_api {
         $discussion->timestart = 0;
         $discussion->timeend = 0;
         $discussion->reveal = 0;
+        $discussion->attachment = $attachment;
         $discussion->mobiledraftid = $draftid;
 
         if (has_capability('mod/hsuforum:pindiscussions', $context) && $options['discussionpinned']) {
