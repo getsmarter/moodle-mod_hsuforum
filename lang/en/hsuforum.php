@@ -617,6 +617,7 @@ $string['plaintext'] = 'Plain text';
 $string['exportattachments'] = 'Export attachments';
 $string['all'] = 'All';
 $string['participants'] = 'Participants';
+$string['allparticipants'] = 'All Participants';
 $string['author'] = 'Author';
 $string['date'] = 'Date';
 $string['byx'] = 'by {$a}';
@@ -678,7 +679,9 @@ $string['liked'] = 'Liked';
 $string['unlike'] = 'Unlike';
 $string['replyfrom'] = 'Reply from';
 $string['postedby'] = 'Posted by: ';
-
+$string['filter'] = 'Filter';
+$string['reset'] = 'Reset';
+$string['filtererror'] = 'There aren\'t any posts that match your filter selection. Reset to try again';
 // Deprecated since Moodle 3.0.
 $string['subscribersto'] = 'Subscribers to "{$a->name}"';
 
@@ -689,6 +692,8 @@ $string['sortdefault'] = 'Oldest first (Default)';
 $string['sortnewestfirst'] = 'Newest first';
 $string['sortmostreplies'] = 'Replies: Most to Least';
 $string['sortmostlikes'] = 'Likes: Most to Least';
+$string['sortmobiledefault'] = 'Newest first (Default)';
+$string['sortoldestfirst'] = 'Oldest first';
 
 $string['posttimeago'] = 'Posted {$a}';
 

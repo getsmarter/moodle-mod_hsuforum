@@ -33,6 +33,10 @@ $addons = array(
                 'delegate' => 'CoreCourseModuleDelegate', // Delegate (where to display the link to the plugin)
                 'method' => 'forum_discussions_view', // Main function in \mod_hsuforum\output\mobile
                 'init' => 'app_init', // Function that will run on runtime of the app
+                'styles' => array(
+                    'url' => $CFG->wwwroot . '/mod/hsuforum/styles_app.css',
+                    'version' => '2019300800'
+                ),
             )
         ),
         'lang' => array( // Language strings that are used in all the handlers. Can add more as required.

@@ -1,12 +1,164 @@
 /**
- * Mod_hsuforum mobile tag js library written in vanilla js. The library needs to be echo'd into the return array 
- * for mobile functions in order for it to work. Vanilla js is mandatory in the ammendment of this library because
+ * Mod_hsuforum mobile js library written in vanilla js and ES6. The library needs to be echo'd into the return array 
+ * for mobile functions in order for it to work. Vanilla js or ES6 is mandatory in the ammendment of this library because
  * of the angular involvement of the mobile app.
  *
  * @package	mod_hsuforum
  * @author JJ Swanevelder
  */
 
+(function (mobile) {
+    mobile.mod_hsuforum = {
+        //-----------------------------------//
+        // Class helper functions definitions
+        //-----------------------------------//
+
+        /**
+         * Function to handle posts. Can be for replies or new discussions.
+         * If no post id object then the function will handle adding a new discussion.
+         * @param {object} that The this object when calling this function.
+         * @param {object} post The post for a reply
+         * @return {void}
+         */
+        handlePost: (that, post) => {
+            let subject = (post && post.id) ? post.subject : that.CONTENT_OTHERDATA.discussiontitle;
+            let message = (post && post.id) ? that.controls[post.id].value : that.controls[1].value;
+            let groupId = that.CONTENT_OTHERDATA.groupselection;
+            let forumId = (post && post.forumid) ? post.forumid : that.CONTENT_OTHERDATA.forumid;
+            let attachments = (post && post.attachments) ? post.attachments : that.CONTENT_OTHERDATA.files;
+            let modal;
+            let promise;
+            let attachmentflag = 0;
+
+            if (!subject) {
+                that.CoreUtilsProvider.domUtils.showErrorModal(that.CONTENT_OTHERDATA.errormessages['erroremptysubject'], true);
+                return;
+            }
+
+            modal = that.CoreUtilsProvider.domUtils.showModalLoading('core.sending', true);
+            message = that.CoreTextUtilsProvider.formatHtmlLines(message);
+
+            // Upload draft attachments first if any.
+            if (attachments.length) {
+                promise = that.CoreFileUploaderProvider.uploadOrReuploadFiles(attachments, 'mod_hsuforum', forumId);
+                attachmentflag = 1;
+            } else {
+                promise = Promise.resolve(1);
+            }
+
+            promise.then(draftAreaId => {
+                // Try to send it to server.
+                let site = that.CoreSitesProvider.getCurrentSite();
+                let webservice = (post && post.parent) ? 'mod_hsuforum_add_discussion_post' :'mod_hsuforum_add_discussion';
+                let params = {};
+                if (post && post.parent) {
+                    params.postid  = post.id;
+                    params.subject = subject;
+                    params.message = message;
+                    params.draftid = draftAreaId;
+                    params.attachment = attachmentflag;
+                    
+                } else {
+                    params.forumid = forumId;
+                    params.subject = subject;
+                    params.message = message;
+                    params.groupid = groupId;
+                    params.draftid = draftAreaId;
+                    params.attachment = attachmentflag;
+                }
+
+                return site.write(webservice, params).then(response => {
+                    // Other errors ocurring.
+                    if (!response) {
+                        return Promise.reject(that.CoreWSProvider.createFakeWSError(response.warnings));
+                    } else {
+                        return response;
+                    }
+                });
+            }).then(() => {
+                if (!post && !post.id) {
+                    // Go back one level if adding a new discussion
+                    that.NavController.pop();
+                } else {
+                    // Refresh page if adding a reply
+                    that.refreshContent();
+                }
+            }).catch(msg => {
+                that.CoreUtilsProvider.domUtils.showErrorModalDefault(msg, 'addon.mod_forum.cannotcreatediscussion', true);
+            }).finally(() => {
+                modal.dismiss();
+            });
+        },
+
+        /**
+         * Function to build formcontrols for all the advanced editors on the page
+         * @param {object} mobile The moodlemobile instance
+         * @return {void}
+         */
+        buildFormControls: (mobile) => {
+            mobile.controls = [];
+            // 1. Setting up firstpost formcontrol
+            if (mobile.CONTENT_OTHERDATA.firstpost !== undefined) {
+                mobile.controls[mobile.CONTENT_OTHERDATA.firstpost.id] = mobile.FormBuilder.control('');
+            }
+        
+            // 2. Setting up formcontrol for replies
+            if (mobile.CONTENT_OTHERDATA.replies && mobile.CONTENT_OTHERDATA.replies.length) {
+                mobile.CONTENT_OTHERDATA.replies.forEach((reply) => {
+                    mobile.controls[reply.id] = mobile.FormBuilder.control('');
+                });
+            }
+            // 3. Setting up formcontrol for an add discussion page
+            if (mobile.CONTENT_OTHERDATA.firstpost == undefined && mobile.CONTENT_OTHERDATA.replies == undefined) {
+                mobile.controls[1] = mobile.FormBuilder.control('');
+            }
+        },
+    };
+
+    //-------------------//
+    // Init declarations
+    //-------------------//
+
+    /**
+     * Initialisation for the discussions page.
+     * @param {object} outerThis The main component.
+     * @return {void}
+     */
+    window.postServiceInit = function(outherThis) {
+        outherThis.handlePost = function(post = false) {
+            mobile.mod_hsuforum.handlePost(outherThis, post);
+        };
+    };
+
+    /**
+     * Function to initialize formcontrols for all pages
+     * @param {object} outerThis The main component.
+     * @return {void}
+     */
+    window.formControlInit = function(outerThis) {
+        mobile.mod_hsuforum.buildFormControls(outerThis);
+    };
+
+    //------------------------------------------------//
+    // Inits being called based on page variables set.
+    //------------------------------------------------//
+
+    switch(mobile.CONTENT_OTHERDATA.page) { 
+        case 'add_discussion': 
+        case 'discussion_posts_replies': 
+        case 'discussion_posts': {
+            window.postServiceInit(mobile);
+        }
+        // Case for if page is undefined or inits that should run on all pages
+        default: { 
+            window.formControlInit(mobile);
+            break; 
+        }
+    }
+})(this);
+
+// @TODO - Convert below legacy code into class based definitions as above. Then rename file to app_pageload.js 
+// so it makes more sense to distinguish between app_init and app_pageload
 /* ------------------------------------------------------------------------------------------- /
     MAIN FUNCTIONS
     1. Set window object with a usable click function ("activate_mention_users") then call init() on click for that func

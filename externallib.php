@@ -852,6 +852,8 @@ class mod_hsuforum_external extends external_api {
                                                 (can be the initial discussion post'),
                 'subject' => new external_value(PARAM_TEXT, 'new post subject'),
                 'message' => new external_value(PARAM_RAW, 'new post message (only html format allowed)'),
+                'draftid' => new external_value(PARAM_INT, 'The file upload draftid', VALUE_DEFAULT, 0),
+                'attachment' => new external_value(PARAM_INT, 'attachment added', VALUE_DEFAULT, 0),
                 'options' => new external_multiple_structure (
                     new external_single_structure(
                         array(
@@ -874,12 +876,13 @@ class mod_hsuforum_external extends external_api {
      * @param int $postid the post id we are going to reply to
      * @param string $subject new post subject
      * @param string $message new post message (only html format allowed)
+     * @param int $draftid mobile file draft id
      * @param array $options optional settings
      * @return array of warnings and the new post id
      * @since Moodle 3.0
      * @throws moodle_exception
      */
-    public static function add_discussion_post($postid, $subject, $message, $options = array()) {
+    public static function add_discussion_post($postid, $subject, $message, $draftid = 0, $attachment = 0, $options = array()) {
         global $DB, $CFG, $USER;
         require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
         require_once($CFG->dirroot . "/mod/hsuforum/mobilelib.php");
@@ -889,6 +892,8 @@ class mod_hsuforum_external extends external_api {
                                                 'postid' => $postid,
                                                 'subject' => $subject,
                                                 'message' => $message,
+                                                'draftid' => $draftid,
+                                                'attachment' => $attachment,
                                                 'options' => $options
                                             ));
         // Validate options.
@@ -943,6 +948,8 @@ class mod_hsuforum_external extends external_api {
         $post->reveal = 0;
         $post->flags = 0;
         $post->privatereply = 0;
+        $post->attachment = $attachment;
+        $post->draftid = $draftid;
 
         if ($postid = hsuforum_add_new_post($post, null)) {
 
@@ -1011,6 +1018,8 @@ class mod_hsuforum_external extends external_api {
                 'subject' => new external_value(PARAM_TEXT, 'New Discussion subject'),
                 'message' => new external_value(PARAM_RAW, 'New Discussion message (only html format allowed)'),
                 'groupid' => new external_value(PARAM_INT, 'The group, default to -1', VALUE_DEFAULT, -1),
+                'draftid' => new external_value(PARAM_INT, 'The file upload draftid', VALUE_DEFAULT, 0),
+                'attachment' => new external_value(PARAM_INT, 'attachment upload', VALUE_DEFAULT, 0),
                 'options' => new external_multiple_structure (
                     new external_single_structure(
                         array(
@@ -1040,7 +1049,7 @@ class mod_hsuforum_external extends external_api {
      * @since Moodle 3.0
      * @throws moodle_exception
      */
-    public static function add_discussion($forumid, $subject, $message, $groupid = -1, $options = array()) {
+    public static function add_discussion($forumid, $subject, $message, $groupid = -1, $draftid = 0, $attachment = 0, $options = array()) {
         global $DB, $CFG;
         require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
         require_once($CFG->dirroot . "/mod/hsuforum/mobilelib.php");
@@ -1051,6 +1060,8 @@ class mod_hsuforum_external extends external_api {
                                                 'subject' => $subject,
                                                 'message' => $message,
                                                 'groupid' => $groupid,
+                                                'draftid' => $draftid,
+                                                'attachment' => $attachment,
                                                 'options' => $options
                                             ));
         // Validate options.
@@ -1119,6 +1130,8 @@ class mod_hsuforum_external extends external_api {
         $discussion->timestart = 0;
         $discussion->timeend = 0;
         $discussion->reveal = 0;
+        $discussion->attachment = $attachment;
+        $discussion->mobiledraftid = $draftid;
 
         if (has_capability('mod/hsuforum:pindiscussions', $context) && $options['discussionpinned']) {
             $discussion->pinned = HSUFORUM_DISCUSSION_PINNED;

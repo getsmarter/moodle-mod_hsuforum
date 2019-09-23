@@ -7,6 +7,11 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+define('SORT_REPLIES_MOST_TO_LEAST', 2);
+define('SORT_LIKES_MOST_TO_LEAST', 3);
+define('SORT_OLDEST', 4);
+define('SORT_NEWEST', 5);
+define('MOBILE_WEBSERVICE_USER_TOKEN', hsuforum_mobile_get_user_token());
 
 /**
  * Function to check a message for potential tagged users
@@ -595,56 +600,256 @@ function hsuforum_get_course_role_assignment_ids($coursecontextid, $roleid) {
 }
 
 /**
- * Function to get an orginised post/child structured array used in mobile.
- * @param int $discussionid the discussion id
- * @param string $order the SQL order by
+ * Internal method to walk over a list of posts, rendering
+ * each post and their children.
  *
- * @return array the filtered array:
+ * @param array $posts
+ * @param int $parentid The current parent
+ * @param int $depth The post depth level
+ * @param array $post_map The map array
+ * @return array
  */
-function hsuforum_get_discussion_post_hierarchy($discussionid, $order = "ASC") {
+function hsuforum_mobile_post_walker($posts, $parentid, $depth = 0, $post_map=array()) {
+    foreach ($posts as $post) {
+        if ($post->parent != $parentid) {
+            continue;
+        }
+
+        $post_map[$post->id] = array('id' => $post->id,'depth' => $depth);
+
+        if (!empty($post->children)) {
+            $post_map = hsuforum_mobile_post_walker($post->children, $post->id, ($depth + 1), $post_map);
+        }
+    }
+    return $post_map;
+}
+
+/**
+ * Function to get discussion posts by field
+ * @param int $discussionid The discussion id
+ * @param string $fields The selected fields to return
+ * @param bool Option to get nested children for post
+ * @param string $order The SQL order by
+ *
+ * @return array The discussion posts
+ */
+function hsuforum_mobile_get_all_discussion_posts_by_field($discussionid, $fields="*", $children=false, $order = "ASC") {
     global $DB, $USER;
 
-    $postssql        = "SELECT p.id, p.parent, p.created 
-                            FROM {hsuforum_posts} p 
-                            WHERE discussion = ? 
-                                AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
-                            ORDER BY p.created " . $order;
-    $postsparams     = array('discussion' => $discussionid, 'privatereply' => $USER->id, 'user' => $USER->id);
-    $discussionposts = $DB->get_records_sql($postssql, $postsparams);
-    $filteredposts   = [];
-    $firstpost       = [];
+    $postssql = "SELECT " . $fields . "
+                    FROM {hsuforum_posts} p 
+                    WHERE discussion = ? 
+                        AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
+                    ORDER BY p.created " . $order;
 
-    foreach ($discussionposts as $key => $post) {
-        // Firstpost
-        if (!$post->parent) {
-            $filteredposts[$post->id] = [];
-            $firstpost = $post;
-        // Firstlevel posts
-        } elseif (isset($filteredposts[$post->parent])) {
-            $filteredposts[$post->parent][$post->id] = [];
-        // Secondlevel posts - essentially a reply on the firstlevel
-        } elseif (isset($filteredposts[$firstpost->id][$post->parent])) {
-            $filteredposts[$firstpost->id][$post->parent]['secondlevelposts'][$post->id] = [
-                'id'      => $post->id,
-                'parent'  => $post->parent,
-                'depth'   => 2,
-                'created' => $post->created
-            ];
-        // Third level and deeper will be grouped as children of second level
-        } else {
-            $firstlevelpost = hsuforum_get_firstlevel_post($post->id, $discussionposts);
-            if ($firstreplyparent = hsuforum_get_secondlevel_post($post->id, $discussionposts, $filteredposts[$firstpost->id][$firstlevelpost->id]['secondlevelposts'])) {
-                    $filteredposts[$firstpost->id][$firstlevelpost->id]['secondlevelposts'][$firstreplyparent->id]['children'][$post->id] = [
-                    'id'      => $post->id,
-                    'parent'  => $post->parent,
-                    'depth'   => $firstlevelpost->depth,
-                    'created' => $post->created
-                ];
+    $postsparams = array(
+                    'discussion' => $discussionid, 
+                    'privatereply' => $USER->id, 
+                    'user' => $USER->id
+                    );
+
+    $posts = $DB->get_records_sql($postssql, $postsparams);
+
+    if ($children) {
+        foreach ($posts as $pid=>$p) {
+            if (!$p->parent) {
+                continue;
+            }
+            if (!isset($posts[$p->parent])) {
+                continue; // parent does not exist??
+            }
+            if (!isset($posts[$p->parent]->children)) {
+                $posts[$p->parent]->children = array();
+            }
+            $posts[$p->parent]->children[$pid] =& $posts[$pid];
+        }
+
+        // Start with the last child of the first post.
+        $post = &$posts[reset($posts)->id];
+
+        $lastpost = false;
+        while (!$lastpost) {
+            if (!isset($post->children)) {
+                $post->lastpost = true;
+                $lastpost = true;
+            } else {
+                // Go to the last child of this post.
+                $post = &$posts[end($post->children)->id];
             }
         }
     }
 
-    return $filteredposts;
+    return $posts;
+}
+
+/**
+ * Function to determine the margin level for a post card depending on depth level
+ * @param int $depthlevel The post depth level
+ *
+ * @return string The margin style
+ */
+function hsuforum_mobile_get_style_margin(int $depthlevel) {
+    $margin = 'auto';
+    switch (true) {
+        case $depthlevel == 2:
+            $margin = '6%';
+            break;
+        case $depthlevel == 3:
+            $margin = '8%';
+            break;
+        case $depthlevel == 4:
+            $margin = '10%';
+            break;
+        case $depthlevel == 5:
+            $margin = '12%';
+            break;
+        case $depthlevel > 5:
+            $margin = '14%';
+            break;
+        default:
+            $margin = 'auto';
+            break;
+    }
+
+    return $margin;
+}
+
+/**
+ * Function to filter/sort discussion rootposts. The function will iterate through the discussion
+ * posts and automatically add the filtered posts to its respective rootpost for the discussion in
+ * array 'filteredposts'. The function will also work out the amount of likes for a rootpost.
+ * @param array $discussionrootposts The discussion root posts
+ * @param int $discussionid The discussion id
+ * @param int $firstpostid The firstpost for the discussion
+ * @param int $filter The filter option
+ * @param int $filter The sort option
+ * @param object $course The course related to the discussion
+ *
+ * @return array The filtered/sorted posts
+ */
+function hsuforum_mobile_filter_sort_posts($discussionrootposts, $discussionid, $firstpostid, $filter, $sort, $course) {
+    global $DB, $USER, $PAGE;
+
+    try {
+        $returnposts = [];
+        $discussionposts = hsuforum_mobile_get_all_discussion_posts_by_field($discussionid, 'p.id,p.parent, p.userid');
+        $filteredposts = $PAGE->get_renderer('mod_hsuforum')->filter_sort_posts($discussionposts, $filter, $sort, $course, true, false);
+
+        foreach ($filteredposts as $postid => $post) {
+            if ($postid) {
+                if (in_array($post->parent, array_keys($discussionrootposts))) {
+                    hsuforum_mobile_add_filteredpost_to_posts_array($discussionrootposts, $post->parent, $postid);
+                } else {
+                    // Run up the chain to see if the filtered post is in one of the discussionrootposts
+                    if ($rootpost = hsuforum_get_firstlevel_post($postid, $discussionposts)) {
+                        hsuforum_mobile_add_filteredpost_to_posts_array($discussionrootposts, $rootpost->id, $postid);
+                    }
+                }
+            }
+        }
+
+        // With above algorithm we will also have an array 'filteredposts' for the firstpost which is the filtered rootposts
+        if (isset($discussionrootposts[$firstpostid]->filteredposts) && count($discussionrootposts[$firstpostid]->filteredposts)) {
+            foreach ($discussionrootposts[$firstpostid]->filteredposts as $filteredrootpost) {
+                array_push($returnposts, $discussionrootposts[$filteredrootpost]);
+            }
+        }
+
+        // Sort the posts
+        $sortedposts = hsuforum_mobile_sort_posts($returnposts, $sort);
+        return $sortedposts;
+
+    } catch (\Exception $e) {
+        print($e->getMessage());
+        // Last failsafe if something goes wrong
+        return $discussionrootposts;
+    }
+}
+
+/**
+ * Function to handle adding filtered post results to rootposts and like counts
+ * @param array $posts The rootposts for the discussion
+ * @param int $rootpostid The rootpost id
+ * @param int $postid The filtered post id
+ *
+ * @return array The rootposts
+ */
+function hsuforum_mobile_add_filteredpost_to_posts_array(&$rootposts, $rootpostid, $postid) {
+    global $DB;
+    $isrootpost = false;
+    $isrootpost = isset($rootposts[$postid]) ? 1 : 0;
+    $postlikes = sizeof($DB->get_records('hsuforum_actions', array('postid' => $postid, 'action' => 'like')));
+
+    // Adding post id to filteredposts array to highlight posts
+    if (isset($rootposts[$rootpostid]->filteredposts)) {
+        array_push($rootposts[$rootpostid]->filteredposts, $postid);
+    } else {
+        $rootposts[$rootpostid]->filteredposts = [];
+        array_push($rootposts[$rootpostid]->filteredposts, $postid);
+    }
+
+    // Add likes for sorting options
+    if (count($postlikes) > 0) {
+        if ($isrootpost) {
+            $rootposts[$postid]->rootpostlikes = $postlikes;
+        } else {
+            $rootposts[$rootpostid]->nestedreplylikes += $postlikes;
+        }        
+    }
+
+    return $rootposts;
+}
+
+/**
+ * Function to sort posts
+ * @param array $posts The posts to be sorted
+ * @param int $sort The sort option
+ *
+ * @return array The sorted posts
+ */
+function hsuforum_mobile_sort_posts($posts, $sort) {
+    if ($posts) {
+        switch ($sort) {
+            case SORT_OLDEST:
+                uasort($posts, function ($a, $b) {
+                    return $a->created <=> $b->created;
+                });
+                break;
+            
+            case SORT_NEWEST:
+                uasort($posts, function ($a, $b) {
+                    return $b->created <=> $a->created;
+                });
+                break;
+            
+            case SORT_LIKES_MOST_TO_LEAST:
+                uasort($posts, function ($a, $b) {
+                    $a->rootpostlikes = !$a->rootpostlikes ? 0 : $a->rootpostlikes;
+                    $b->rootpostlikes = !$b->rootpostlikes ? 0 : $b->rootpostlikes;
+
+                    return $b->rootpostlikes <=> $a->rootpostlikes;
+                });
+                break;
+
+            case SORT_REPLIES_MOST_TO_LEAST:
+                uasort($posts, function ($a, $b) {
+                    $a->filteredposts = !$a->filteredposts ? 0 : $a->filteredposts;
+                    $b->filteredposts = !$b->filteredposts ? 0 : $b->filteredposts;
+
+                    return $b->filteredposts <=> $a->filteredposts;
+                });
+                break;
+
+            default:
+                // Sort oldest as an default
+                uasort($posts, function ($a, $b) {
+                    return $a->created <=> $b->created;
+                });
+                break;
+        }
+    }
+
+    return $posts;
 }
 
 /**
@@ -690,44 +895,105 @@ function hsuforum_get_firstlevel_post($postid, $unfilteredposts = array()) {
 }
 
 /**
- * Function find the second level post parent for a post deeper than second level.
- * @param int $postid the post id
- * @param array $unfilteredposts the posts for a discussion
- * @param array $firstreplies the firstlevel posts on a firstpost.
- *
- * @return object the secondlevel post
+ * Function to generate a token for the mobile webservice.
+ * Note this is bound to the constant MOBILE_WEBSERVICE_USER_TOKEN so that it can be used anywhere
+ * 
+ * @return string the token
  */
-function hsuforum_get_secondlevel_post($postid, $unfilteredposts = array(), $firstreplies = array()) {
-    $secondlevelpost = false;
-    $depth = 0;
+function hsuforum_mobile_get_user_token() : string {
+    global $DB;
 
-    // Check if post id in arr.
-    if (isset($unfilteredposts[$postid]) && count($firstreplies)) {
-        $parentid = (int) $unfilteredposts[$postid]->parent;
-        $postid = -1;
-        while ($parentid !== 0) {
-            foreach ($unfilteredposts as $pid => $post) {
-                // Found a parent for current search
-                if ($pid == $parentid) {
-                    $parent = $unfilteredposts[$unfilteredposts[$parentid]->parent];
-                    // Exit search if parent parent is 0
-                    if (array_key_exists($pid, $firstreplies)) {
-                        $parentid = 0;
-                        $depth++;
-                        // Setting return values
-                        $secondlevelpost = new stdClass();
-                        $secondlevelpost->id = $pid;
-                        $secondlevelpost->depth = $depth;
-                    // Else continue search
-                    } else {
-                        $parentid = (int) $unfilteredposts[$pid]->parent;
-                        $postid = (int) $unfilteredposts[$pid];
-                        $depth++;
-                    }
+    $service = $DB->get_record('external_services', array('shortname' => 'moodle_mobile_app', 'enabled' => 1));
+    $tokenarr = external_generate_token_for_current_user($service);
+
+    return $tokenarr->token;
+}
+
+/**
+ * Function to get the url for a profile picture
+ * @param object $postuser the postuser
+ *
+ * @return string the profile pic url
+ */
+function hsuforum_mobile_get_user_profilepic_url($postuser) : string {
+    global $PAGE, $CFG;
+
+    $postuser->user_picture->size = 100;
+    $imagepath = parse_url($postuser->user_picture->get_url($PAGE)->out())['path'];
+
+    if (strpos($imagepath, 'pluginfile.php')) {
+        $imageurl = $CFG->wwwroot.'/webservice'.$imagepath.'?token='.MOBILE_WEBSERVICE_USER_TOKEN;
+    } else {
+        $imageurl = $postuser->user_picture->get_url($PAGE)->out();
+    }
+
+    return $imageurl;
+}
+
+    /**
+     * @param $message
+     * @param $modulecontextid
+     * @param $postid
+     * returns the message with
+     * the correctly embedded images
+     * looks for each image, and builds the correct url
+     * to grab the image via webservices rest API
+     */
+function returnEmbeddedImageMessage($message, $modulecontextid, $postid) {
+    global $CFG;
+
+    $baseuri = $CFG->wwwroot . '/webservice/pluginfile.php/' . $modulecontextid . '/mod_hsuforum/post/' . $postid;
+    // https://gist.github.com/vyspiansky/11285153.
+    preg_match_all( '@src="([^"]+)"@' , $message, $explodedmessage );
+    $goodbadimages = [];
+
+    foreach($explodedmessage as $images) {
+        if(sizeof($images) === 1) { // Handling post messages with a single image, example of data below.
+            // [0]=> string(64) "src="@@PLUGINFILE@@/Screenshot%202019-07-12%20at%2011.12.43.png"".
+            if (strpos($images[0], 'src=') !== false) {
+                $output = null;
+                preg_match('~src="(.*?)"~', $images[0], $output);
+                $gooduri = str_replace('@@PLUGINFILE@@', $baseuri, $output[1]) . '?token='.MOBILE_WEBSERVICE_USER_TOKEN;
+                $goodbadimages[] = array('bad_uri' => $output[0], 'good_uri' => $gooduri);
+            }
+        } else { // Handling post messages with a single image, example of data below.
+            // array( [0]=> string(64) "src="@@PLUGINFILE@@/Screenshot%202019-07-12%20at%2011.12.43.png"".
+            // [1]=> string(64) "src="@@PLUGINFILE@@/Screenshot%202019-07-12%20at%2011.12.43.png"" );.
+            foreach($images as $image) {
+                if (strpos($image, 'src=') !== false) {
+                    $output = null;
+                    preg_match('~src="(.*?)"~', $image, $output);
+                    $gooduri = str_replace('@@PLUGINFILE@@', $baseuri, $output[1]) . '?token='.MOBILE_WEBSERVICE_USER_TOKEN;
+                    $goodbadimages[] = array('bad_uri' => $output[0], 'good_uri' => $gooduri);
                 }
             }
         }
     }
 
-    return $secondlevelpost;
+    // Replacing the bad URLs with the good ones.
+    foreach($goodbadimages as $replacementimage) {
+        $message = str_replace($replacementimage['bad_uri'], 'src="' . $replacementimage['good_uri'] . '""', $message);
+    }
+
+    return $message;
+}
+
+/**
+ * Check what groups the user is allowed to post to.
+ * @param object $cm the course module
+ * @param object $forum the forum
+ * @param object $modcontext the module context
+ * @param array $activitygroups the available activity groups
+ * @return array $allowedgroups the groups you are allowed to view/post to
+ */
+function mobile_hsu_get_allowed_user_post_groups($cm, $forum, $modcontext, $activitygroups) {
+        $allowedgroups = [];
+
+        foreach ($activitygroups as $groupid => $group) {
+            if (hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $modcontext)) {
+                $allowedgroups[] = $group;
+            }
+        }
+
+        return array_values($allowedgroups);
 }

@@ -54,16 +54,38 @@ class mobile {
 
     /// Group permission logic
         $showgroupsections      = false;
-        $allowedgroups          = false;
         $currentgroup           = groups_get_activity_group($cm);
         $groupmode              = groups_get_activity_groupmode($cm, $course);
         $canstart               = hsuforum_user_can_post_discussion($forum, $currentgroup, $groupmode, $cm, $context);
         $allgroups              = groups_get_all_groups($cm->course, 0, $cm->groupingid);
-        $allowedgroups          = groups_get_activity_allowed_groups($cm, $USER->id);
+        $allowedactivitygroups  = groups_get_activity_allowed_groups($cm, $USER->id);
+        $allowedusergroups      = mobile_hsu_get_allowed_user_post_groups($cm, $forum, $modcontext, $allowedactivitygroups);
 
-        if (count($allowedgroups) && (int) $cm->groupmode > 0) {
-            $showgroupsections = true;
+        // Set filtergroup here that will be an option on the selection box
+        $filtergroups = [];
+        switch ((int) $cm->groupmode) {
+            case HSUFORUM_POSTS_SEPARATE_GROUPS:
+                $filtergroups = $allowedusergroups;
+                break;
+            case HSUFORUM_POSTS_VISIBLE_GROUPS:
+                $filtergroups = $allgroups;
+                break;
+            default:
+                $filtergroups = [];
+                break;
         }
+
+        if ((int) $cm->groupmode !== HSUFORUM_POSTS_SEPARATE_GROUPS && count($filtergroups) > 0) {
+            // Adding 'All Participants entry
+            $all_participants = new \stdClass;
+            $all_participants->id = '-1';
+            $all_participants->name = 'All Participants';
+            $filtergroups = array('-1' => $all_participants) + $filtergroups;
+            $filtergroups = array_values($filtergroups);
+        }
+
+        // Check if we will show the select box on template
+        $showgroupsections = count($allowedactivitygroups) && (int) $cm->groupmode > 0 ? 1 : 0;
 
     /// Get all the recent discussions we're allowed to see
         /**
@@ -72,7 +94,6 @@ class mobile {
          * Reference lib.php line :5399 to implement when required
          * UX requirements need to be defined in terms of pagination and limits on the page (infinite scroll maybe?)
          */
-        $sortorder = hsuforum_get_default_sort_order();
         $getuserlastmodified = true;
         $fullpost = true;
         $maxdiscussions = -1;
@@ -80,8 +101,39 @@ class mobile {
         $perpage = 20;
         $discussions = false;
 
+        // Sorting/filter the discussions
+        if ($cm->groupmode > 0 && (!empty($allowedusergroups) && count($allowedusergroups))) {
+            // Choose first allowed group as first option if not on all groups mode.
+            $args->filter = !isset($args->filter) ? $allowedusergroups[0]->id : $args->filter;
+        } else {
+            $args->filter = !isset($args->filter) ? HSUFORUM_POSTS_ALL_USER_GROUPS : $args->filter;
+        }
+
+        $args->sort = !isset($args->sort) ? 'recent' : $args->sort;
+        switch ($args->sort) {
+            case 'recent':
+                $sortorder = "d.pinned DESC, d.timemodified DESC";
+                break;
+            case 'mostactive':
+                $sortorder = "d.pinned DESC, extra.replies DESC, d.timemodified DESC";
+                break;
+            case 'created':
+                $sortorder = "d.pinned DESC, p.created DESC";
+                break;
+            case 'subscribe':
+                $sortorder = "d.pinned DESC, sd.id DESC, d.timemodified DESC";
+                break;
+            case 'like':
+                $sortorder = "d.pinned DESC, likes DESC";
+                break;
+            default:
+                $sortorder = '';
+                break;
+        }
+
+    /// Getting discussions
         try {
-            $discussions = hsuforum_get_discussions($cm, $sortorder, $fullpost, null, $maxdiscussions, $getuserlastmodified, $page, $perpage, HSUFORUM_POSTS_ALL_USER_GROUPS, false);
+            $discussions = hsuforum_get_discussions($cm, $sortorder, $fullpost, null, $maxdiscussions, $getuserlastmodified, $page, $perpage, $args->filter, false);
         } catch (Exception $e) {
             // @TODO handle exceptions properly in the app context
             print_r($e->getMessage());
@@ -103,7 +155,7 @@ class mobile {
                 $postuser = hsuforum_extract_postuser($discussion, $forum, context_module::instance($cm->id));
                 if ($postuser) {
                     $postuser->user_picture->size = 100;
-                    $discussion->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
+                    $discussion->profilesrc = hsuforum_mobile_get_user_profilepic_url($postuser);
                     $discussion->postuserid = $postuser->id;
                 }
                 // Getting footer stats
@@ -136,6 +188,11 @@ class mobile {
                 $discussion->contribslabel = ($stats['contribs'] == 0) || ($stats['contribs'] > 1) ? get_string('contributors', 'hsuforum') : get_string('contributor', 'hsuforum');
                 $discussion->subscribedlabel = $discussion->subscriptionid ? get_string('toggled:subscribe', 'hsuforum') : get_string('toggle:subscribe', 'hsuforum');
                 $discussion->replylabel = ($discussion->replies == 0) || ($discussion->replies > 1) ? get_string('replies', 'hsuforum') : get_string('reply', 'hsuforum');
+                
+                // If we find the @@PLUGIN@@ in a message string we know we need to get the correct embedded images
+                if(strpos($discussion->message, '@@PLUGINFILE@@') !== false) {
+                    $discussion->message = returnEmbeddedImageMessage($discussion->message, $context->id, $discussion->id);
+                }
             }
         }
 
@@ -144,6 +201,13 @@ class mobile {
         $discussionlabel = count($discussions) >= 2 || count($discussions) == 0 ? get_string('discussions', 'hsuforum') : get_string('discussion', 'hsuforum');
         $unreadlabel = get_string('unread', 'hsuforum');
         $postedbylabel = get_string('postedby', 'hsuforum');
+        $recentlabel = get_string('discussionsortkey:lastreply', 'hsuforum');
+        $mostactivelabel = get_string('discussionsortkey:replies', 'hsuforum');
+        $createdlabel = get_string('discussionsortkey:created', 'hsuforum');
+        $subscribelabel = get_string('discussionsortkey:subscribe', 'hsuforum');
+        $likelabel = get_string('discussionsortkey:like', 'hsuforum');
+        $filterlabel = get_string('filter', 'hsuforum');
+        $allparticipants = get_string('allparticipants', 'hsuforum');
 
         // Build data array to output in the template
         $data = array(
@@ -156,6 +220,14 @@ class mobile {
             'postedbylabel' => $postedbylabel,
             'discussioncount' => count($discussions),
             'showgroupsections' => $showgroupsections,
+            'recentlabel' => $recentlabel,
+            'mostactivelabel' => $mostactivelabel,
+            'createdlabel' => $createdlabel,
+            'subscribelabel' => $subscribelabel,
+            'likelabel' => $likelabel,
+            'filterlabel' => $filterlabel,
+            'allparticipants' => $allparticipants,
+            'allparticipantsid' => HSUFORUM_POSTS_ALL_USER_GROUPS,
         );
 
         return array(
@@ -167,9 +239,11 @@ class mobile {
             ),
             'javascript' => '',
             'otherdata' => array(
-                'allowedgroups' => json_encode($allowedgroups),
+                'filtergroups' => json_encode($filtergroups),
                 'discussions' => json_encode(array_values($discussions)),
                 'forum' => json_encode($forum),
+                'sort' => $args->sort,
+                'filter' => $args->filter,
             ),
             'files' => ''
         );
@@ -198,12 +272,14 @@ class mobile {
         $courseroleassignments = hsuforum_get_course_roles_and_assignments($course->id);
         $unreadpostids         = [];
         $attachmentclass       = new \mod_hsuforum\attachments($forum, $modcontext);
+        $filter                = 1;
+        $sort                  = 4;
 
     /// Getting firstpost and root replies for the firstpost
         // Note there can only be one post(when user created discussion) in a discussion and then additional posts are regarged as replies(api data structure reflects this concept). Very confusing...
             // Note that a reply(post) can have children which are replies on a reply essentially.
         $firstpost = false;
-        $replies = false;
+        $replies = [];
 
         $firstpostcondition = array('p.id' => $discussion->firstpost);
         $firstpostresult = hsuforum_get_all_discussion_posts($discussion->id, $firstpostcondition, $USER->id);
@@ -211,14 +287,12 @@ class mobile {
         // Populating firstpost with virtual props needed for template
         if ($firstpostresult) {
             $firstpost = array_pop($firstpostresult);
-
             // Getting all nested unread ids for root post in discussion
             $readpostids = hsuforum_get_unread_nested_postids($discussion->id, $firstpost->id, $USER->id);
 
             // Avatar section
             $postuser = hsuforum_extract_postuser($firstpost, $forum, context_module::instance($cm->id));
-            $postuser->user_picture->size = 100;
-            $firstpost->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
+            $firstpost->profilesrc = hsuforum_mobile_get_user_profilepic_url($postuser);
             $firstpost->postuserid = $postuser->id;
 
             // Like section
@@ -236,6 +310,10 @@ class mobile {
             $firstpost->latestpost = strlen($stats['latestpost']) ? $stats['latestpost'] : false;
             $firstpost->contribs = $stats['contribs'];
 
+            if(empty($firstpost->replies)) {
+                $firstpost->createdfiltered = '';
+            }
+
             // Set ribbon labels
             $firstpost->viewslabel = ($stats['views'] == 0) || ($stats['views'] > 1) ? get_string('views', 'hsuforum') : get_string('view', 'hsuforum');
             $firstpost->contribslabel = ($stats['contribs'] == 0) || ($stats['contribs'] > 1) ? get_string('contributors', 'hsuforum') : get_string('contributor', 'hsuforum');
@@ -245,92 +323,170 @@ class mobile {
             // Getting attachments files
             $filesraw = $attachmentclass->get_attachments($firstpost->id);
             $firstpost->files = [];
+            $firstpost->attachments = [];
+            $baseuriattachment = $CFG->wwwroot . '/webservice/pluginfile.php/' . $modcontext->id . '/mod_hsuforum/attachment/';
+            $firstpost->imgtype = null;
+            $firstpost->defaultfiletype = null;
+            $firstpost->images = [];
+
             foreach ($filesraw as $file) {
                 $fileobj = new \stdClass;
                 $fileobj->id = $file->get_itemid();
                 $fileobj->filename = $file->get_filename();
                 $fileobj->filepath = $file->get_filepath();
-                $fileobj->fileurl = moodle_url::make_pluginfile_url(
-                    $modcontext->id, 'mod_hsuforum', "attachment", $fileobj->id, '/', $fileobj->filename)->out(false);
                 $fileobj->filesize = $file->get_filesize();
                 $fileobj->timemodified = $file->get_timemodified();
                 $fileobj->mimetype = $file->get_mimetype();
                 $fileobj->isexternalfile = $file->get_repository_type();
-    
+                $fileobj->fileurl = $baseuriattachment . $firstpost->id . '/' . rawurlencode($fileobj->filename) . '?token='.MOBILE_WEBSERVICE_USER_TOKEN;
+
                 array_push($firstpost->files, $fileobj);
+
+                switch($fileobj->mimetype) { // Setting the image type here, we handle images and other attachments differently.
+                    case 'image/png':   
+                        $fileobj->imgtype = true;
+                        array_push($firstpost->images, $fileobj);
+                        break;
+                    case 'image/jpeg':
+                        $fileobj->imgtype = true;
+                        array_push($firstpost->images, $fileobj);
+                        break;
+                    default:
+                        $fileobj->defaultfiletype = true;
+                        array_push($firstpost->images, $fileobj);
+                        break;
+                }
             }
+
+            // Need to check if single or multiple images, for loop with ionic components.
+            if(count($firstpost->images) > 1) {
+                $firstpost->imagescount = true;
+            } elseif(!empty(count($firstpost->images))) {
+                $firstpost->singleimage = true;
+            }
+
+            // If we find the @@PLUGIN@@ in a message string we know we need to get the correct embedded images
+            if(strpos($firstpost->message, '@@PLUGINFILE@@') !== false) {
+                $firstpost->message = returnEmbeddedImageMessage($firstpost->message, $modcontext->id, $firstpost->id);
+            }
+
+            // Set forumid and groupid
+            $firstpost->forumid = $forum->id;
+            $firstpost->groupid = $discussion->groupid;
         }
 
         $repliesparams = array('p.parent' => $discussion->firstpost);
-        $replies = hsuforum_get_all_discussion_posts($discussion->id, $repliesparams);
+        $repliesraw = hsuforum_get_all_discussion_posts($discussion->id, $repliesparams);
 
-        // Populating replies with virtual props needed for template
-        foreach ($replies as &$reply) {
-            // Avatar section
-            $postuser = hsuforum_extract_postuser($reply, $forum, context_module::instance($cm->id));
-            $postuser->user_picture->size = 100;
-            $reply->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
-            $reply->postuserid = $postuser->id;
-
-            // Like section
-            $reply->likes = array_values(getpostlikes($reply));
-            $reply->likecount = count($reply->likes);
-            if ($reply->likecount) {
-                $reply->likedescription = getlikedescription($reply->likes);
-            }
-            $reply->created = hsuforum_relative_time($reply->created);
-            $reply->likelabel = userlikedpost($reply->id, $USER->id) ? get_string('unlike', 'hsuforum') : get_string('like', 'hsuforum');
-            $reply->textareaid = "textarea_id".$reply->id;
-            $reply->postformid = "postform_id".$reply->id;
-
-            // Blank reply post section
-            $reply->replybody = ' ';
-
-            // Check for unread reply posts and updating the unreadpostids array
-            if (!in_array($reply->id, $readpostids)) {
-                $reply->unread = true;
-                array_push($unreadpostids, $reply->id);
-            }
-
-            // Getting role colors
-            switch (true) {
-                case in_array($postuser->id, $courseroleassignments['htutor']):
-                case in_array($postuser->id, $courseroleassignments['tutor']):
-                case in_array($postuser->id, $courseroleassignments['gsmanager']):
-                    $reply->rolecolor = '#333';
-                    break;
-                case in_array($postuser->id, $courseroleassignments['smanager']):
-                    $reply->rolecolor = '#f42684';
-                    break;
-                case (in_array($postuser->id, $courseroleassignments['student'])) && ($postuser->id == $USER->id):
-                    $reply->rolecolor = '#bbb';
-                    break;
-                default:
-                    $reply->rolecolor = false;
-                    break;
-            }
-
-            // Getting attachments files
-            $filesraw = $attachmentclass->get_attachments($reply->id);
-            $reply->files = [];
-            foreach ($filesraw as $file) {
-                $fileobj = new \stdClass;
-                $fileobj->id = $file->get_itemid();
-                $fileobj->filename = $file->get_filename();
-                $fileobj->filepath = $file->get_filepath();
-                $fileobj->fileurl = moodle_url::make_pluginfile_url(
-                    $modcontext->id, 'mod_hsuforum', "attachment", $fileobj->id, '/', $fileobj->filename)->out(false);
-                $fileobj->filesize = $file->get_filesize();
-                $fileobj->timemodified = $file->get_timemodified();
-                $fileobj->mimetype = $file->get_mimetype();
-                $fileobj->isexternalfile = $file->get_repository_type();
-    
-                array_push($reply->files, $fileobj);
-            }
-
-            // Check for nested replies
-            $reply->havereplies = hsuforum_count_replies($reply, $children=true);
+        // Filter posts if other than defaults
+        if (isset($args['filter']) || isset($args['sort']) ) {
+            $sort = isset($args['sort']) ? $args['sort'] : $sort;
+            $filter = isset($args['filter']) ? $args['filter'] : $filter;
         }
+        $repliessorted = hsuforum_mobile_filter_sort_posts($repliesraw, $discussion->id, $firstpost->id, $filter, $sort, $course);
+        $baseuriattachment = $CFG->wwwroot . '/webservice/pluginfile.php/' . $modcontext->id . '/mod_hsuforum/attachment/';
+        // Populating replies with virtual props needed for template
+        foreach ($repliessorted as &$reply) {
+            // Filter_sort_posts() sometimes returns empty arrays thus checking for id.
+            if ($reply->id) {
+                // Avatar section
+                $postuser = hsuforum_extract_postuser($reply, $forum, context_module::instance($cm->id));
+                $reply->profilesrc = hsuforum_mobile_get_user_profilepic_url($postuser);
+                $reply->postuserid = $postuser->id;
+
+                // Like section
+                $reply->likes = array_values(getpostlikes($reply));
+                $reply->likecount = count($reply->likes);
+                if ($reply->likecount) {
+                    $reply->likedescription = getlikedescription($reply->likes);
+                }
+                $reply->created = hsuforum_relative_time($reply->created);
+                $reply->likelabel = userlikedpost($reply->id, $USER->id) ? get_string('unlike', 'hsuforum') : get_string('like', 'hsuforum');
+                $reply->textareaid = "textarea_id".$reply->id;
+                $reply->postformid = "postform_id".$reply->id;
+
+                // Blank reply post section
+                $reply->replybody = ' ';
+
+                // Check for unread reply posts and updating the unreadpostids array
+                if (!in_array($reply->id, $readpostids)) {
+                    $reply->unread = true;
+                    array_push($unreadpostids, $reply->id);
+                }
+
+                // Set forumid and groupid
+                $reply->forumid = $forum->id;
+                $reply->groupid = $discussion->groupid;
+
+                // Getting role colors
+                switch (true) {
+                    case in_array($postuser->id, $courseroleassignments['htutor']):
+                    case in_array($postuser->id, $courseroleassignments['tutor']):
+                    case in_array($postuser->id, $courseroleassignments['gsmanager']):
+                        $reply->rolecolor = '#333';
+                        break;
+                    case in_array($postuser->id, $courseroleassignments['smanager']):
+                        $reply->rolecolor = '#f42684';
+                        break;
+                    case (in_array($postuser->id, $courseroleassignments['student'])) && ($postuser->id == $USER->id):
+                        $reply->rolecolor = '#bbb';
+                        break;
+                    default:
+                        $reply->rolecolor = false;
+                        break;
+                }
+
+                // Getting attachments files
+                $filesraw = $attachmentclass->get_attachments($reply->id);
+                $reply->files = [];
+                $reply->attachments = [];
+                $attachmenturl = null;
+                $reply->imgtype = null;
+                $reply->images = [];
+
+                foreach ($filesraw as $file) {
+                    $fileobj = new \stdClass;
+                    $fileobj->id = $file->get_itemid();
+                    $fileobj->filename = $file->get_filename();
+                    $fileobj->filepath = $file->get_filepath();
+                    $fileobj->filesize = $file->get_filesize();
+                    $fileobj->timemodified = $file->get_timemodified();
+                    $fileobj->mimetype = $file->get_mimetype();
+                    $fileobj->isexternalfile = $file->get_repository_type();
+                    $fileobj->fileurl = $baseuriattachment . $reply->id . '/' . rawurlencode($fileobj->filename) . '?token='.MOBILE_WEBSERVICE_USER_TOKEN;
+
+                    array_push($reply->files, $fileobj);
+
+                    switch($fileobj->mimetype) { // Setting the image type here, we handle images and other attachments differently.
+                        case 'image/png':
+                            $reply->imgtype = true;
+                            array_push($reply->images, $fileobj);
+                            break;
+                        case 'image/jpeg':
+                            $reply->imgtype = true;
+                            array_push($reply->images, $fileobj);
+                            break;
+                        default:
+                            $reply->defaultfiletype = true;
+                            break;
+                    }
+                }
+
+                // If we find the @@PLUGIN@@ in a message string we know we need to get the correct embedded images
+                if(strpos($reply->message, '@@PLUGINFILE@@') !== false) {
+                    $reply->message = returnEmbeddedImageMessage($reply->message, $modcontext->id, $reply->id);
+                }
+                // Check for nested replies
+                $reply->havereplies = hsuforum_count_replies($reply, $children=true);
+                $replies[] = $reply;
+                
+                // Check for filteredposts and encode the array to be passed to next view as param
+                if ($reply->filteredposts && count($reply->filteredposts)) {
+                    $reply->filteredids = JSON_ENCODE($reply->filteredposts);
+                }
+            }
+        }
+
 
     /// Getting tagable users
         $tagusers = [];
@@ -339,10 +495,16 @@ class mobile {
         $showtaguserul = count($tagusers) ? true : false;
 
     /// Setting additional labels
-        // @todo - convert additional lables to an array then pass to context var if we get to many labels
-        $replylabel = count($replies) >= 2 || count($replies) == 0 ? get_string('replies', 'hsuforum') : get_string('reply', 'hsuforum');
-        $replyfromlabel = get_string('replyfrom', 'hsuforum');
-        $unreadlabel = get_string('unread', 'hsuforum');
+        $replylabel         = count($replies) >= 2 || count($replies) == 0 ? get_string('replies', 'hsuforum') : get_string('reply', 'hsuforum');
+        $replyfromlabel     = get_string('replyfrom', 'hsuforum');
+        $filterdefault      = get_string('filterdefault', 'hsuforum');
+        $filtertutorreplies = get_string('filtertutorreplies', 'hsuforum');
+        $filtermyreplies    = get_string('filtermyreplies', 'hsuforum');
+        $sortdefault        = get_string('sortdefault', 'hsuforum');
+        $sortnewestfirst    = get_string('sortnewestfirst', 'hsuforum');
+        $sortmostlikes      = get_string('sortmostlikes', 'hsuforum');
+        $sortmostreplies    = get_string('sortmostreplies', 'hsuforum');
+        $filtererrorlabel   = get_string('filtererror', 'hsuforum');
 
     /// Handling Events
         hsuforum_discussion_view($modcontext, $forum, $discussion);
@@ -368,6 +530,16 @@ class mobile {
             'canreply'       => $cm->groupmode == 0 ? true : $canreply,
             'showtaguserul'  => $showtaguserul,
             'tagusers'       => $tagusers,
+            'maxsize'        => $forum->maxbytes,
+            'maxattachments' => $forum->maxattachments,
+            'filterdefaultlabel'        => $filterdefault,
+            'filtertutorreplieslabel'   => $filtertutorreplies,
+            'filtermyreplieslabel'      => $filtermyreplies,
+            'sortdefaultlabel'          => $sortdefault,
+            'sortnewestfirstlabel'      => $sortnewestfirst,
+            'sortmostlikeslabel'        => $sortmostlikes,
+            'sortmostreplieslabel'      => $sortmostreplies,
+            'filtererrorlabel'          => $filtererrorlabel,
         );
 
         return array(
@@ -377,12 +549,17 @@ class mobile {
                     'html' => $OUTPUT->render_from_template('mod_hsuforum/mobile_view_discussion_posts', $data),
                 ),
             ),
-            'javascript'          => file_get_contents($CFG->dirroot . '/mod/hsuforum/appjs/mention_users.js'),
-            'otherdata'           => array(
-                'replies'         => json_encode(array_values($replies)),
-                'firstpost'       => json_encode($firstpost),
-                'sectionbody'     => '',
-                'discussiontitle' => $discussion->name,
+            'javascript'            => file_get_contents($CFG->dirroot . '/mod/hsuforum/appjs/mention_users.js'),
+            'otherdata'             => array(
+                'replies'           => json_encode(array_values($replies)),
+                'firstpost'         => json_encode($firstpost),
+                'sectionbody'       => '',
+                'discussiontitle'   => $discussion->name,
+                'sort'              => $sort,
+                'filter'            => $filter,
+                'sortfilterdefault' => ($sort == 4 && $filter == 1) ? 1 : 0,
+                'filterdefault'     => $filter == 1 ? 1 : 0,
+                'page'              => 'discussion_posts',
             ),
             'files' => ''
         );
@@ -445,15 +622,22 @@ class mobile {
                         'showtaguserul'     => $showtaguserul,
                         'tagusers'          => $tagusers,
                         'forumid'           => $forum->id,
+                        'posttoforumlabel'  => get_string('posttoforum', 'hsuforum'),
+                        'maxsize'           => $forum->maxbytes,
+                        'maxattachments'    => $forum->maxattachments,
                         )
                     ),
                 ),
             ),
             'javascript' => file_get_contents($CFG->dirroot . '/mod/hsuforum/appjs/mention_users.js'),
             'otherdata' => array(
-                'groupsections' => json_encode($allowedgroups),
-                'groupselection' => (is_array($allowedgroups) && count($allowedgroups)) ? $allowedgroups[0]->id : -1,
+                'page'            => 'add_discussion',
+                'forumid'         => $forum->id,
+                'files'           => json_encode([]),
+                'groupsections'   => json_encode($allowedgroups),
+                'groupselection'  => (is_array($allowedgroups) && count($allowedgroups)) ? $allowedgroups[0]->id : -1,
                 'discussiontitle' => '',
+                'errormessages'   => json_encode(['erroremptysubject' => get_string('erroremptysubject', 'hsuforum')]),
             ),
             'files' => ''
         );
@@ -482,6 +666,11 @@ class mobile {
         $courseroleassignments = hsuforum_get_course_roles_and_assignments($course->id);
         $havechildren          = isset($args['havechildren']) ? $args['havechildren'] : false;
         $unreadpostids         = [];
+        $sortfilterdefault     = isset($args['sortfilterdefault']) ? (bool) $args['sortfilterdefault'] : false;
+        $filterdefault         = isset($args['filterdefault']) ? (bool) $args['filterdefault'] : false;
+        $highlightposts        = isset($args['filteredids']) ? JSON_DECODE($args['filteredids']) : false;
+        $attachmentclass       = new \mod_hsuforum\attachments($forum, $modcontext);
+        $baseuriattachment = $CFG->wwwroot . '/webservice/pluginfile.php/' . $modcontext->id . '/mod_hsuforum/attachment/';
 
     /// Getting all nested unread ids for root post in discussion
         $readpostids = hsuforum_get_unread_nested_postids($discussion->id, $postid, $USER->id);
@@ -490,23 +679,20 @@ class mobile {
         $repliesparams = array('p.parent' => $postid);
         $replies = [];
 
-    /// Build replies structure where posts deeper that second level will be nested as children in the secondlevelpost
+    /// Build reply structure where posts will have an indicated depth level in relation to its root parent.
         if ($havechildren > 0) {
-            // @TODO - we can flatten this array at some point to facilitate for pagination
-            $filteredchildrenidarr = hsuforum_get_discussion_post_hierarchy($discussion->id);
+            // This is all the posts for the discussion in a slimmed down version for processing
+            $unfilteredposts = hsuforum_mobile_get_all_discussion_posts_by_field($discussion->id, 'p.id, p.parent', true);
+            // The post we clicked on to view the nested replies
+            $post = $unfilteredposts[$discussion->firstpost]->children[$postid];
+            $filteredposts = [];
+            $filteredposts = hsuforum_mobile_post_walker($post->children, $postid);
 
-            if (isset($filteredchildrenidarr[$discussion->firstpost][$postid]["secondlevelposts"])) {
-                $secondlevelposts = $filteredchildrenidarr[$discussion->firstpost][$postid]["secondlevelposts"];
-                foreach ($secondlevelposts as $post) {
-                    $replies[] = hsuforum_get_post_full($post['id']);
-                    if (count($post['children'])) {
-                        foreach ($post['children'] as $child) {
-                            if ($childpost = hsuforum_get_post_full($child['id'])) {
-                                $childpost->depth = $child['depth'];
-                                $replies[] = $childpost;
-                            }
-                        }
-                    }
+            foreach ($filteredposts as $filteredpost) {
+                if ($post = hsuforum_get_post_full($filteredpost['id'])) {
+                    $post->depth = $filteredpost['depth'];
+                    $post->cardmargin = hsuforum_mobile_get_style_margin($filteredpost['depth']);
+                    $replies[] = $post;
                 }
             }
         } else {
@@ -515,10 +701,15 @@ class mobile {
 
     /// Populating replies with virtual props needed for template
         foreach ($replies as &$reply) {
+            $reply->attachments = [];
+            $attachmenturl = null;
+            $reply->imgtype = null;
+            $reply->images = [];
+
             // Avatar section
             $postuser = hsuforum_extract_postuser($reply, $forum, context_module::instance($cm->id));
             $postuser->user_picture->size = 100;
-            $reply->profilesrc = $postuser->user_picture->get_url($PAGE)->out();
+            $reply->profilesrc = hsuforum_mobile_get_user_profilepic_url($postuser);
             $reply->postuserid = $postuser->id;
 
             // Like section
@@ -558,6 +749,50 @@ class mobile {
                     $reply->rolecolor = false;
                     break;
             }
+
+            // Check if post needs to be highlighted - temporary demonstration
+            if (!$filterdefault && ($highlightposts && in_array($reply->id, $highlightposts))) {
+                $reply->highlightcolor = 'lightskyblue';
+            } else {
+                $reply->highlightcolor = '#fff';
+            }
+
+            // Getting attachments files
+            $filesraw = $attachmentclass->get_attachments($reply->id);
+            $reply->files = [];
+            $reply->attachments = [];
+            foreach ($filesraw as $file) {
+                $fileobj = new \stdClass;
+                $fileobj->id = $file->get_itemid();
+                $fileobj->filename = $file->get_filename();
+                $fileobj->filepath = $file->get_filepath();
+                $fileobj->filesize = $file->get_filesize();
+                $fileobj->timemodified = $file->get_timemodified();
+                $fileobj->mimetype = $file->get_mimetype();
+                $fileobj->isexternalfile = $file->get_repository_type();
+                $fileobj->fileurl = $baseuriattachment . $reply->id . '/' . rawurlencode($fileobj->filename) . '?token='.MOBILE_WEBSERVICE_USER_TOKEN;
+    
+                array_push($reply->files, $fileobj);
+
+                switch($fileobj->mimetype) { // Setting the image type here, we handle images and other attachments differently.
+                    case 'image/png':
+                        $reply->imgtype = true;
+                        array_push($reply->images, $fileobj);
+                        break;
+                    case 'image/jpeg':
+                        $reply->imgtype = true;
+                        array_push($reply->images, $fileobj);
+                        break;
+                    default:
+                        $reply->defaultfiletype = true;
+                        break;
+                }
+            }
+
+            // If we find the @@PLUGIN@@ in a message string we know we need to get the correct embedded images
+            if(strpos($reply->message, '@@PLUGINFILE@@') !== false) {
+                $reply->message = returnEmbeddedImageMessage($reply->message, $modcontext->id, $reply->id);
+            }
         }
 
     /// Getting tagable users
@@ -589,6 +824,8 @@ class mobile {
             'canreply'       => $cm->groupmode == 0 ? true : $canreply,
             'showtaguserul'  => $showtaguserul,
             'tagusers'       => $tagusers,
+            'maxsize'        => $forum->maxbytes,
+            'maxattachments' => $forum->maxattachments,
         );
 
         return array(
@@ -602,8 +839,10 @@ class mobile {
             'otherdata'         => array(
                 'replies'       => json_encode(array_values($replies)),
                 'sectionbody'   => '',
+                'page'          => 'discussion_posts_replies',
             ),
             'files' => ''
         );
     }
+
 }

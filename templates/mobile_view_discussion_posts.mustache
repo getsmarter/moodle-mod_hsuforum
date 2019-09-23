@@ -1,5 +1,6 @@
 {{=<% %>=}}
     <%#firstpost%>
+    <ion-row class="hsu-view-discussion-posts-page">
         <ion-card id="cardid_<% id %>">
             <ion-card-header no-padding text-wrap class="card-header card-header-md">
                 <ion-item style="background-color: #eeeeee;" text-wrap>
@@ -13,43 +14,42 @@
 
             <ion-card-content padding-top class="card-content card-content-md">
                 <core-format-text singleline="false" text="{{CONTENT_OTHERDATA.firstpost.message}}"></core-format-text>
-
-            <!-- Uploaded files -->
-            <%#files%>
-                <core-file
-                    [file]="{fileurl: '<% fileurl %>', filename: '<% filename %>', timemodified: '<% timemodified %>', filesize: '<% filesize %>'}"
-                    component="mod_hsuforum" 
-                    componentId="<% cmid %>">
-                </core-file>
-            <%/files%>
-
+                <!-- Uploaded files -->
+                <ion-row *ngIf="CONTENT_OTHERDATA.firstpost.singleimage"> 
+                    <img src={{CONTENT_OTHERDATA.firstpost.images[0].fileurl}}>
+                </ion-row>
+                <ion-row *ngIf="CONTENT_OTHERDATA.firstpost.imagescount">
+                    <p *ngFor="let image of CONTENT_OTHERDATA.firstpost.images">
+                        <img src={{image.fileurl}}>
+                    </p>
+                </ion-row>
             </ion-card-content>
 
-            <ion-row>
-                <ion-col>
-                    <%#canreply%>
+            <%#canreply%>
+                <ion-row>
+                    <ion-col>
+                            <button
+                                ion-button small clear class="js_reply"
+                                (click)="CONTENT_OTHERDATA.showform_<% id %> = true"
+                                onclick="window.activate_mention_users(event)">
+                                <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
+                                <span id="<% id %>">Reply</span>
+                            </button>
+                        <!-- Like button -->
                         <button
-                            ion-button small clear class="js_reply"
-                            (click)="CONTENT_OTHERDATA.showform_<% id %> = true"
-                            onclick="window.activate_mention_users(event)">
-                            <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
-                            <span id="<% id %>">Reply</span>
+                            ion-button small clear style="padding: 0"
+                            core-site-plugins-call-ws 
+                            name="mod_hsuforum_like_post" 
+                            [params]="{postid: <% id %>}"
+                            [preSets]="{getFromCache: 0, saveToCache: 0}" 
+                            successMessage 
+                            refreshOnSuccess="true">
+                            <ion-icon class="icon icon-md ion-md-thumbs-up" style="margin-right: 4px;"></ion-icon>
+                            <% likelabel %>
                         </button>
-                    <%/canreply%>
-                    <!-- Like button -->
-                    <button
-                        ion-button small clear style="padding: 0"
-                        core-site-plugins-call-ws 
-                        name="mod_hsuforum_like_post" 
-                        [params]="{postid: <% id %>}"
-                        [preSets]="{getFromCache: 0, saveToCache: 0}" 
-                        successMessage 
-                        refreshOnSuccess="true">
-                        <ion-icon class="icon icon-md ion-md-thumbs-up" style="margin-right: 4px;"></ion-icon>
-                        <% likelabel %>
-                    </button>
-                </ion-col>
-            </ion-row>
+                    </ion-col>
+                </ion-row>
+            <%/canreply%>
 
             <!-- Who liked section -->
             <%#likedescription%>
@@ -67,29 +67,28 @@
                 <%#canreply%>
                 <ion-card *ngIf="CONTENT_OTHERDATA.showform_<% id %>">
                     <form #f="ngForm" id="postformid_<% id %>">
-                        <div id="textarea_id<% id %>"
-                            style="min-height: 200px; -webkit-user-select: text; user-select: text;"
-                            contenteditable="true"
-                            [innerHTML]=CONTENT_OTHERDATA.firstpostreplybody 
-                            (keypress)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML"
-                            (keyup)="CONTENT_OTHERDATA.sectionbody = $event.target.innerHTML">
-                        </div>
+                        <ion-item class="hsu-text-editor-wrapper">
+                            <core-rich-text-editor item-content [control]=controls[CONTENT_OTHERDATA.firstpost.id] name="rte_new_post_{{CONTENT_OTHERDATA.firstpost.id}}"></core-rich-text-editor>
+                        </ion-item>
+                        <core-attachments 
+                            [files]="CONTENT_OTHERDATA.firstpost.attachments" 
+                            [maxSize]="<% maxsize %>"
+                            [maxSubmissions]="<% maxattachments %>"
+                            [component]="mod_hsuforum" 
+                            [componentId]="<% cmid %>" 
+                            [acceptedTypes]="image/jpeg" 
+                            [allowOffline]="false">
+                        </core-attachments>
                     </form>
 
                     <ion-row text-center>
                         <!-- Form submit button -->
                         <ion-col>
-                            <button
-                                ion-button small clear core-site-plugins-call-ws
-                                name="mod_hsuforum_add_discussion_post" 
-                                [disabled]="CONTENT_OTHERDATA.sectionbody <= 3"
-                                [params]="{postid: <% id %>, subject: 'RE: <% subject %>', message: CONTENT_OTHERDATA.sectionbody}" 
-                                [preSets]="{getFromCache: 0, saveToCache: 0}" 
-                                successMessage 
-                                refreshOnSuccess="true" 
-                                (click)="CONTENT_OTHERDATA.showform_<% id %> = true"
-                                >
-                                Submit reply
+                            <button ion-button small clear type="submit"
+                                [disabled]="controls[CONTENT_OTHERDATA.firstpost.id].value == null || controls[CONTENT_OTHERDATA.firstpost.id].value == ''"
+                                (click)="handlePost(CONTENT_OTHERDATA.firstpost)"
+                                successMessage>
+                                <h3>Submit reply</h3>
                             </button>
                         </ion-col>
 
@@ -110,14 +109,14 @@
                         </ion-col>
                     </ion-row>
                     <!-- Mention user search element -->
-                    <div class="searchfilter" style="display:none;">
+                    <ion-row class="searchfilter" style="display:none;">
                         <ion-searchbar></ion-searchbar>
                         <ion-list class="filter_list" style="max-height:150px; overflow-y: scroll;">
                             <%#tagusers%>
                                 <ion-item id="<% id %>"><% name %></ion-item>
                             <%/tagusers%>
                         </ion-list>
-                    </div>
+                    </ion-row>
                 </ion-card>
                 <%/canreply%>
             </ion-row>
@@ -158,10 +157,82 @@
         </ion-card>
     <%/firstpost%>
 
+    <!-- FILTER POSTS SECTION -->
+    <ion-grid class="hsu-filter-box">
+        <ion-row>
+
+            <ion-col col-auto>
+                <ion-label>Filter by:</ion-label>
+                <ion-item>
+                    <ion-select 
+                        interface="popover" 
+                        name="filter" 
+                        interface="alert" 
+                        [(ngModel)]="CONTENT_OTHERDATA.filter" 
+                        >
+                    <ion-option value="1"><% filterdefaultlabel %></ion-option>
+                    <ion-option value="2"><% filtermyreplieslabel %></ion-option>
+                    <ion-option value="3"><% filtertutorreplieslabel %></ion-option>
+                    </ion-select>
+                </ion-item>
+            </ion-col>
+
+            <ion-col col-auto>
+                <ion-label>Sort by:</ion-label>
+                <ion-item>
+                    <ion-select 
+                        interface="popover" 
+                        name="sort" 
+                        interface="alert" 
+                        [(ngModel)]="CONTENT_OTHERDATA.sort" 
+                        >
+                    <ion-option value="4"><% sortdefaultlabel %></ion-option>
+                    <ion-option value="5"><% sortnewestfirstlabel %></ion-option>
+                    <ion-option value="3"><% sortmostlikeslabel %></ion-option>
+                    <ion-option value="2"><% sortmostreplieslabel %></ion-option>
+                    </ion-select>
+                </ion-item>
+            </ion-col>
+
+            <ion-col align-self-end col-auto>
+                <button
+                    ion-button 
+                    small
+                    (click)="updateContent({
+                        cmid: <% cmid %>, 
+                        courseid: <% courseid %>, 
+                        sort: CONTENT_OTHERDATA.sort, 
+                        filter: CONTENT_OTHERDATA.filter, 
+                        discussionid: <% discussionid %>})">
+                    Filter
+                </button>
+                <button
+                    *ngIf="!CONTENT_OTHERDATA.sortfilterdefault" 
+                    ion-button 
+                    small
+                    (click)="updateContent({
+                        cmid: <% cmid %>, 
+                        courseid: <% courseid %>, 
+                        sort: 4, 
+                        filter: 1, 
+                        discussionid: <% discussionid %>})">
+                    Reset
+                </button>
+            </ion-col>
+
+        </ion-row>
+    </ion-grid>
+
+    <!-- NO POSTS ON FILTER -->
+    <ion-item 
+        class="hsu-filter-error"
+        *ngIf="!CONTENT_OTHERDATA.replies.length" text-wrap text-center>
+        <% filtererrorlabel %>
+    </ion-item>
 
     <!-- REPLIES ON FIRSTPOST -->
-    <ion-list>
-        <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies" id="cardid_{{reply.id}}" 
+    <ion-list class="w-100">
+        <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies" id="cardid_{{reply.id}}"
             [ngStyle]="{'border-left': (reply.rolecolor) ? '3px solid': '0', 'border-color': reply.rolecolor}">
             <ion-card-header no-padding text-wrap class="card-header card-header-md">
                 <ion-item text-wrap>
@@ -199,38 +270,46 @@
             </ion-card-header>
 
             <!-- Uploaded files -->
-            <core-file *ngFor="let file of reply.files"
-                [file]=file 
-                component="mod_hsuforum" 
-                componentId="<% cmid %>">
-            </core-file>
+            <ion-item *ngIf="reply.defaultfiletype">
+                <core-file *ngFor="let file of reply.files"
+                    [file]=file
+                    component="mod_hsuforum"
+                    componentId="<% cmid %>">
+                </core-file>
+            </ion-item>
+
+            <ion-item *ngIf="reply.imgtype">
+                <p *ngFor="let image of reply.images">
+                    <img src={{image.fileurl}}>
+                </p>
+            </ion-item>
 
             <ion-card-content>
                 <core-format-text maxHeight="127" fullOnClick="true" text="{{reply.message}}"></core-format-text>
             </ion-card-content>
             
             <%#canreply%>
-            <!-- Button to show reply box -->
-            <button
-                ion-button small clear style="float: left;" class="js_reply"
-                (click)="reply.showform = true"
-                onclick="window.activate_mention_users(event)">
-                <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
-                <span id="{{reply.id}}">Reply</span>
-            </button>
+                <!-- Button to show reply box -->
+                <button
+                    ion-button small clear style="float: left;" class="js_reply"
+                    (click)="reply.showform = true"
+                    onclick="window.activate_mention_users(event)">
+                    <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
+                    <span id="{{reply.id}}">Reply</span>
+                </button>
+                <!-- Like button -->
+                <button
+                    ion-button small clear style="padding: 0"
+                    core-site-plugins-call-ws 
+                    name="mod_hsuforum_like_post" 
+                    [params]="{postid: reply.id}"
+                    [preSets]="{getFromCache: 0, saveToCache: 0}" 
+                    successMessage 
+                    refreshOnSuccess="true">
+                    <ion-icon class="icon icon-md ion-md-thumbs-up" style="margin-right: 4px;"></ion-icon>
+                    {{reply.likelabel}}
+                </button>
             <%/canreply%>
-            <!-- Like button -->
-            <button
-                ion-button small clear style="padding: 0"
-                core-site-plugins-call-ws 
-                name="mod_hsuforum_like_post" 
-                [params]="{postid: reply.id}"
-                [preSets]="{getFromCache: 0, saveToCache: 0}" 
-                successMessage 
-                refreshOnSuccess="true">
-                <ion-icon class="icon icon-md ion-md-thumbs-up" style="margin-right: 4px;"></ion-icon>
-                {{reply.likelabel}}
-            </button>
             <!-- View reply button -->
             <button
                 *ngIf="reply.havereplies"
@@ -238,7 +317,13 @@
                 title="Reply to <% discussionname %>"
                 component="mod_hsuforum" 
                 method="view_post_replies"
-                [args]="{'postid':reply.id, 'discussionid':reply.discussion, 'havechildren': reply.havereplies}">
+                [args]="{
+                    'postid':reply.id,
+                    'discussionid':reply.discussion,
+                    'havechildren': reply.havereplies,
+                    'sortfilterdefault': CONTENT_OTHERDATA.sortfilterdefault,
+                    'filterdefault': CONTENT_OTHERDATA.filterdefault,
+                    'filteredids': reply.filteredids}">
                 View replies 
             </button>
             <!-- Who liked section -->
@@ -251,29 +336,27 @@
             <%#canreply%>
             <ion-card *ngIf="reply.showform">
                 <form #f="ngForm" id="{{reply.postformid}}">
-                    <div id="{{reply.textareaid}}"
-                        style="min-height: 200px; -webkit-user-select: text; user-select: text;"
-                        contenteditable="true"
-                        [innerHTML]=CONTENT_OTHERDATA.replybody 
-                        (keyup)="reply.replybody = $event.target.innerHTML"
-                        (keypress)="reply.replybody = $event.target.innerHTML">
-                    </div>
+                    <ion-item class="hsu-text-editor-wrapper">
+                        <core-rich-text-editor item-content [control]=controls[reply.id] name="rte_new_post_{{reply.id}}"></core-rich-text-editor>
+                    </ion-item>
+                    <core-attachments 
+                        [files]="reply.attachments" 
+                        [maxSize]="<% maxsize %>"
+                        [maxSubmissions]="<% maxattachments %>"
+                        [component]="mod_hsuforum" 
+                        [componentId]="<% cmid %>" 
+                        [acceptedTypes]="image/jpeg" 
+                        [allowOffline]="false">
+                    </core-attachments>
                 </form>
                 <ion-row text-center>
                     <!-- Form submit button -->
                     <ion-col>
-                        <button
-                            ion-button small clear type="submit" core-site-plugins-call-ws 
-                            name="mod_hsuforum_add_discussion_post" 
-                            *ngIf="reply.showform"
-                            [disabled]="reply.replybody <= 3"
-                            [params]="{postid: reply.id, subject: 'RE:' + reply.subject, message: reply.replybody}" 
-                            [preSets]="{getFromCache: 0, saveToCache: 0}" 
-                            successMessage 
-                            refreshOnSuccess="true" 
-                            (click)="reply.showform = true"
-                            >
-                            Submit reply
+                        <button ion-button small clear type="submit"
+                            [disabled]="controls[reply.id].value == null || controls[reply.id].value == ''"
+                            (click)="handlePost(reply)"
+                            successMessage>
+                            <h3>Submit reply</h3>
                         </button>
                     </ion-col>
 
@@ -307,3 +390,4 @@
             <%/canreply%>
         </ion-card>
     </ion-list>
+</ion-row>

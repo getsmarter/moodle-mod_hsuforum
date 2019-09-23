@@ -1,15 +1,20 @@
 {{=<% %>=}}
-<ion-card style="margin: 12px 0; padding: 1rem; width: 100%;">
-    <p>
-        <span><% replycount %> <% replylabel %> for post</span>
-    </p>
-</ion-card>
+<ion-row class="hsu-view-post-replies-page">
+    <ion-card style="margin: 12px 0; padding: 1rem; width: 100%;">
+        <p>
+            <span><% replycount %> <% replylabel %> for post</span>
+        </p>
+    </ion-card>
 
 <!-- REPLIES ON FIRSTPOST -->
     <ion-card *ngFor="let reply of CONTENT_OTHERDATA.replies" id="cardid_{{reply.id}}" 
-        [ngStyle]="{'border-left': (reply.rolecolor) ? '3px solid': '0', 'border-color': reply.rolecolor}">
+        [ngStyle]="{
+            'border-left': (reply.rolecolor) ? '3px solid': '0',
+            'border-color': reply.rolecolor,
+            'margin-left': reply.cardmargin, 
+            'background-color': reply.highlightcolor}">
         <ion-card-header no-padding text-wrap class="card-header card-header-md">
-            <ion-item text-wrap>
+            <ion-item text-wrap [ngStyle]="{'background-color': reply.highlightcolor}">
                 <ion-avatar item-start>
                     <a core-user-link courseId="<% courseid %>" userId="{{reply.postuserid}}"><img src={{reply.profilesrc}}></a>
                 </ion-avatar>
@@ -44,31 +49,46 @@
         </ion-card-header>
 
         <ion-card-content padding-top class="card-content card-content-md">
+
+            <!-- Uploaded files -->
+            <ion-item *ngIf="reply.defaultfiletype">
+                <core-file *ngFor="let file of reply.files"
+                           [file]=file
+                           component="mod_hsuforum"
+                           componentId="<% cmid %>">
+                </core-file>
+            </ion-item>
+            <ion-item *ngIf="reply.imgtype">
+                <p *ngFor="let image of reply.images">
+                    <img src={{image.fileurl}}>
+                </p>
+            </ion-item>
+
             <core-format-text maxHeight="127" fullOnClick="true" text="{{reply.message}}"></core-format-text>
         </ion-card-content>
 
         <%#canreply%>
-        <!-- Button to show reply box -->
-        <button
-            ion-button small clear style="float: left;" class="js_reply"
-            (click)="reply.showform = true"
-            onclick="window.activate_mention_users(event)">
-            <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
-            <span id="{{reply.id}}">Reply</span>
-        </button>
+            <!-- Button to show reply box -->
+            <button
+                ion-button small clear style="float: left;" class="js_reply"
+                (click)="reply.showform = true"
+                onclick="window.activate_mention_users(event)">
+                <ion-icon class="icon icon-md ion-md-undo" style="margin-right: 4px;"></ion-icon>
+                <span id="{{reply.id}}">Reply</span>
+            </button>
+            <!-- Like button -->
+            <button
+                ion-button small clear style="padding: 0"
+                core-site-plugins-call-ws 
+                name="mod_hsuforum_like_post" 
+                [params]="{postid: reply.id}"
+                [preSets]="{getFromCache: 0, saveToCache: 0}" 
+                successMessage 
+                refreshOnSuccess="true">
+                <ion-icon class="icon icon-md ion-md-thumbs-up" style="margin-right: 4px;"></ion-icon>
+                {{reply.likelabel}}
+            </button>
         <%/canreply%>
-        <!-- Like button -->
-        <button
-            ion-button small clear style="padding: 0"
-            core-site-plugins-call-ws 
-            name="mod_hsuforum_like_post" 
-            [params]="{postid: reply.id}"
-            [preSets]="{getFromCache: 0, saveToCache: 0}" 
-            successMessage 
-            refreshOnSuccess="true">
-            <ion-icon class="icon icon-md ion-md-thumbs-up" style="margin-right: 4px;"></ion-icon>
-            {{reply.likelabel}}
-        </button>
         <!-- Who liked section -->
         <ion-item *ngIf="reply.likedescription">
             <p text-wrap style="color: #2f6473; background-color: #def2f8; border-color: #d1edf6; padding: 3px 0px;">
@@ -79,29 +99,27 @@
         <%#canreply%>
         <ion-card *ngIf="reply.showform">
             <form #f="ngForm" id="{{reply.postformid}}">
-                <div id="{{reply.textareaid}}"
-                    style="min-height: 200px; -webkit-user-select: text; user-select: text;"
-                    contenteditable="true"
-                    [innerHTML]=CONTENT_OTHERDATA.replybody 
-                    (keyup)="reply.replybody = $event.target.innerHTML"
-                    (keypress)="reply.replybody = $event.target.innerHTML">
-                </div>
+                <ion-item class="hsu-text-editor-wrapper">
+                    <core-rich-text-editor item-content [control]=controls[reply.id] name="rte_new_post_{{reply.id}}"></core-rich-text-editor>
+                </ion-item>
+                <core-attachments 
+                    [files]="reply.attachments" 
+                    [maxSize]="<% maxsize %>"
+                    [maxSubmissions]="<% maxattachments %>"
+                    [component]="mod_hsuforum" 
+                    [componentId]="<% cmid %>" 
+                    [acceptedTypes]="image/jpeg" 
+                    [allowOffline]="false">
+                </core-attachments>
             </form>
             <ion-row text-center>
                 <!-- Form submit button -->
                 <ion-col>
-                    <button
-                        ion-button small clear type="submit" core-site-plugins-call-ws 
-                        name="mod_hsuforum_add_discussion_post" 
-                        *ngIf="reply.showform"
-                        [disabled]="reply.replybody <= 3"
-                        [params]="{postid: reply.id, subject: 'RE:' + reply.subject, message: reply.replybody}" 
-                        [preSets]="{getFromCache: 0, saveToCache: 0}" 
-                        successMessage 
-                        refreshOnSuccess="true" 
-                        (click)="reply.showform = true"
-                        >
-                        Submit reply
+                    <button ion-button small clear type="submit"
+                        [disabled]="controls[reply.id].value == null || controls[reply.id].value == ''"
+                        (click)="handlePost(reply)"
+                        successMessage>
+                        <h3>Submit reply</h3>
                     </button>
                 </ion-col>
 
@@ -134,3 +152,4 @@
         </ion-card>
         <%/canreply%>
     </ion-card>
+</ion-row>

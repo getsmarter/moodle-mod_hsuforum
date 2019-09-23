@@ -1,153 +1,208 @@
 {{=<% %>=}}
-<%#canstart%>
-<!-- Add new discussion -->
-    <ion-card>
+<ion-row class="hsu_view_discussions_page">
+    <%#canstart%>
+    <!-- Add new discussion --> 
+    <ion-fab core-fab bottom end>
         <button
-            ion-button full 
-            style="margin:0" 
+            ion-fab 
+            class="hsu_fabbutton_add_discussion"
             core-site-plugins-new-content 
             component="mod_hsuforum" 
             method="add_discussion" 
             [args]="{cmid: <%cmid%>}" 
             title="Add new discussion">
-            Add new discussion
+            <ion-icon name="add"></ion-icon>
         </button>
+    </ion-fab>
+    <%/canstart%>
+    <!-- Discussion description -->
+    <ion-card *ngIf="CONTENT_OTHERDATA.discussions.length > 0">
+        <ion-card-content>
+            <core-format-text text="{{CONTENT_OTHERDATA.forum.intro}}"></core-format-text>
+            <p text-right>{{ CONTENT_OTHERDATA.discussions.length }} <% discussionlabel %></p>
+        </ion-card-content>
     </ion-card>
-<%/canstart%>
-<!-- Discussion description -->
-<ion-card *ngIf="CONTENT_OTHERDATA.discussions.length > 0">
-    <ion-card-content>
-        <core-format-text text="{{CONTENT_OTHERDATA.forum.intro}}"></core-format-text>
-        <p text-right>{{ CONTENT_OTHERDATA.discussions.length }} <% discussionlabel %></p>
-    </ion-card-content>
-</ion-card>
 
-<!-- Discussion cards -->
-<ion-card *ngFor="let discussion of CONTENT_OTHERDATA.discussions" 
-    [ngStyle]="{'border-left': (discussion.rolecolor) ? '3px solid': '0', 'border-color': discussion.rolecolor}"
-    core-site-plugins-new-content 
-    title={{discussion.name}}
-    component="mod_hsuforum" 
-    method="view_discussion" 
-    [args]="{discussionid: discussion.discussion}">
-
-    <!-- Header -->
-    <ion-item style="background-color: #f7f7f7;">
-        <ion-label style="margin: 0;">
+        <!-- Sort/Filter discussions -->
+        <ion-grid class="hsu-filter-box">
             <ion-row>
-                <ion-avatar item-start style="margin: 0; margin-top: 12px;">
-                    <a core-user-link courseId="<%courseid%>" userId="{{discussion.postuserid}}">
-                        <img src={{discussion.profilesrc}} style="max-height: 45px; max-width: 45px;">
-                    </a>
-                </ion-avatar>
-                <ion-item text-wrap style="max-width: 82%; padding-left: 0; background-color: #f7f7f7">
-                    <!-- Discussion subject section -->
-                    <ion-row>
-                        <h2>{{ discussion.subject }}</h2>
-                    </ion-row>
+                <!-- Filter discussions -->
+                <ion-col col-auto *ngIf="CONTENT_OTHERDATA.filtergroups && CONTENT_OTHERDATA.filtergroups.length >= 2">
+                        <ion-label>Filter by:</ion-label>
+                        <ion-item>
+                            <ion-select 
+                                interface="popover" 
+                                name="filter" 
+                                interface="alert" 
+                                [(ngModel)]="CONTENT_OTHERDATA.filter" 
+                                >
+                                <ion-option 
+                                    *ngFor="let group of CONTENT_OTHERDATA.filtergroups" 
+                                    value={{group.id}}>
+                                    {{group.name}}
+                                </ion-option>
+                            </ion-select>
+                        </ion-item>
+                </ion-col>
+                <!-- Sort discussions -->
+                <ion-col col-auto>
+                    <ion-label>Sort by:</ion-label>
+                    <ion-item>
+                        <ion-select 
+                            interface="popover" 
+                            name="sort" 
+                            interface="alert" 
+                            [(ngModel)]="CONTENT_OTHERDATA.sort" 
+                            >
+                            <ion-option value="recent"><% recentlabel %></ion-option>
+                            <ion-option value="mostactive"><% mostactivelabel %></ion-option>
+                            <ion-option value="created"><% createdlabel %></ion-option>
+                            <ion-option value="subscribe"><% subscribelabel %></ion-option>
+                            <ion-option value="like"><% likelabel %></ion-option>
+                        </ion-select>
+                    </ion-item>
+                </ion-col>
+                <ion-col align-self-end col-auto>
+                    <button
+                        ion-button 
+                        small
+                        (click)="updateContent({
+                            cmid: <% cmid %>, 
+                            filter: CONTENT_OTHERDATA.filter,
+                            sort: CONTENT_OTHERDATA.sort})">
+                        <% filterlabel %>
+                    </button>
+                </ion-col>
+            </ion-row>
+        </ion-grid>
 
-                    <!-- Posted by section -->
-                    <ion-row>
-                        <ion-note><% postedbylabel %> {{ discussion.firstname }} {{ discussion.lastname }}</ion-note>
-                    </ion-row>
+    <!-- Discussion cards -->
+    <ion-card *ngFor="let discussion of CONTENT_OTHERDATA.discussions" 
+        [ngStyle]="{'border-left': (discussion.rolecolor) ? '3px solid': '0', 'border-color': discussion.rolecolor}"
+        core-site-plugins-new-content 
+        title={{discussion.name}}
+        component="mod_hsuforum" 
+        method="view_discussion" 
+        [args]="{discussionid: discussion.discussion}">
 
-                    <!-- Group listing section -->
-                    <%#showgroupsections%>
-                        <ion-row style="font-weight: initial">
+        <!-- Header -->
+        <ion-item style="background-color: #f7f7f7;">
+            <ion-label style="margin: 0;">
+                <ion-row>
+                    <ion-avatar item-start style="margin: 0; margin-top: 12px;">
+                        <a core-user-link courseId="<%courseid%>" userId="{{discussion.postuserid}}">
+                            <img src={{discussion.profilesrc}} style="max-height: 45px; max-width: 45px;">
+                        </a>
+                    </ion-avatar>
+                    <ion-item text-wrap style="max-width: 82%; padding-left: 0; background-color: #f7f7f7">
+                        <!-- Discussion subject section -->
+                        <ion-row>
+                            <h2>{{ discussion.subject }}</h2>
+                        </ion-row>
+
+                        <!-- Posted by section -->
+                        <ion-row>
+                            <ion-note><% postedbylabel %> {{ discussion.firstname }} {{ discussion.lastname }}</ion-note>
+                        </ion-row>
+
+                        <!-- Group listing section -->
+                        <%#showgroupsections%>
+                            <ion-row style="font-weight: initial">
+                                <ion-note>
+                                    <ion-icon class="icon icon-md ion-md-people"></ion-icon> {{ discussion.groupname }}
+                                </ion-note>
+                            </ion-row>
+                        <%/showgroupsections%>
+
+                        <!-- New post section -->
+                        <ion-row *ngIf="discussion.unread">
                             <ion-note>
-                                <ion-icon class="icon icon-md ion-md-people"></ion-icon> {{ discussion.groupname }}
+                                <ion-icon 
+                                    style="color: #f42684;" 
+                                    class="icon icon-md fa fa-circle fa-primary">
+                                </ion-icon>
+                                <span style="color: #000; text-transform: uppercase; font-weight: 500;"> <% unreadlabel %></span>
                             </ion-note>
                         </ion-row>
-                    <%/showgroupsections%>
 
-                    <!-- New post section -->
-                    <ion-row *ngIf="discussion.unread">
-                        <ion-note>
-                            <ion-icon 
-                                style="color: #f42684;" 
-                                class="icon icon-md fa fa-circle fa-primary">
-                            </ion-icon>
-                            <span style="color: #000; text-transform: uppercase; font-weight: 500;"> <% unreadlabel %></span>
-                        </ion-note>
-                    </ion-row>
+                        <!-- Post Timestamp section -->
+                        <ion-row *ngIf="discussion.createdfiltered">
+                            <p><core-format-text text="{{discussion.createdfiltered}}"></core-format-text></p>
+                        </ion-row>
 
-                    <!-- Post Timestamp section -->
-                    <ion-row *ngIf="discussion.createdfiltered">
-                        <p><core-format-text text="{{discussion.createdfiltered}}"></core-format-text></p>
-                    </ion-row>
+                        <!-- Subscribe button section -->
+                        <ion-row>
+                            <button 
+                                style="text-transform: uppercase; padding: 0; float: right; background-color: unset;"
+                                core-site-plugins-call-ws 
+                                name="mod_hsuforum_subscribe" 
+                                [params]="{discussionid: discussion.discussion}"
+                                [preSets]="{getFromCache: 0, saveToCache: 0}" 
+                                successMessage 
+                                refreshOnSuccess="true">
+                                <!-- Subscribed -->
+                                <p *ngIf="discussion.subscriptionid"
+                                    style="font-size: 1.2rem;">
+                                    <ion-icon 
+                                        style="color: #ffac0d;" 
+                                        class="icon icon-md ion-md-mail">
+                                    </ion-icon>
+                                        <span style="font-weight: 500;">{{ discussion.subscribedlabel }}</span></p>
+                                <!-- Not Subscribed -->
+                                <p *ngIf="!discussion.subscriptionid"
+                                    style="font-size: 1.2rem;">
+                                    <ion-icon class="icon icon-md ion-md-mail"></ion-icon>
+                                    <span>{{ discussion.subscribedlabel }}</span>
+                                </p>
+                            </button>
+                        </ion-row>
 
-                    <!-- Subscribe button section -->
-                    <ion-row>
-                        <button 
-                            style="text-transform: uppercase; padding: 0; float: right; background-color: unset;"
-                            core-site-plugins-call-ws 
-                            name="mod_hsuforum_subscribe" 
-                            [params]="{discussionid: discussion.discussion}"
-                            [preSets]="{getFromCache: 0, saveToCache: 0}" 
-                            successMessage 
-                            refreshOnSuccess="true">
-                            <!-- Subscribed -->
-                            <p *ngIf="discussion.subscriptionid"
-                                style="font-size: 1.2rem;">
-                                <ion-icon 
-                                    style="color: #ffac0d;" 
-                                    class="icon icon-md ion-md-mail">
-                                </ion-icon>
-                                    <span style="font-weight: 500;">{{ discussion.subscribedlabel }}</span></p>
-                            <!-- Not Subscribed -->
-                            <p *ngIf="!discussion.subscriptionid"
-                                style="font-size: 1.2rem;">
-                                <ion-icon class="icon icon-md ion-md-mail"></ion-icon>
-                                <span>{{ discussion.subscribedlabel }}</span>
-                            </p>
-                        </button>
-                    </ion-row>
+                    </ion-item>
+                </ion-row>
+            </ion-label>
+        </ion-item>
 
-                </ion-item>
-            </ion-row>
-        </ion-label>
-    </ion-item>
+        <!-- Content -->
+        <ion-card-content style="padding: 1rem;">
+            <core-format-text maxHeight="127" fullOnClick="true" text="{{discussion.message}}"></core-format-text>
+        </ion-card-content>
 
-    <!-- Content -->
-    <ion-card-content style="padding: 1rem;">
-        <core-format-text maxHeight="127" fullOnClick="true" text="{{discussion.message}}"></core-format-text>
-    </ion-card-content>
+        <!-- Footer -->
+        <ion-row class="row" text-center style="padding-bottom: 2px; background-color: #f7f7f7;">
+            <!-- Replies -->
+            <ion-col>
+                <ion-note>
+                    <ion-icon class="icon icon-md ion-md-chatboxes"></ion-icon> 
+                    <span *ngIf="discussion.replies"> {{ discussion.replies }} {{ discussion.replylabel }}</span>
+                    <span *ngIf="!discussion.replies"> 0 {{ discussion.replylabel }}</span>
+                </ion-note>
+            </ion-col>
 
-    <!-- Footer -->
-    <ion-row class="row" text-center style="padding-bottom: 2px; background-color: #f7f7f7;">
-        <!-- Replies -->
-        <ion-col>
-            <ion-note>
-                <ion-icon class="icon icon-md ion-md-chatboxes"></ion-icon> 
-                <span *ngIf="discussion.replies"> {{ discussion.replies }} {{ discussion.replylabel }}</span>
-                <span *ngIf="!discussion.replies"> 0 {{ discussion.replylabel }}</span>
-            </ion-note>
-        </ion-col>
+            <!-- Contributors -->
+            <ion-col>
+                <ion-note>
+                    <ion-icon class="icon icon-md ion-md-contacts"></ion-icon> 
+                    <span *ngIf="discussion.contribs"> {{ discussion.contribs }} {{ discussion.contribslabel }}</span>
+                    <span *ngIf="!discussion.contribs"> 0 {{ discussion.contribslabel }}</span>
+                </ion-note>
+            </ion-col>
 
-        <!-- Contributors -->
-        <ion-col>
-            <ion-note>
-                <ion-icon class="icon icon-md ion-md-contacts"></ion-icon> 
-                <span *ngIf="discussion.contribs"> {{ discussion.contribs }} {{ discussion.contribslabel }}</span>
-                <span *ngIf="!discussion.contribs"> 0 {{ discussion.contribslabel }}</span>
-            </ion-note>
-        </ion-col>
+            <!-- Views -->
+            <ion-col>
+                <ion-note>
+                    <ion-icon class="icon icon-md ion-md-eye"></ion-icon> 
+                    <span> {{ discussion.views }} {{ discussion.viewslabel }}</span>
+                </ion-note>
+            </ion-col>
 
-        <!-- Views -->
-        <ion-col>
-            <ion-note>
-                <ion-icon class="icon icon-md ion-md-eye"></ion-icon> 
-                <span> {{ discussion.views }} {{ discussion.viewslabel }}</span>
-            </ion-note>
-        </ion-col>
+            <!-- Latest Post -->
+            <ion-col *ngIf="discussion.latestpost">
+                <ion-note>
+                    <ion-icon class="icon icon-md ion-md-time"></ion-icon>
+                    <span><core-format-text text="{{discussion.latestpost}}"></core-format-text></span>
+                </ion-note>
+            </ion-col>
 
-        <!-- Latest Post -->
-        <ion-col *ngIf="discussion.latestpost">
-            <ion-note>
-                <ion-icon class="icon icon-md ion-md-time"></ion-icon>
-                <span><core-format-text text="{{discussion.latestpost}}"></core-format-text></span>
-            </ion-note>
-        </ion-col>
-
-    </ion-row>
-</ion-card>
+        </ion-row>
+    </ion-card>
+</ion-row>

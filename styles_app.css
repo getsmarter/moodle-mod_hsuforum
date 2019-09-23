@@ -1,0 +1,47 @@
+/* GLOBAL STYLING */
+.hsu-text-editor-wrapper {
+    padding: 0 !important;
+}
+
+.hsu-filter-error {
+    background-color: #fefbef;
+    color: #2f2f2f;
+    border: 1px solid #f4dc5e;
+    border-radius: 3px;
+    margin: 10px !important;
+}
+
+.hsu_fabbutton_add_discussion {
+    box-shadow: none !important;
+}
+
+.w-100 {
+    width: 100%;    
+}
+
+/* ADD DISCUSSION PAGE */
+.hsu-add-discussion .hsu-text-editor-wrapper .item-inner,
+.add-discussion-button-wrapper .item-inner {
+    padding-right: 0 !important;
+}
+
+/* VIEW DISCUSSION POSTS PAGE */
+.hsu-view-discussion-posts-page .hsu-text-editor-wrapper .item-inner,
+.hsu-view-discussion-posts-page .hsu-text-editor-wrapper .item-inner .input-wrapper {
+    margin: 0 !important;
+}
+
+/* MEDIA QUERIES */
+/* Filter boxes */
+@media screen and (max-width: 429px) {
+    .hsu-filter-box ion-col {
+        width: 100%;
+    }
+    .hsu-filter-box .select-text {
+        text-align: left !important;
+    }
+
+    .hsu-filter-box ion-item {
+        padding-left: 0 !important;
+    }
+}
