@@ -4257,7 +4257,7 @@ function hsuforum_add_discussion($discussion, $mform=null, $unused=null, $userid
     $post->message       = $discussion->message;
     $post->messageformat = $discussion->messageformat;
     $post->messagetrust  = $discussion->messagetrust;
-    $post->attachments   = isset($discussion->attachments) ? $discussion->attachments : null;
+    $post->attachment    = isset($discussion->attachment) ? $discussion->attachment : 0;
     $post->forum         = $forum->id;     // speedup
     $post->course        = $forum->course; // speedup
     $post->mailnow       = $discussion->mailnow;
