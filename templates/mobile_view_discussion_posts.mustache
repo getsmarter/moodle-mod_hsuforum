@@ -163,35 +163,31 @@
 
             <ion-col col-auto>
                 <ion-label>Filter by:</ion-label>
-                <ion-item>
                     <ion-select 
                         interface="popover" 
                         name="filter" 
                         interface="alert" 
                         [(ngModel)]="CONTENT_OTHERDATA.filter" 
-                        >
+                        class="core-button-select">
                     <ion-option value="1"><% filterdefaultlabel %></ion-option>
                     <ion-option value="2"><% filtermyreplieslabel %></ion-option>
                     <ion-option value="3"><% filtertutorreplieslabel %></ion-option>
                     </ion-select>
-                </ion-item>
             </ion-col>
 
             <ion-col col-auto>
                 <ion-label>Sort by:</ion-label>
-                <ion-item>
                     <ion-select 
                         interface="popover" 
                         name="sort" 
                         interface="alert" 
                         [(ngModel)]="CONTENT_OTHERDATA.sort" 
-                        >
+                        class="core-button-select">
                     <ion-option value="4"><% sortdefaultlabel %></ion-option>
                     <ion-option value="5"><% sortnewestfirstlabel %></ion-option>
                     <ion-option value="3"><% sortmostlikeslabel %></ion-option>
                     <ion-option value="2"><% sortmostreplieslabel %></ion-option>
                     </ion-select>
-                </ion-item>
             </ion-col>
 
             <ion-col align-self-end col-auto>
