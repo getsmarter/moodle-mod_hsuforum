@@ -200,6 +200,7 @@ class edit_controller extends controller_abstract {
             $reveal        = optional_param('reveal', 0, PARAM_BOOL);
             $message       = required_param('message', PARAM_RAW_TRIMMED);
             $messageformat = required_param('messageformat', PARAM_INT);
+            $posttomygroups = optional_param('posttomygroups', 0, PARAM_BOOL);
 
             list($timestart, $timeend) = local::get_form_discussion_times();
 
@@ -219,7 +220,8 @@ class edit_controller extends controller_abstract {
                 $parent     = $DB->get_record('hsuforum_posts', array('id' => $post->parent), '*', MUST_EXIST);
                 $privatereply = $parent->userid;
             }
-            return $this->postservice->handle_update_post($course, $cm, $forum, $context, $discussion, $post, $files,  array(
+            return $this->postservice->handle_update_post($course, $cm, $forum, $context, $discussion, $post, $files, $posttomygroups,
+              array(
                 'subject'       => $subject,
                 'name'          => $subject,
                 'groupid'       => $groupid,
