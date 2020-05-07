@@ -150,7 +150,7 @@ if ($ADMIN->fulltree) {
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
 
-    $name = 'hsuforum/loggedinuserlabeltagttextcolor';
+    $name = 'hsuforum/loggedinuserlabeltagtextcolor';
     $title = get_string('settingslabeltagttextcolor', 'hsuforum');
     $default = '#fff';
     $previewconfig = null;
@@ -181,8 +181,8 @@ if ($ADMIN->fulltree) {
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
 
-    $name = 'hsuforum/headtutorlabeltagttextcolor';
-    $title = get_string('settingslabeltagttextcolor', 'hsuforum');
+    $name = 'hsuforum/headtutorlabeltagtextcolor';
+    $title = get_string('settingslabeltagtextcolor', 'hsuforum');
     $default = '#fff';
     $previewconfig = null;
     $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
@@ -212,8 +212,8 @@ if ($ADMIN->fulltree) {
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
 
-    $name = 'hsuforum/tutorlabeltagttextcolor';
-    $title = get_string('settingslabeltagttextcolor', 'hsuforum');
+    $name = 'hsuforum/tutorlabeltagtextcolor';
+    $title = get_string('settingslabeltagtextcolor', 'hsuforum');
     $default = '#fff';
     $previewconfig = null;
     $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
@@ -243,8 +243,8 @@ if ($ADMIN->fulltree) {
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
 
-    $name = 'hsuforum/coursecoachlabeltagttextcolor';
-    $title = get_string('settingslabeltagttextcolor', 'hsuforum');
+    $name = 'hsuforum/coursecoachlabeltagtextcolor';
+    $title = get_string('settingslabeltagtextcolor', 'hsuforum');
     $default = '#fff';
     $previewconfig = null;
     $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
@@ -274,8 +274,8 @@ if ($ADMIN->fulltree) {
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
 
-    $name = 'hsuforum/supportlabeltagttextcolor';
-    $title = get_string('settingslabeltagttextcolor', 'hsuforum');
+    $name = 'hsuforum/supportlabeltagtextcolor';
+    $title = get_string('settingslabeltagtextcolor', 'hsuforum');
     $default = '#fff';
     $previewconfig = null;
     $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
