@@ -1297,7 +1297,27 @@ HTML;
         if (!empty($forum->displaywordcount)) {
             $postcontent .= "<div class='post-word-count'>".get_string('numwords', 'moodle', count_words($post->message))."</div>";
         }
+        
+        // Check for substring @all
+        // remove @all tag, replace with bold
+        $postcontent = self::sanitizedAtTag($postcontent);
+
         $postcontent  = "<div class='posting'>".$postcontent."</div>";
+        return $postcontent;
+    }
+
+    /**
+     * sanitizedAtTag function
+     *
+     * @param string $postcontent
+     * @return void
+     */
+    private function sanitizedAtTag($postcontent = '') {
+        if (strpos( $postcontent, '@all')) {
+            $postcontent = strip_tags($postcontent);
+            return str_replace('@all', '<b>@all</b>', $postcontent);
+        } 
+
         return $postcontent;
     }
 
