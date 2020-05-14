@@ -757,7 +757,16 @@ HTML;
                 $output .= "<li class='hsuforum-post depth$depth' data-depth='$depth' data-count='$count'>".$html."</li>";
 
                 if (!empty($post->children)) {
-                    $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
+                    if (count($post->children) > 2 && $depth == 0) {
+                        // Adding collapsable elements
+                        $output .= "<a class='posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#".$post->id."'>" . count($post->children) ." replies</i></a>";
+                        $output .= "<div id=".$post->id." class='posts-collapse-container collapse'>";
+                        $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
+                        $output .= "<a class='posts-collapse-toggle collapse-bottom' data-toggle='collapse' data-target='#".$post->id."'></i></a>";
+                        $output .= "</div>" ;
+                    } else {
+                        $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
+                    }
                 }
             }
         }

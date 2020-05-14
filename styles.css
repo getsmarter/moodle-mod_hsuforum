@@ -1159,3 +1159,49 @@ FUN WITH FORMS
         margin-top: 20px !important;
     }
 }
+
+#page-mod-hsuforum-discuss .posts-collapse-container {
+    border: 1px solid #ccc;
+    position: relative;
+    width: calc(100% - 8%);
+    margin-right: 0;
+    float: right;
+    margin-bottom: 9px;
+    padding-right: 5px;
+    padding-bottom: 5px;
+}
+
+#page-mod-hsuforum-discuss .posts-collapse-toggle[aria-expanded="true"],
+#page-mod-hsuforum-discuss .posts-collapse-toggle[data-toggle="collapse"] {
+    display: inline-block;
+    margin: 1% 0;
+    margin-left: 8%;
+    color: #717171;
+    cursor: pointer;
+}
+
+#page-mod-hsuforum-discuss .collapse-bottom[aria-expanded="true"] {
+    position: absolute;
+    bottom: 6px;
+    left: -17px;
+    margin-left: 0;
+    border: 1px solid #ccc;
+    background: #fff;
+    padding: 3px 8px;
+}
+
+#page-mod-hsuforum-discuss .posts-collapse-toggle[data-toggle="collapse"]:hover {
+    color: inherit;
+    background-color: #eee;
+}
+
+#page-mod-hsuforum-discuss .posts-collapse-toggle.collapse-top[data-toggle="collapse"]::after {
+    font-family: 'FontAwesome';
+    content: "\f078";
+}
+
+#page-mod-hsuforum-discuss .posts-collapse-toggle.collapse-top[data-toggle="collapse"][aria-expanded="true"]::after,
+#page-mod-hsuforum-discuss .posts-collapse-toggle.collapse-bottom[data-toggle="collapse"]::after {
+    font-family: 'FontAwesome';
+    content: "\f077";
+}
