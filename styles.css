@@ -1171,11 +1171,14 @@ FUN WITH FORMS
     padding-bottom: 5px;
 }
 
+#page-mod-hsuforum-discuss .posts-collapse-toggle:not(.collapse-bottom):hover,
+#page-mod-hsuforum-discuss .posts-collapse-toggle:not(.collapse-bottom) {
+    border-bottom: none !important;
+}
+
 #page-mod-hsuforum-discuss .posts-collapse-toggle[aria-expanded="true"],
 #page-mod-hsuforum-discuss .posts-collapse-toggle[data-toggle="collapse"] {
     display: inline-block;
-    margin: 1% 0;
-    margin-left: 8%;
     color: #717171;
     cursor: pointer;
 }

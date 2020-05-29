@@ -551,9 +551,11 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $post->replycount = count($post->children);
         }
         $data->replycount = '';
+        $data->nestedreplycount = '';
         // Only show reply count if replies and not first post
         if(!empty($post->replycount) && $post->replycount > 0 && $post->parent) {
             $data->replycount = hsuforum_xreplies($post->replycount);
+            $data->nestedreplycount = hsuforum_xreplies($this->post_walker_count($post->children, $post));
         }
 
         // Mark post as read.
@@ -759,7 +761,6 @@ HTML;
                 if (!empty($post->children)) {
                     if (count($post->children) > 2 && $depth == 0) {
                         // Adding collapsable elements
-                        $output .= "<a class='posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#".$post->id."'>" . count($post->children) ." replies</i></a>";
                         $output .= "<div id=".$post->id." class='posts-collapse-container collapse'>";
                         $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
                         $output .= "<a class='posts-collapse-toggle collapse-bottom' data-toggle='collapse' data-target='#".$post->id."'></i></a>";
@@ -771,6 +772,31 @@ HTML;
             }
         }
         return $output;
+    }
+
+    /**
+     * Count all nested replies for a post
+     *
+     * @param array $posts - the array of posts
+     * @param object $parent - the parent post
+     * @param int $count - the count
+     * @return int - the count for the total nested posts
+     */
+    protected function post_walker_count(array $posts, object $parent, int &$count=0) : int {
+        $output = '';
+        foreach ($posts as $post) {
+            if ($post->parent != $parent->id) {
+                continue;
+            }
+
+            $count++;
+
+            if (!empty($post->children)) {
+                $this->post_walker_count($post->children, $post, $count);
+            }
+        }
+
+        return (int) $count;
     }
 
     /**

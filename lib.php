@@ -5727,6 +5727,7 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $ca
     $renderer = $PAGE->get_renderer('mod_hsuforum');
     echo $renderer->discussion_thread($cm, $discussion, $post, $posts, $reply);
     echo $OUTPUT->box_end(); // End mod-hsuforum-posts-container
+    $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_focus', 'init');
     return;
 
 }
