@@ -687,6 +687,12 @@ function hsuforum_cron() {
                     continue;
                 }
 
+                // Don't send email if the post is a mention for userto
+                $id_array = mention_id_array($post->message);
+                if (in_array($userto->id, $id_array)) {
+                    continue;
+                }
+
                 // Get info about the sending user.
                 if (array_key_exists($post->userid, $users)) {
                     // We might know the user already.
@@ -8447,4 +8453,24 @@ function mod_hsuforum_myprofile_navigation(core_user\output\myprofile\tree $tree
     $tree->add_node($node);
 
     return true;
+}
+
+/**
+ * Function to check a post message for mentions and capture ids in an array.
+ *
+ * @param string $postmessage The post message
+ * @return array The array of user id's mentioned in the post.
+ */
+function mention_id_array($postmessage="") {
+    $id_array = array();
+    if ($postmessage) {
+        $string_array = explode('userid="', $postmessage);
+
+        for ($x = 1; $x < count($string_array); $x++) {
+            $string = $string_array[$x];
+            $id = explode('">', $string)[0];
+            array_push($id_array, $id);
+        }
+    }
+    return $id_array;
 }
