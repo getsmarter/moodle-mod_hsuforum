@@ -34,13 +34,17 @@ plugins:
   phpmd:
     enabled: true
     config:
-      rulesets: "codesize,controversial,design,naming,unusedcode,.codeclimaterules/phpmd.xml"
+      file_extensions: "php"
+      rulesets: ".codeclimaterules/phpmd.xml"
 exclude_patterns:
   - ".buildkite/"
+  - ".codeclimaterules/"
   - "amd/build/"
   - "yui/build/"
-  - "**/node_modules/"
+  - "fonts/"
+  - "lang/"
   - "pix/"
   - "pix_core/"
   - "pix_plugins/"
   - "tests/"
+  - "**/*.jpg"
