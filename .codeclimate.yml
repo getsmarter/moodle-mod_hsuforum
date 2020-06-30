@@ -1,0 +1,46 @@
+version: "2"
+checks:
+  argument-count:
+    enabled: false
+  complex-logic:
+    enabled: false
+  file-lines:
+    enabled: false
+  method-complexity:
+    enabled: false
+  method-count:
+    enabled: true
+    config:
+      threshold: 20
+  method-lines:
+    enabled: false
+  nested-control-flow:
+    enabled: true
+    config:
+      threshold: 4
+  return-statements:
+    enabled: true
+    config:
+      threshold: 10
+  similar-code:
+    enabled: true
+    config:
+      threshold: 150
+  identical-code:
+    enabled: true
+    config:
+      threshold: 100
+plugins:
+  phpmd:
+    enabled: true
+    config:
+      rulesets: "codesize,controversial,design,naming,unusedcode,.codeclimaterules/phpmd.xml"
+exclude_patterns:
+  - ".buildkite/"
+  - "amd/build/"
+  - "yui/build/"
+  - "**/node_modules/"
+  - "pix/"
+  - "pix_core/"
+  - "pix_plugins/"
+  - "tests/"
