@@ -125,11 +125,16 @@ class kernel {
         $buffer   = trim(ob_get_contents());
         ob_end_clean();
 
-        if (!empty($response) and !empty($buffer)) {
-            throw new \coding_exception('Mixed return output and buffer output', "Buffer: $buffer");
-        } else if (!empty($buffer)) {
-            $response = $buffer;
+        try {
+            if (!empty($response) and !empty($buffer)) {
+                throw new \coding_exception('Mixed return output and buffer output', "Buffer: $buffer");
+            } else if (!empty($buffer)) {
+                $response = $buffer;
+            }
+        } catch (\Exception $e) {
+            error_log($e, 0);
         }
+
         return $response;
     }
 
