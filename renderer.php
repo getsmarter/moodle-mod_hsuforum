@@ -726,6 +726,7 @@ HTML;
                 hsuforum_mark_post_read($USER->id, $parent, $forum->id);
             }
         }
+        $output  = "<h5 role='heading' aria-level='5'>".hsuforum_xreplies($count)."</h5>";
         if (!empty($count)) {
             $output = "<ol class='hsuforum-thread-replies-list'>".$items."</ol>";
         }
