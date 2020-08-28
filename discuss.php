@@ -368,4 +368,6 @@
 
 echo $renderer->render(new advanced_editor($modcontext));
 
+$PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_focus', 'init');
+
 echo $OUTPUT->footer();

@@ -720,3 +720,8 @@ $string['coursecoachtext'] = 'coursecoachtext';
 // Global Success Manager user tags
 $string['settingheadingsupporttext'] = 'Global Success Manager';
 $string['supporttext'] = 'supporttext';
+
+$string['configmanyposts'] = 'Upon loading a discussion page, the number of posts that will load at a time';
+$string['manyposts'] = 'Posts per discussion';
+
+$string['modalpageload'] = 'Page Loading, please wait ';
