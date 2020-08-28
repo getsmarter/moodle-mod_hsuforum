@@ -1208,3 +1208,14 @@ FUN WITH FORMS
     font-family: 'FontAwesome';
     content: "\f077";
 }
+
+.showreplies {
+    margin-top: 5px;
+    font-size: 12px !important;
+}
+
+#showmoreposts.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: default;
+}

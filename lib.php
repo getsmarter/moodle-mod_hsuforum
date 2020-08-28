@@ -1958,7 +1958,11 @@ function hsuforum_get_post_full($postid) {
  * @return array of posts
  */
 function hsuforum_get_all_discussion_posts($discussionid, $conditions = array()) {
-    global $CFG, $DB, $USER;
+    global $CFG, $DB, $USER, $PAGE;
+
+    $manyposts = empty(get_config('hsuforum')->manyposts) ? 30 :  (int)get_config('hsuforum')->manyposts;
+
+    $shownextposts = optional_param('shownextposts', 0, PARAM_INT);  
 
     $tr_sel  = "";
     $tr_join = "";
@@ -1979,13 +1983,52 @@ function hsuforum_get_all_discussion_posts($discussionid, $conditions = array())
         $conditionsql .= " AND $field = ?";
         $params[] = $value;
     }
+
+    $sql = "SELECT parent from {hsuforum_posts} where discussion = ? and parent <> 0 LIMIT 1";
+    
+    $parentid = $DB->get_record_sql($sql, array($discussionid))->parent;
+
+    $totalposts = $DB->count_records('hsuforum_posts', array('discussion' => $discussionid, 'parent' => $parentid));
+
+    if ($totalposts < $manyposts) {
+        echo '<script>$(function() {$("#showmoreposts").hide();});</script>';
+    }
+
+    echo "<script>window.totalposts = $totalposts; window.manyposts = $manyposts</script>";
+
+    $urltogo = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussionid));
+
+    echo '<script>$(".hsuforum-thread-filter_sort_list").append( "tests" );</script>';
+    echo '<script>$(document).ready(function(){$("#showmoreposts").attr("href", "'.$urltogo->out().'");$("#showmoreposts").attr("href", $("#showmoreposts").attr("href").replace("&amp;", "&"));})</script>';
+    $excludedposts = '';
+
+    if ($shownextposts > 0) {
+        $excludedposts .= 'AND id NOT IN (';
+        for ($i = 0; $i < $shownextposts; $i++) {
+           $excludedposts .= $_SESSION['currenthsuforumpostset'][$i].',';
+        }
+
+        $excludedposts = rtrim($excludedposts,',') ;
+
+        $excludedposts .=')';
+    }
+
+    $sqlpostset = "SELECT SUBSTRING_INDEX(GROUP_CONCAT(id ORDER BY id asc, parent asc), ',', $manyposts) id
+        FROM
+            {hsuforum_posts} where parent = ? and discussion = ? $excludedposts
+        GROUP BY parent order by id desc";
+
+    $currentpostset = $DB->get_record_sql($sqlpostset, array($parentid, $discussionid))->id;
+
+    $_SESSION['currenthsuforumpostset'][$shownextposts] = $currentpostset;
+
     if (!$posts = $DB->get_records_sql("SELECT p.*, $allnames, u.email, u.picture, u.imagealt $tr_sel
                                      FROM {hsuforum_posts} p
                                           LEFT JOIN {user} u ON p.userid = u.id
                                           $tr_join
                                     WHERE p.discussion = ?
                                       AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
-                                      $conditionsql
+                                      $conditionsql AND (find_in_set(p.id, '$currentpostset') OR parent <> $parentid)
                                  ORDER BY p.created ASC", $params)) {
         return array();
     }
@@ -5714,7 +5757,6 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $ca
         $posts = $rm->get_ratings($ratingoptions);
     }
 
-
     $post->forum = $forum->id;   // Add the forum id to the post object, later used for rendering
     $post->forumtype = $forum->type;
 
@@ -5727,7 +5769,6 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $ca
     $renderer = $PAGE->get_renderer('mod_hsuforum');
     echo $renderer->discussion_thread($cm, $discussion, $post, $posts, $reply);
     echo $OUTPUT->box_end(); // End mod-hsuforum-posts-container
-    $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_focus', 'init');
     return;
 
 }
@@ -5907,7 +5948,7 @@ function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modn
              "class=\"icon\" alt=\"{$aname}\" />";
     }
     echo "<a href=\"$CFG->wwwroot/mod/hsuforum/discuss.php?d={$activity->content->discussion}"
-         ."#p{$activity->content->id}\">{$activity->content->subject}</a>";
+        ."#p{$activity->content->id}\">{$activity->content->subject}</a>";
     echo '</div>';
 
     echo '<div class="user">';
