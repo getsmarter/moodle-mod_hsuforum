@@ -1988,6 +1988,10 @@ function hsuforum_get_all_discussion_posts($discussionid, $conditions = array())
     
     $parentid = $DB->get_record_sql($sql, array($discussionid))->parent;
 
+    if (empty($parentid)) {
+        $parentid = 0;
+    }
+
     $totalposts = $DB->count_records('hsuforum_posts', array('discussion' => $discussionid, 'parent' => $parentid));
 
     if ($totalposts < $manyposts) {
