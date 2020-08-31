@@ -293,7 +293,7 @@ foreach ($result->posts as $post) {
     $course = $result->courses[$discussion->course];
 
     $forumurl = new moodle_url('/mod/hsuforum/view.php', array('id' => $cm->id));
-    $discussionurl = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion));
+    $discussionurl = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion, 'postid' => $post->id));
 
     // TODO actually display if the search result has been read, for now just
     // hide the unread status marker for all results.
