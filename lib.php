@@ -1995,15 +1995,20 @@ function hsuforum_get_all_discussion_posts($discussionid, $conditions = array())
     $totalposts = $DB->count_records('hsuforum_posts', array('discussion' => $discussionid, 'parent' => $parentid));
 
     if ($totalposts < $manyposts) {
-        echo '<script>$(function() {$("#showmoreposts").hide();});</script>';
+        $OUTPUT.= '$(function()  alert(); {$("#showmoreposts").hide();});';
     }
 
-    echo "<script>window.totalposts = $totalposts; window.manyposts = $manyposts</script>";
+    $scripts = '';
+
+    $scripts.= "window.totalposts = $totalposts; window.manyposts = $manyposts;";
 
     $urltogo = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussionid));
 
-    echo '<script>$(".hsuforum-thread-filter_sort_list").append( "tests" );</script>';
-    echo '<script>$(document).ready(function(){$("#showmoreposts").attr("href", "'.$urltogo->out().'");$("#showmoreposts").attr("href", $("#showmoreposts").attr("href").replace("&amp;", "&"));})</script>';
+    $scripts .= '$(".hsuforum-thread-filter_sort_list").append( "tests" );';
+    $scripts .= '$(document).ready(function(){$("#showmoreposts").attr("href", "'.$urltogo->out().'");$("#showmoreposts").attr("href", $("#showmoreposts").attr("href").replace("&amp;", "&"));})';
+
+    $PAGE->requires->js_amd_inline(add_forum_js($scripts));
+
     $excludedposts = '';
 
     if ($shownextposts > 0) {
@@ -2068,6 +2073,13 @@ function hsuforum_get_all_discussion_posts($discussionid, $conditions = array())
     }
 
     return $posts;
+}
+
+function add_forum_js($scriptdata) {
+
+    $js[] = $scriptdata;
+
+    return join(' ', $js);
 }
 
 /**
