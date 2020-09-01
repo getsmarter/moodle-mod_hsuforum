@@ -532,7 +532,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->imagesrc       = $postuser->user_picture->get_url($this->page)->out();
         $data->userurl        = $this->get_post_user_url($cm, $postuser);
         $data->unread         = empty($post->postread) ? true : false;
-        $data->permalink      = new moodle_url('/mod/hsuforum/discuss.php#p'.$post->id, array('d' => $discussion->id));
+        $data->permalink      = new moodle_url('/mod/hsuforum/discuss.php#p'.$post->id, array('d' => $discussion->id, 'postid' => $post->id));
         $data->isreply        = false;
         $data->parentfullname = '';
         $data->parentuserurl  = '';
