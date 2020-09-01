@@ -344,7 +344,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
             echo $OUTPUT->heading(format_string($forum->name), 2);
             echo $OUTPUT->confirm(get_string("deletesureplural", "hsuforum", $replycount+1),
                          "post.php?delete=$delete&confirm=$delete",
-                         $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion.'#p'.$post->id);
+                         $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion. '&postid=' . $post->id .'#p'.$post->id);
 
             echo $renderer->post($cm, $discussion, $post, false, null, false);
         } else {
