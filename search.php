@@ -319,7 +319,7 @@ foreach ($posts as $post) {
     }
 
     // Prepare a link to the post in context, to be displayed after the forum post.
-    $fulllink = "<a href=\"discuss.php?d=$post->discussion&postid=$post->id#p$post->id\">".get_string("postincontext", "hsuforum")."</a>";
+    $fulllink = "<a href=\"discuss.php?d=$post->discussion#p$post->id\">".get_string("postincontext", "hsuforum")."</a>";
 
     // Message is now html format.
     if ($post->messageformat != FORMAT_HTML) {
