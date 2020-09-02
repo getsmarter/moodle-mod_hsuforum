@@ -34,7 +34,7 @@
 
                     var tempDiv = $('<div id="tempDiv_'+window.currentshowposts+'"></div>');
                     var url = $(this).attr('href') + '&shownextposts=' + window.currentshowposts;
-                    tempDiv.load(url+' .hsuforum-thread-replies');
+                    tempDiv.load(url+' .hsuforum-thread-replies',null, M.local_hsuforum_actions.init);
                     $(".hsuforum-thread-replies").append(tempDiv);
 
                     currenttext.removeClass('fa-circle-o-notch fa-spin').addClass('fa-comments');
