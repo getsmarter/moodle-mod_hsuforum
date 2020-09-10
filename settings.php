@@ -43,10 +43,7 @@ if ($ADMIN->fulltree) {
 
     // Number of discussions on a page
     $settings->add(new admin_setting_configtext('hsuforum/manydiscussions', get_string('manydiscussions', 'hsuforum'),
-                       get_string('configmanydiscussions', 'hsuforum'), 100, PARAM_INT));
-    // Number of posts to load for discussion
-    $settings->add(new admin_setting_configtext('hsuforum/manyposts', get_string('manyposts', 'hsuforum'),
-                       get_string('configmanyposts', 'hsuforum'), 30, PARAM_INT));    
+                       get_string('configmanydiscussions', 'hsuforum'), 100, PARAM_INT));   
 
     if (isset($CFG->maxbytes)) {
         $maxbytes = 0;

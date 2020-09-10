@@ -1799,7 +1799,6 @@ HTML;
 
         return <<<HTML
 <div class="hsuforum-reply-wrapper$t->thresholdblocked">
-    <a id="showmoreposts" href="" class="btn showreplies float-right"><i class="fa fa-comments"></i> Load more posts</a>
     <form method="post" role="region" aria-label="$t->legend" class="hsuforum-form $t->class" action="$actionurl" autocomplete="off">
         <fieldset>
             <legend>$t->legend</legend>

@@ -1958,11 +1958,7 @@ function hsuforum_get_post_full($postid) {
  * @return array of posts
  */
 function hsuforum_get_all_discussion_posts($discussionid, $conditions = array()) {
-    global $CFG, $DB, $USER, $PAGE;
-
-    $manyposts = empty(get_config('hsuforum')->manyposts) ? 30 :  (int)get_config('hsuforum')->manyposts;
-
-    $shownextposts = optional_param('shownextposts', 0, PARAM_INT);  
+    global $CFG, $DB, $USER; 
 
     $tr_sel  = "";
     $tr_join = "";
@@ -1984,60 +1980,13 @@ function hsuforum_get_all_discussion_posts($discussionid, $conditions = array())
         $params[] = $value;
     }
 
-    $sql = "SELECT parent from {hsuforum_posts} where discussion = ? and parent <> 0 LIMIT 1";
-    
-    $parentid = $DB->get_record_sql($sql, array($discussionid))->parent;
-
-    if (empty($parentid)) {
-        $parentid = 0;
-    }
-
-    $totalposts = $DB->count_records('hsuforum_posts', array('discussion' => $discussionid, 'parent' => $parentid));
-
-    if ($totalposts < $manyposts) {
-        $OUTPUT.= '$(function()  alert(); {$("#showmoreposts").hide();});';
-    }
-
-    $scripts = '';
-
-    $scripts.= "window.totalposts = $totalposts; window.manyposts = $manyposts;";
-
-    $urltogo = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussionid));
-
-    $scripts .= '$(".hsuforum-thread-filter_sort_list").append( "tests" );';
-    $scripts .= '$(document).ready(function(){$("#showmoreposts").attr("href", "'.$urltogo->out().'");$("#showmoreposts").attr("href", $("#showmoreposts").attr("href").replace("&amp;", "&"));})';
-
-    $PAGE->requires->js_amd_inline(add_forum_js($scripts));
-
-    $excludedposts = '';
-
-    if ($shownextposts > 0) {
-        $excludedposts .= 'AND id NOT IN (';
-        for ($i = 0; $i < $shownextposts; $i++) {
-           $excludedposts .= $_SESSION['currenthsuforumpostset'][$i].',';
-        }
-
-        $excludedposts = rtrim($excludedposts,',') ;
-
-        $excludedposts .=')';
-    }
-
-    $sqlpostset = "SELECT SUBSTRING_INDEX(GROUP_CONCAT(id ORDER BY id asc, parent asc), ',', $manyposts) id
-        FROM
-            {hsuforum_posts} where parent = ? and discussion = ? $excludedposts
-        GROUP BY parent order by id desc";
-
-    $currentpostset = $DB->get_record_sql($sqlpostset, array($parentid, $discussionid))->id;
-
-    $_SESSION['currenthsuforumpostset'][$shownextposts] = $currentpostset;
-
     if (!$posts = $DB->get_records_sql("SELECT p.*, $allnames, u.email, u.picture, u.imagealt $tr_sel
                                      FROM {hsuforum_posts} p
                                           LEFT JOIN {user} u ON p.userid = u.id
                                           $tr_join
                                     WHERE p.discussion = ?
                                       AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
-                                      $conditionsql AND (find_in_set(p.id, '$currentpostset') OR parent <> $parentid)
+                                      $conditionsql
                                  ORDER BY p.created ASC", $params)) {
         return array();
     }
