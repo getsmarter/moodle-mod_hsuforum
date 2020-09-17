@@ -759,7 +759,7 @@ HTML;
                 $output .= "<li class='hsuforum-post depth$depth' data-depth='$depth' data-count='$count'>".$html."</li>";
 
                 if (!empty($post->children)) {
-                    if (count($post->children) > 2 && $depth == 0) {
+                    if (count($post->children) > 2) {
                         // Adding collapsable elements
                         $output .= "<div id=".$post->id." class='posts-collapse-container collapse'>";
                         $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
