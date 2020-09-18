@@ -223,7 +223,7 @@
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
 
-echo $OUTPUT->render_from_template('mod_hsuforum/loading', []);
+    echo $OUTPUT->render_from_template('mod_hsuforum/loading', []);
 
     echo $renderer->render(new discussion_dateform($modcontext, $discussion));
 

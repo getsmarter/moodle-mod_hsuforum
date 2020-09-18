@@ -36,7 +36,11 @@ define(['jquery'], function ($) {
                 $('.article').show();
                 $('#loading-container').hide();
             }).catch(() => {
-                alert("element did not load in 30 seconds");
+                $('.article :input').removeAttr('disabled');
+                $('.hsuforum-menu :input').removeAttr('disabled');
+                $('.article').show();
+                $('#loading-container').hide();
+                throw("element did not load in 30 seconds");
             });
 
         }
