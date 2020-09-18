@@ -1219,3 +1219,57 @@ FUN WITH FORMS
   pointer-events: none;
   cursor: default;
 }
+
+.article {
+    display: none;
+}
+
+#loading-text {
+    margin: 180px auto auto;
+    font: bold 14px sans-serif;
+    color: grey ;
+    font-size: 16px;
+    text-align: center;
+}
+
+#loading-container {
+    display: block;
+    position: relative;
+    margin: auto auto -280px;
+    width: 50%;
+    border: 1px solid dimgrey;
+    border-radius: 4px;
+    padding: 10px;
+    height: 280px;
+    background-color: white;
+    z-index: 999;
+}
+
+.loading {
+    display: block;
+    position: relative;
+    top: 40%;
+    left: 50%;
+    margin-top: -50px;
+    margin-left: -50px;
+    z-index: 1000;
+    background-color: rgba(192, 192, 192, 0.5);
+    border: 16px solid #e51470;
+    border-radius: 50%;
+    border-top: 16px solid grey;
+    border-bottom: 16px solid #ddd;
+    width: 100px;
+    height: 100px;
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
