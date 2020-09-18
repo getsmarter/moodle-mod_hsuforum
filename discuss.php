@@ -223,6 +223,8 @@
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
 
+    echo $OUTPUT->render_from_template('mod_hsuforum/loading', []);
+
     echo $renderer->render(new discussion_dateform($modcontext, $discussion));
 
     if ($forum->type != 'single') {
@@ -369,5 +371,6 @@
 echo $renderer->render(new advanced_editor($modcontext));
 
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_focus', 'init');
+$PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_loader', 'init');
 
 echo $OUTPUT->footer();

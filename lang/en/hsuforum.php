@@ -725,3 +725,5 @@ $string['configmanyposts'] = 'Upon loading a discussion page, the number of post
 $string['manyposts'] = 'Posts per discussion';
 
 $string['modalpageload'] = 'Page Loading, please wait ';
+
+$string['loadingtext'] = 'Please wait while the forum is loading...';

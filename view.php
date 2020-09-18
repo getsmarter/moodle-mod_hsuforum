@@ -93,6 +93,9 @@
 
     echo $OUTPUT->header();
 
+    echo $OUTPUT->render_from_template('mod_hsuforum/loading', []);
+    $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_loader', 'init');
+
     echo $renderer->render(new discussion_dateform($context));
 
     echo ('<div id="discussionsview">');
