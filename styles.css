@@ -1254,7 +1254,7 @@ FUN WITH FORMS
     margin-left: -50px;
     z-index: 1000;
     background-color: rgba(192, 192, 192, 0.5);
-    border: 16px solid #e51470;
+    border: 16px solid [[setting:themeheaderbordercolour]];
     border-radius: 50%;
     border-top: 16px solid grey;
     border-bottom: 16px solid #ddd;
