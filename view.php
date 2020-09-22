@@ -114,7 +114,7 @@
     echo '</div>';
     echo $renderer->render(new advanced_editor($context));
 
-//Need this to execute earlier than it does in a JS module
+    //Need this to execute earlier than it does in a JS module
     echo "<script>
         $('.container :input').prop('disabled', true);
     </script>";
