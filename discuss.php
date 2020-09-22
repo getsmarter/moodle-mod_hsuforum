@@ -370,6 +370,11 @@
 
 echo $renderer->render(new advanced_editor($modcontext));
 
+//Need this to execute earlier than it does in a JS module
+echo "<script>
+    $('.container :input').prop('disabled', true);
+</script>";
+
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_focus', 'init');
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_loader', 'init');
 

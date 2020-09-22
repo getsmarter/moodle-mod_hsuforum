@@ -27,19 +27,16 @@ define(['jquery'], function ($) {
 
     return {
         init: function () {
-            $('.article :input').attr('disabled', true);
-            $('.hsuforum-menu :input').attr('disabled', true);
-
             waitForElement("body", 30000).then(function() {
-                $('.article :input').removeAttr('disabled');
-                $('.hsuforum-menu :input').removeAttr('disabled');
+                $('.container :input').prop('disabled', false);
                 $('.article').show();
                 $('#loading-container').hide();
+                $('#overlay-box').hide();
             }).catch(() => {
-                $('.article :input').removeAttr('disabled');
-                $('.hsuforum-menu :input').removeAttr('disabled');
+                $('.container :input').prop('disabled', false);
                 $('.article').show();
                 $('#loading-container').hide();
+                $('#overlay-box').hide();
                 throw("element did not load in 30 seconds");
             });
 

@@ -1264,6 +1264,19 @@ FUN WITH FORMS
     animation: spin 2s linear infinite;
 }
 
+#overlay-box {
+    display: block;
+    position: absolute;
+    background-color: #dddddd;
+    opacity: 0.8;
+    overflow: hidden -moz-scrollbars-none;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 998;
+}
+
 @keyframes spin {
     from {
         transform: rotate(0deg);
