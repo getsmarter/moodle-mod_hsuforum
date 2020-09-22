@@ -98,7 +98,7 @@
 
     echo $renderer->render(new discussion_dateform($context));
 
-    echo ('<div id="discussionsview">');
+    echo '<div id="discussionsview">';
 
 /// Some capability checks.
     if (empty($cm->visible) and !has_capability('moodle/course:viewhiddenactivities', $context)) {
@@ -113,4 +113,9 @@
 
     echo '</div>';
     echo $renderer->render(new advanced_editor($context));
+
+    //Need this to execute earlier than it does in a JS module
+    echo "<script>
+        $('.container :input').prop('disabled', true);
+    </script>";
     echo $OUTPUT->footer($course);
