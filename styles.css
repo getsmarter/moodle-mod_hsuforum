@@ -1220,7 +1220,7 @@ FUN WITH FORMS
   cursor: default;
 }
 
-.article {
+.mod-hsuforum-posts-container {
     display: none;
 }
 
@@ -1233,8 +1233,10 @@ FUN WITH FORMS
 }
 
 #page-mod-hsuforum-view #region-main,
+#page-mod-hsuforum-view #region-main .card,
 #page-mod-hsuforum-view #hsuforum-overlay-box,
 #page-mod-hsuforum-discuss #region-main,
+#page-mod-hsuforum-discuss #region-main .card,
 #page-mod-hsuforum-discuss #hsuforum-overlay-box{
     min-height: 400px !important;
 }

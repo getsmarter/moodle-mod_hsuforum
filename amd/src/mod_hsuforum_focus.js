@@ -6,17 +6,6 @@
  
     return {
         init: function() {
-            window.hascompleted = false;
-            var postid = window.location.hash
-            if (!window.hascompleted) {
-                if (postid) {
-                    if ($(postid).closest('li').data('depth') > 0) {
-                        $(postid).closest('.posts-collapse-container').addClass('show');
-                    }
-                    $('html,body').animate({scrollTop: $(postid).offset().top - 53}, 1000);
-                }
-                window.hascompleted = true;
-            }
 
             $('.posts-collapse-container').on('hide.bs.collapse', function() {
                 // Collapsable container id

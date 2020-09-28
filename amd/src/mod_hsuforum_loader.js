@@ -29,9 +29,20 @@ define(['jquery'], function ($) {
         init: function () {
             waitForElement("body", 30000).then(function() {
                 $('.container :input').prop('disabled', false);
-                $('.article').show();
+                $('.mod-hsuforum-posts-container').show();
                 $('#hsuforum-loading-container').hide();
                 $('#hsuforum-overlay-box').hide();
+                window.hascompleted = false;
+                var postid = window.location.hash
+                if (!window.hascompleted) {
+                    if (postid) {
+                        if ($(postid).closest('li').data('depth') > 0) {
+                            $(postid).closest('.posts-collapse-container').addClass('show');
+                        }
+                        $('html,body').animate({scrollTop: $(postid).offset().top - 60}, 1000);
+                    }
+                    window.hascompleted = true;
+                }                
             }).catch(() => {
                 $('.container :input').prop('disabled', false);
                 $('.article').show();
