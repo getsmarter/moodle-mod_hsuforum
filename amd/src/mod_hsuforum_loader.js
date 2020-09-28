@@ -30,13 +30,13 @@ define(['jquery'], function ($) {
             waitForElement("body", 30000).then(function() {
                 $('.container :input').prop('disabled', false);
                 $('.article').show();
-                $('#loading-container').hide();
-                $('#overlay-box').hide();
+                $('#hsuforum-loading-container').hide();
+                $('#hsuforum-overlay-box').hide();
             }).catch(() => {
                 $('.container :input').prop('disabled', false);
                 $('.article').show();
-                $('#loading-container').hide();
-                $('#overlay-box').hide();
+                $('#hsuforum-loading-container').hide();
+                $('#hsuforum-overlay-box').hide();
                 throw("element did not load in 30 seconds");
             });
 

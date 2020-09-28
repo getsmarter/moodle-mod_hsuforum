@@ -1224,7 +1224,7 @@ FUN WITH FORMS
     display: none;
 }
 
-#loading-text {
+#hsuforum-loading-text {
     margin: 180px auto auto;
     font: bold 14px sans-serif;
     color: grey ;
@@ -1232,7 +1232,14 @@ FUN WITH FORMS
     text-align: center;
 }
 
-#loading-container {
+#page-mod-hsuforum-view #region-main,
+#page-mod-hsuforum-view #hsuforum-overlay-box,
+#page-mod-hsuforum-discuss #region-main,
+#page-mod-hsuforum-discuss #hsuforum-overlay-box{
+    min-height: 400px !important;
+}
+
+#hsuforum-loading-container {
     display: block;
     position: relative;
     margin: auto auto -280px;
@@ -1245,7 +1252,7 @@ FUN WITH FORMS
     z-index: 999;
 }
 
-.loading {
+.hsuforum-loading {
     display: block;
     position: relative;
     top: 40%;
@@ -1264,7 +1271,7 @@ FUN WITH FORMS
     animation: spin 2s linear infinite;
 }
 
-#overlay-box {
+#hsuforum-overlay-box {
     display: block;
     position: absolute;
     background-color: #dddddd;
