@@ -43,7 +43,7 @@ if ($ADMIN->fulltree) {
 
     // Number of discussions on a page
     $settings->add(new admin_setting_configtext('hsuforum/manydiscussions', get_string('manydiscussions', 'hsuforum'),
-                       get_string('configmanydiscussions', 'hsuforum'), 100, PARAM_INT));
+                       get_string('configmanydiscussions', 'hsuforum'), 100, PARAM_INT));   
 
     if (isset($CFG->maxbytes)) {
         $maxbytes = 0;
@@ -134,5 +134,160 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configcheckbox('hsuforum/hiderecentposts', get_string('hiderecentposts', 'hsuforum'),
                        get_string('confighiderecentposts', 'hsuforum'), 0));
+
+    // Logged in User
+    $name = 'hsuforum/userloggedinheading';
+    $heading = get_string('settingheadingloggedinuser', 'hsuforum');
+    $information = '';
+    $setting = new admin_setting_heading($name, $heading, $information);
+    $settings->add($setting);
+
+    $name = 'hsuforum/loggedinusertext';
+    $title = get_string('loggedinusertext', 'hsuforum');
+    $description = '';
+    $default = 'My reply';
+    $setting = new admin_setting_configtext($name, $title, $description, $default);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    $name = 'hsuforum/loggedinuserlabeltagtextcolor';
+    $title = get_string('settingslabeltagttextcolor', 'hsuforum');
+    $default = '#fff';
+    $previewconfig = null;
+    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    $name = 'hsuforum/loggedinuserlabeltagbackgroundcolour';
+    $title = get_string('settingslabeltagbackgroundcolour', 'hsuforum');
+    $default = '#bbb';
+    $previewconfig = null;
+    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    // Head Tutor
+    $name = 'hsuforum/headtutorheading';
+    $heading = get_string('settingheadingheadtutortext', 'hsuforum');
+    $information = '';
+    $setting = new admin_setting_heading($name, $heading, $information);
+    $settings->add($setting);
+
+    $name = 'hsuforum/headtutortext';
+    $title = get_string('headtutortext', 'hsuforum');
+    $description = '';
+    $default = 'Head Tutor reply';
+    $setting = new admin_setting_configtext($name, $title, $description, $default);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    $name = 'hsuforum/headtutorlabeltagtextcolor';
+    $title = get_string('settingslabeltagtextcolor', 'hsuforum');
+    $default = '#fff';
+    $previewconfig = null;
+    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    $name = 'hsuforum/headtutorlabeltagbackgroundcolour';
+    $title = get_string('settingslabeltagbackgroundcolour', 'hsuforum');
+    $default = '#2f2f2f';
+    $previewconfig = null;
+    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    // Tutor
+    $name = 'hsuforum/tutorheading';
+    $heading = get_string('settingheadingtutortext', 'hsuforum');
+    $information = '';
+    $setting = new admin_setting_heading($name, $heading, $information);
+    $settings->add($setting);
+
+    $name = 'hsuforum/tutortext';
+    $title = get_string('tutortext', 'hsuforum');
+    $description = '';
+    $default = 'Tutor reply';
+    $setting = new admin_setting_configtext($name, $title, $description, $default);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    $name = 'hsuforum/tutorlabeltagtextcolor';
+    $title = get_string('settingslabeltagtextcolor', 'hsuforum');
+    $default = '#fff';
+    $previewconfig = null;
+    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    $name = 'hsuforum/tutorlabeltagbackgroundcolour';
+    $title = get_string('settingslabeltagbackgroundcolour', 'hsuforum');
+    $default = '#2f2f2f';
+    $previewconfig = null;
+    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    // Success Manager
+    $name = 'hsuforum/coursecoachheading';
+    $heading = get_string('settingheadingcoursecoachtext', 'hsuforum');
+    $information = '';
+    $setting = new admin_setting_heading($name, $heading, $information);
+    $settings->add($setting);
+
+    $name = 'hsuforum/coursecoachtext';
+    $title = get_string('coursecoachtext', 'hsuforum');
+    $description = '';
+    $default = 'Support reply';
+    $setting = new admin_setting_configtext($name, $title, $description, $default);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    $name = 'hsuforum/coursecoachlabeltagtextcolor';
+    $title = get_string('settingslabeltagtextcolor', 'hsuforum');
+    $default = '#fff';
+    $previewconfig = null;
+    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    $name = 'hsuforum/coursecoachlabeltagbackgroundcolour';
+    $title = get_string('settingslabeltagbackgroundcolour', 'hsuforum');
+    $default = '#f42684';
+    $previewconfig = null;
+    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    // Global Success Manager
+    $name = 'hsuforum/supportheading';
+    $heading = get_string('settingheadingsupporttext', 'hsuforum');
+    $information = '';
+    $setting = new admin_setting_heading($name, $heading, $information);
+    $settings->add($setting);
+
+    $name = 'hsuforum/supporttext';
+    $title = get_string('supporttext', 'hsuforum');
+    $description = '';
+    $default = 'Support reply';
+    $setting = new admin_setting_configtext($name, $title, $description, $default);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    $name = 'hsuforum/supportlabeltagtextcolor';
+    $title = get_string('settingslabeltagtextcolor', 'hsuforum');
+    $default = '#fff';
+    $previewconfig = null;
+    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    $name = 'hsuforum/supportlabeltagbackgroundcolour';
+    $title = get_string('settingslabeltagbackgroundcolour', 'hsuforum');
+    $default = '#f42684';
+    $previewconfig = null;
+    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
 }
 

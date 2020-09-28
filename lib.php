@@ -1964,7 +1964,7 @@ function hsuforum_get_post_full($postid) {
  * @return array of posts
  */
 function hsuforum_get_all_discussion_posts($discussionid, $conditions = array()) {
-    global $CFG, $DB, $USER;
+    global $CFG, $DB, $USER; 
 
     $tr_sel  = "";
     $tr_join = "";
@@ -1985,6 +1985,7 @@ function hsuforum_get_all_discussion_posts($discussionid, $conditions = array())
         $conditionsql .= " AND $field = ?";
         $params[] = $value;
     }
+
     if (!$posts = $DB->get_records_sql("SELECT p.*, $allnames, u.email, u.picture, u.imagealt $tr_sel
                                      FROM {hsuforum_posts} p
                                           LEFT JOIN {user} u ON p.userid = u.id
@@ -2027,6 +2028,13 @@ function hsuforum_get_all_discussion_posts($discussionid, $conditions = array())
     }
 
     return $posts;
+}
+
+function add_forum_js($scriptdata) {
+
+    $js[] = $scriptdata;
+
+    return join(' ', $js);
 }
 
 /**
@@ -5720,7 +5728,6 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $ca
         $posts = $rm->get_ratings($ratingoptions);
     }
 
-
     $post->forum = $forum->id;   // Add the forum id to the post object, later used for rendering
     $post->forumtype = $forum->type;
 
@@ -5912,7 +5919,7 @@ function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modn
              "class=\"icon\" alt=\"{$aname}\" />";
     }
     echo "<a href=\"$CFG->wwwroot/mod/hsuforum/discuss.php?d={$activity->content->discussion}"
-         ."#p{$activity->content->id}\">{$activity->content->subject}</a>";
+        ."#p{$activity->content->id}\">{$activity->content->subject}</a>";
     echo '</div>';
 
     echo '<div class="user">';

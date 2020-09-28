@@ -1159,3 +1159,130 @@ FUN WITH FORMS
         margin-top: 20px !important;
     }
 }
+
+#page-mod-hsuforum-discuss .posts-collapse-container {
+    border: 1px solid #ccc;
+    position: relative;
+    width: calc(100% - 8%);
+    margin-right: 0;
+    float: right;
+    margin-bottom: 9px;
+    padding-right: 5px;
+    padding-bottom: 5px;
+}
+
+#page-mod-hsuforum-discuss .posts-collapse-toggle:not(.collapse-bottom):hover,
+#page-mod-hsuforum-discuss .posts-collapse-toggle:not(.collapse-bottom) {
+    border-bottom: none !important;
+}
+
+#page-mod-hsuforum-discuss .posts-collapse-toggle[aria-expanded="true"],
+#page-mod-hsuforum-discuss .posts-collapse-toggle[data-toggle="collapse"] {
+    display: inline-block;
+    color: #717171;
+    cursor: pointer;
+}
+
+#page-mod-hsuforum-discuss .collapse-bottom[aria-expanded="true"] {
+    position: absolute;
+    bottom: 6px;
+    left: -17px;
+    margin-left: 0;
+    border: 1px solid #ccc;
+    background: #fff;
+    padding: 3px 8px;
+}
+
+#page-mod-hsuforum-discuss .posts-collapse-toggle[data-toggle="collapse"]:hover {
+    color: inherit;
+    background-color: #eee;
+}
+
+#page-mod-hsuforum-discuss .posts-collapse-toggle.collapse-top[data-toggle="collapse"]::after {
+    font-family: 'FontAwesome';
+    content: "\f078";
+}
+
+#page-mod-hsuforum-discuss .posts-collapse-toggle.collapse-top[data-toggle="collapse"][aria-expanded="true"]::after,
+#page-mod-hsuforum-discuss .posts-collapse-toggle.collapse-bottom[data-toggle="collapse"]::after {
+    font-family: 'FontAwesome';
+    content: "\f077";
+}
+
+.showreplies {
+    margin-top: 5px;
+    font-size: 12px !important;
+}
+
+#showmoreposts.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: default;
+}
+
+.article {
+    display: none;
+}
+
+#loading-text {
+    margin: 180px auto auto;
+    font: bold 14px sans-serif;
+    color: grey ;
+    font-size: 16px;
+    text-align: center;
+}
+
+#loading-container {
+    display: block;
+    position: relative;
+    margin: auto auto -280px;
+    width: 50%;
+    border: 1px solid dimgrey;
+    border-radius: 4px;
+    padding: 10px;
+    height: 280px;
+    background-color: white;
+    z-index: 999;
+}
+
+.loading {
+    display: block;
+    position: relative;
+    top: 40%;
+    left: 50%;
+    margin-top: -50px;
+    margin-left: -50px;
+    z-index: 1000;
+    background-color: rgba(192, 192, 192, 0.5);
+    border: 16px solid [[setting:themeheaderbordercolour]];
+    border-radius: 50%;
+    border-top: 16px solid grey;
+    border-bottom: 16px solid #ddd;
+    width: 100px;
+    height: 100px;
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin 2s linear infinite;
+}
+
+#overlay-box {
+    display: block;
+    position: absolute;
+    background-color: #dddddd;
+    opacity: 0.8;
+    overflow: hidden -moz-scrollbars-none;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 998;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+

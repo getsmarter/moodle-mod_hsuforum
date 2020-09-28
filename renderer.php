@@ -532,7 +532,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->imagesrc       = $postuser->user_picture->get_url($this->page)->out();
         $data->userurl        = $this->get_post_user_url($cm, $postuser);
         $data->unread         = empty($post->postread) ? true : false;
-        $data->permalink      = new moodle_url('/mod/hsuforum/discuss.php#p'.$post->id, array('d' => $discussion->id));
+        $data->permalink      = new moodle_url('/mod/hsuforum/discuss.php#p'.$post->id, array('d' => $discussion->id, 'postid' => $post->id));
         $data->isreply        = false;
         $data->parentfullname = '';
         $data->parentuserurl  = '';
@@ -551,9 +551,11 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $post->replycount = count($post->children);
         }
         $data->replycount = '';
+        $data->nestedreplycount = '';
         // Only show reply count if replies and not first post
         if(!empty($post->replycount) && $post->replycount > 0 && $post->parent) {
             $data->replycount = hsuforum_xreplies($post->replycount);
+            $data->nestedreplycount = hsuforum_xreplies($this->post_walker_count($post->children, $post));
         }
 
         // Mark post as read.
@@ -758,11 +760,49 @@ HTML;
                 $output .= "<li class='hsuforum-post depth$depth' data-depth='$depth' data-count='$count'>".$html."</li>";
 
                 if (!empty($post->children)) {
-                    $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
+
+                    if (!$post->nestedreplycount) {
+                        $post->nestedreplycount = hsuforum_xreplies($this->post_walker_count($post->children, $post));
+                    }
+
+                    if ($post->nestedreplycount > 2 && $depth == 0) {
+                        // Adding collapsable elements
+                        $output .= "<div id=".$post->id." class='posts-collapse-container collapse'>";
+                        $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
+                        $output .= "<a class='posts-collapse-toggle collapse-bottom' data-toggle='collapse' data-target='#".$post->id."'></i></a>";
+                        $output .= "</div>" ;
+                    } else {
+                        $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
+                    }
                 }
             }
         }
         return $output;
+    }
+
+    /**
+     * Count all nested replies for a post
+     *
+     * @param array $posts - the array of posts
+     * @param object $parent - the parent post
+     * @param int $count - the count
+     * @return int - the count for the total nested posts
+     */
+    protected function post_walker_count(array $posts, object $parent, int &$count=0) : int {
+        $output = '';
+        foreach ($posts as $post) {
+            if ($post->parent != $parent->id) {
+                continue;
+            }
+
+            $count++;
+
+            if (!empty($post->children)) {
+                $this->post_walker_count($post->children, $post, $count);
+            }
+        }
+
+        return (int) $count;
     }
 
     /**
@@ -1298,7 +1338,27 @@ HTML;
         if (!empty($forum->displaywordcount)) {
             $postcontent .= "<div class='post-word-count'>".get_string('numwords', 'moodle', count_words($post->message))."</div>";
         }
+        
+        // Check for substring @all
+        // remove @all tag, replace with bold
+        $postcontent = self::sanitizedAtTag($postcontent);
+
         $postcontent  = "<div class='posting'>".$postcontent."</div>";
+        return $postcontent;
+    }
+
+    /**
+     * sanitizedAtTag function
+     *
+     * @param string $postcontent
+     * @return void
+     */
+    private function sanitizedAtTag($postcontent = '') {
+        if (strpos( $postcontent, '@all')) {
+            $postcontent = strip_tags($postcontent);
+            return str_replace('@all', '<b>@all</b>', $postcontent);
+        } 
+
         return $postcontent;
     }
 

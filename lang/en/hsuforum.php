@@ -698,3 +698,32 @@ $string['sortoldestfirst'] = 'Oldest first';
 $string['posttimeago'] = 'Posted {$a}';
 
 $string['mobileappnotification']= '{student_full_name} posted in {course_short_name}: {hsuforum_name} - {discussion_name}';
+
+// logged in user tags
+$string['settingheadingloggedinuser'] = 'Logged in user';
+$string['loggedinusertext'] = 'loggedinusertext';
+$string['settingslabeltagtextcolor'] = 'Tag text color';
+$string['settingslabeltagbackgroundcolour'] = 'Tag background colour';
+
+// Head Tutor  user tags
+$string['settingheadingheadtutortext'] = 'Head Tutor';
+$string['headtutortext'] = 'headtutortext';
+
+// Tutor user tags
+$string['settingheadingtutortext'] = 'Tutor';
+$string['tutortext'] = 'tutortext';
+
+// Success Manager user tags
+$string['settingheadingcoursecoachtext'] = 'Success Manager';
+$string['coursecoachtext'] = 'coursecoachtext';
+
+// Global Success Manager user tags
+$string['settingheadingsupporttext'] = 'Global Success Manager';
+$string['supporttext'] = 'supporttext';
+
+$string['configmanyposts'] = 'Upon loading a discussion page, the number of posts that will load at a time';
+$string['manyposts'] = 'Posts per discussion';
+
+$string['modalpageload'] = 'Page Loading, please wait ';
+
+$string['loadingtext'] = 'Please wait while the forum is loading...';
