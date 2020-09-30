@@ -1286,6 +1286,13 @@ FUN WITH FORMS
     z-index: 998;
 }
 
+@media only screen and (max-width: 500px){
+  #hsuforum-loading-container {
+    width: 70%;
+    height: 305px;
+  }
+}
+
 @keyframes spin {
     from {
         transform: rotate(0deg);
