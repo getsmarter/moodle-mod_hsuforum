@@ -1195,7 +1195,7 @@ FUN WITH FORMS
 
 #page-mod-hsuforum-discuss .posts-collapse-toggle[data-toggle="collapse"]:hover {
     color: inherit;
-    background-color: #eee;
+    font-weight: 600;
 }
 
 #page-mod-hsuforum-discuss .posts-collapse-toggle.collapse-top[data-toggle="collapse"]::after {
