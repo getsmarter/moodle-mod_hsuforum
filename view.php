@@ -117,5 +117,6 @@
     //Need this to execute earlier than it does in a JS module
     echo "<script>
         $('.container :input').prop('disabled', true);
+        $('.mod-hsuforum-posts-container').hide();
     </script>";
     echo $OUTPUT->footer($course);
