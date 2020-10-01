@@ -1220,10 +1220,6 @@ FUN WITH FORMS
   cursor: default;
 }
 
-.mod-hsuforum-posts-container {
-    display: none;
-}
-
 #hsuforum-loading-text {
     margin: 180px auto auto;
     font: bold 14px sans-serif;
