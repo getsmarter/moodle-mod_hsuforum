@@ -6,7 +6,6 @@
  
     return {
         init: function() {
-
             $('.posts-collapse-container').on('hide.bs.collapse', function() {
                 // Collapsable container id
                 let id = $(this)[0].id;
@@ -19,14 +18,14 @@
 
                         // Only scroll if element is not in viewport
                         if (position.y < 0) {
-                            let parentId = `#${$(parentPost)[0].id}`;
+                            let parentId = $(this).parent().attr('id');
                             // Only scroll once collapse event is done
-                            $(`#${id}.posts-collapse-container`).on('hidden.bs.collapse', function() {
-                                let yAxis = $(parentId).offset().top - 80;
+                            $('#'+id).on('hidden.bs.collapse', function() {
+                                let yAxis = $('#p'+id).offset().top - 80;
                                 // Smoothing out the animation
                                 $([document.documentElement, document.body]).animate({
                                     scrollTop: yAxis
-                                }, 500);
+                                }, 1000);
                             })
                         }
                     }
