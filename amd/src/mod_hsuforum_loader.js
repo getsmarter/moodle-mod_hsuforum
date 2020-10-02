@@ -37,7 +37,7 @@ define(['jquery'], function ($) {
                 if (!window.hascompleted) {
                     if (postid) {
                         if ($(postid).closest('li').data('depth') > 0) {
-                            $(postid).closest('.posts-collapse-container').addClass('show');
+                            $(postid).closest('.posts-collapse-container').addClass('show').find('.posts-collapse-toggle.collapse-bottom').attr('aria-expanded', 'true');
                         }
                         $('html,body').animate({scrollTop: $(postid).offset().top - 60}, 1000);
                     }
