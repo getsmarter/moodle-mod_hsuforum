@@ -145,14 +145,14 @@ if ($ADMIN->fulltree) {
     $name = 'hsuforum/loggedinusertext';
     $title = get_string('loggedinusertext', 'hsuforum');
     $description = '';
-    $default = 'My reply';
+    $default = '';
     $setting = new admin_setting_configtext($name, $title, $description, $default);
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
 
     $name = 'hsuforum/loggedinuserlabeltagtextcolor';
     $title = get_string('settingslabeltagttextcolor', 'hsuforum');
-    $default = '#fff';
+    $default = '';
     $previewconfig = null;
     $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
     $setting->set_updatedcallback('theme_reset_all_caches');
@@ -160,7 +160,7 @@ if ($ADMIN->fulltree) {
 
     $name = 'hsuforum/loggedinuserlabeltagbackgroundcolour';
     $title = get_string('settingslabeltagbackgroundcolour', 'hsuforum');
-    $default = '#bbb';
+    $default = '';
     $previewconfig = null;
     $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
     $setting->set_updatedcallback('theme_reset_all_caches');
@@ -176,7 +176,7 @@ if ($ADMIN->fulltree) {
     $name = 'hsuforum/headtutortext';
     $title = get_string('headtutortext', 'hsuforum');
     $description = '';
-    $default = 'Head Tutor reply';
+    $default = '';
     $setting = new admin_setting_configtext($name, $title, $description, $default);
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
@@ -191,7 +191,7 @@ if ($ADMIN->fulltree) {
 
     $name = 'hsuforum/headtutorlabeltagbackgroundcolour';
     $title = get_string('settingslabeltagbackgroundcolour', 'hsuforum');
-    $default = '#2f2f2f';
+    $default = '';
     $previewconfig = null;
     $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
     $setting->set_updatedcallback('theme_reset_all_caches');
@@ -207,7 +207,7 @@ if ($ADMIN->fulltree) {
     $name = 'hsuforum/tutortext';
     $title = get_string('tutortext', 'hsuforum');
     $description = '';
-    $default = 'Tutor reply';
+    $default = '';
     $setting = new admin_setting_configtext($name, $title, $description, $default);
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
@@ -222,7 +222,7 @@ if ($ADMIN->fulltree) {
 
     $name = 'hsuforum/tutorlabeltagbackgroundcolour';
     $title = get_string('settingslabeltagbackgroundcolour', 'hsuforum');
-    $default = '#2f2f2f';
+    $default = '';
     $previewconfig = null;
     $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
     $setting->set_updatedcallback('theme_reset_all_caches');
@@ -238,14 +238,14 @@ if ($ADMIN->fulltree) {
     $name = 'hsuforum/coursecoachtext';
     $title = get_string('coursecoachtext', 'hsuforum');
     $description = '';
-    $default = 'Support reply';
+    $default = '';
     $setting = new admin_setting_configtext($name, $title, $description, $default);
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
 
     $name = 'hsuforum/coursecoachlabeltagtextcolor';
     $title = get_string('settingslabeltagtextcolor', 'hsuforum');
-    $default = '#fff';
+    $default = '';
     $previewconfig = null;
     $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
     $setting->set_updatedcallback('theme_reset_all_caches');
@@ -253,7 +253,7 @@ if ($ADMIN->fulltree) {
 
     $name = 'hsuforum/coursecoachlabeltagbackgroundcolour';
     $title = get_string('settingslabeltagbackgroundcolour', 'hsuforum');
-    $default = '#f42684';
+    $default = '';
     $previewconfig = null;
     $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
     $setting->set_updatedcallback('theme_reset_all_caches');
@@ -269,14 +269,14 @@ if ($ADMIN->fulltree) {
     $name = 'hsuforum/supporttext';
     $title = get_string('supporttext', 'hsuforum');
     $description = '';
-    $default = 'Support reply';
+    $default = '';
     $setting = new admin_setting_configtext($name, $title, $description, $default);
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
 
     $name = 'hsuforum/supportlabeltagtextcolor';
     $title = get_string('settingslabeltagtextcolor', 'hsuforum');
-    $default = '#fff';
+    $default = '';
     $previewconfig = null;
     $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
     $setting->set_updatedcallback('theme_reset_all_caches');
@@ -284,10 +284,9 @@ if ($ADMIN->fulltree) {
 
     $name = 'hsuforum/supportlabeltagbackgroundcolour';
     $title = get_string('settingslabeltagbackgroundcolour', 'hsuforum');
-    $default = '#f42684';
+    $default = '';
     $previewconfig = null;
     $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
 }
-
