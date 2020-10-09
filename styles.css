@@ -913,6 +913,10 @@ FUN WITH FORMS
     background-color: #f1fbff;
     color: #4178a0;
     border-radius: 2px;
+    float: left;
+    margin-bottom: 30px;
+    padding: 8px;
+    width: 100%;
 }
 
 .hsuforum_subscribe_small {
@@ -1157,6 +1161,7 @@ FUN WITH FORMS
 @media screen and (min-width: 992px){
     #page-mod-hsuforum-discuss .hsuforum-post-body .actions .alert-info.like {
         margin-top: 20px !important;
+        margin-bottom: 25px;
     }
 }
 
@@ -1174,6 +1179,7 @@ FUN WITH FORMS
 #page-mod-hsuforum-discuss .posts-collapse-toggle:not(.collapse-bottom):hover,
 #page-mod-hsuforum-discuss .posts-collapse-toggle:not(.collapse-bottom) {
     border-bottom: none !important;
+    margin-bottom: 8px;
 }
 
 #page-mod-hsuforum-discuss .posts-collapse-toggle[aria-expanded="true"],
@@ -1181,6 +1187,9 @@ FUN WITH FORMS
     display: inline-block;
     color: #717171;
     cursor: pointer;
+    float: left;
+    position: absolute;
+    bottom: 0;
 }
 
 #page-mod-hsuforum-discuss .collapse-bottom[aria-expanded="true"] {
