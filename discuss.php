@@ -378,6 +378,7 @@ echo "<script>
 
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_focus', 'init');
 $config = get_config('hsuforum');
-$PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_loader', 'init', ['enablePostSpinner' => $config->enablepostspinner]);
+$enablepostspinner = !empty($config->enablepostspinner) ? $config->enablepostspinner : 0;
+$PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_loader', 'init', ['enablePostSpinner' => $enablepostspinner]);
 
 echo $OUTPUT->footer();
