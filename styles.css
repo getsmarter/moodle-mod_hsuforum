@@ -1248,9 +1248,8 @@ FUN WITH FORMS
 
 #hsuforum-loading-container {
     display: block;
-    position: relative;
     margin: auto auto -280px;
-    width: 50%;
+    width: inherit;
     border: 1px solid dimgrey;
     border-radius: 4px;
     padding: 10px;
@@ -1289,6 +1288,12 @@ FUN WITH FORMS
     top: 0;
     bottom: 0;
     z-index: 998;
+}
+
+#hsuforum-overlay-fixed {
+    position: fixed;
+    width: 50%;
+    z-index: 999;
 }
 
 @media only screen and (max-width: 500px){
