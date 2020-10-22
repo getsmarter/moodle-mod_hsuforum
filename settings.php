@@ -289,4 +289,10 @@ if ($ADMIN->fulltree) {
     $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
+
+    $name = 'hsuforum/enablepostspinner';
+    $title = get_string('enablepostspinnername', 'hsuforum');
+    $description = get_string('enablepostspinnerdesc', 'hsuforum');
+    $default = 0;
+    $settings->add(new admin_setting_configcheckbox($name, $title, $description, $default));
 }

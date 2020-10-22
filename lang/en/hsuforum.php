@@ -727,3 +727,7 @@ $string['manyposts'] = 'Posts per discussion';
 $string['modalpageload'] = 'Page Loading, please wait ';
 
 $string['loadingtext'] = 'Please wait while the forum is loading...';
+
+// Spinner settings
+$string['enablepostspinnername'] = 'Enable Spinner';
+$string['enablepostspinnerdesc'] = 'Spinner will be active for post reply, edit and like actions';
