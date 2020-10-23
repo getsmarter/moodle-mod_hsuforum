@@ -90,9 +90,6 @@ define(['jquery'], function ($) {
         window.spinnerStartEvent = spinnerStartEvent;
         window.spinnerStopEvent = spinnerStopEvent;
 
-        // Guard clause to check if feature is enabled. If not no action handler will run.
-        if (!window.M.mod_hsuforum.configSettings.enablePostSpinner) return;
-
         document.body.addEventListener("spinnerStartEvent", () => {
             startSpinnerHandler();
         });
@@ -103,7 +100,7 @@ define(['jquery'], function ($) {
     }
 
     return {
-        init: function (enablePostSpinner) {
+        init: function () {
             waitForElement("body", 30000).then(function() {
                 $('.container :input').prop('disabled', false);
                 $('.mod-hsuforum-posts-container').show();
@@ -127,11 +124,6 @@ define(['jquery'], function ($) {
                 $('#hsuforum-overlay-box').hide();
                 throw("element did not load in 30 seconds");
             });
-
-
-                // Setting config setting for loader
-                window.M.mod_hsuforum.configSettings = {};
-                window.M.mod_hsuforum.configSettings.enablePostSpinner = parseInt(enablePostSpinner);
 
                 // Register post observers and custom spinner events.
                 registerPostsObserver();
