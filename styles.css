@@ -1248,15 +1248,18 @@ FUN WITH FORMS
 
 #hsuforum-loading-container {
     display: block;
-    position: relative;
-    margin: auto auto -280px;
-    width: 50%;
+    position: fixed;
+    width: 330px;
     border: 1px solid dimgrey;
     border-radius: 4px;
     padding: 10px;
     height: 280px;
     background-color: white;
-    z-index: 999;
+    z-index: 9999;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+
 }
 
 .hsuforum-loading {
@@ -1280,15 +1283,16 @@ FUN WITH FORMS
 
 #hsuforum-overlay-box {
     display: block;
-    position: absolute;
+    position: fixed;
     background-color: #dddddd;
     opacity: 0.8;
     overflow: hidden -moz-scrollbars-none;
     left: 0;
     right: 0;
-    top: 0;
+    top: 53px;
     bottom: 0;
-    z-index: 998;
+    z-index: 9999;
+    width: 100%;
 }
 
 @media only screen and (max-width: 500px){
@@ -1307,16 +1311,7 @@ FUN WITH FORMS
     }
 }
 
-/* CTED-1486 add fix div around loader and responsive */
-#hsuforum-overlay-fixed {
-    position: fixed;
-    left: 0;
-    right: 0;
-    text-align: center;
-    z-index: 9999;
-    width: 50%;
-    margin: auto 32%;
-}
+/* CTED-1486 add fix div around loader and responsive  */
 
 @media screen and (min-width: 768px) and (max-width: 991px){
 #hsuforum-overlay-fixed {
