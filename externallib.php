@@ -390,8 +390,8 @@ class mod_hsuforum_external extends external_api {
         // We will add this field in the response.
         $canreply = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
 
-        $allposts = hsuforum_get_all_discussion_posts($discussion->id);
-
+        $allposts = hsuforum_get_discussion_firstpost_replies($discussion->id);
+        
         foreach ($allposts as $pid => $post) {
 
             if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {

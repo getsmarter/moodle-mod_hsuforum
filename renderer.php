@@ -42,8 +42,9 @@ require_once($CFG->dirroot.'/lib/formslib.php');
  * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
  * @author Mark Nielsen
  **/
-class mod_hsuforum_renderer extends plugin_renderer_base {
 
+//class theme_legend_mod_hsuforum_renderer extends mod_hsuforum_renderer {
+  class mod_hsuforum_renderer extends plugin_renderer_base {
     /**
      * @param $course
      * @param $cm
@@ -252,6 +253,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      */
     public function discussion_thread($cm, $discussion, $post, array $posts, $canreply = null) {
         $output  = $this->discussion($cm, $discussion, $post, true, $posts, $canreply);
+
         $output .= $this->article_assets($cm);
 
         return $output;
@@ -747,18 +749,19 @@ HTML;
      * @param int $depth
      * @return string
      */
-    protected function post_walker($cm, $discussion, $posts, $parent, $canreply, &$count, $depth = 0) {
+    protected function post_walker($cm, $discussion, $firstreplies, $parent, $canreply, &$count, $depth = 0) {
         $output = '';
-        foreach ($posts as $post) {
+        foreach ($firstreplies as $post) {
             if ($post->parent != $parent->id) {
                 continue;
             }
+
             $html = $this->post($cm, $discussion, $post, $canreply, $parent, array(), $depth);
             if (!empty($html)) {
                 $count++;
                 $output .= "<li class='hsuforum-post depth$depth' data-depth='$depth' data-count='$count'>".$html."</li>";
 
-                if (!empty($post->children)) {
+                if (!empty($firstreplies->children)) {
 
                     if (!$post->nestedreplycount) {
                         $post->nestedreplycount = hsuforum_xreplies($this->post_walker_count($post->children, $post));
@@ -767,11 +770,11 @@ HTML;
                     if ($post->nestedreplycount > 2 && $depth == 0) {
                         // Adding collapsable elements
                         $output .= "<div id=".$post->id." class='posts-collapse-container collapse'>";
-                        $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
+                        $output .= $this->post_walker($cm, $discussion, $firstreplies, $post, $canreply, $count, ($depth + 1));
                         $output .= "<a class='posts-collapse-toggle collapse-bottom' data-toggle='collapse' data-target='#".$post->id."'></i></a>";
                         $output .= "</div>" ;
                     } else {
-                        $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
+                        $output .= $this->post_walker($cm, $discussion, $firstreplies, $post, $canreply, $count, ($depth + 1));
                     }
                 }
             }
@@ -816,7 +819,9 @@ HTML;
      * @return string
      */
     public function post_template($p) {
-        global $PAGE;
+        global $PAGE, $DB, $USER;
+
+        $filterandsort = '';
 
         $byuser = $p->fullname;
         if (!empty($p->userurl)) {
@@ -831,7 +836,7 @@ HTML;
             if (empty($p->parentuserpic)) {
                 $byline = get_string('replybyx', 'hsuforum', $byuser);
             } else {
-                $byline = get_string('postbyxinreplytox', 'hsuforum', array(
+                $byline = get_string('postfromx', 'theme_legend', array(
                         'parent' => $p->parentuserpic.$parent,
                         'author' => $byuser,
                         'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
@@ -861,10 +866,12 @@ HTML;
         $options = get_string('options', 'hsuforum');
         $datecreated = hsuforum_relative_time($p->rawcreated, array('class' => 'hsuforum-post-pubdate'));
 
-
         $postreplies = '';
-        if($p->replycount) {
-            $postreplies = "<div class='post-reply-count accesshide'>$p->replycount</div>";
+
+        if ($p->depth == 0 && $p->nestedreplycount > 2) {   
+            $postreplies = "<a class='post-reply-count posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#".$p->id."'>$p->nestedreplycount</a>";  
+        } else {    
+            $postreplies = "<div class='post-reply-count accesshide'>$p->replycount</div>"; 
         }
 
         $newwindow = '';
@@ -878,16 +885,74 @@ HTML;
             $revealed = '<span class="label label-danger">'.$nonanonymous.'</span>';
         }
 
+        /*  
+         * Flags and timezone   
+         * Add users country flag and timezone. 
+        */  
+        $flagandtimezone = '';  
+        if ($PAGE->theme->settings->display_flag_and_time && !empty($p->userurl)) { 
+            $userid = $p->userurl->params()['id'];  
+            $data = $DB->get_record_sql('SELECT timezone, country FROM {user} WHERE id = ?',    
+                           array($userid)); 
+            $flagandtimezone = theme_legend_user_flag_and_timezone($data);  
+        }
+
+        /*  
+         * Start CSS class for role 
+         * Addition 
+         * Adds colour to post entry dependant  
+         * on user that made the post.  
+        */  
+        $roleclass = '';    
+        if($userid = $p->userurl->params()['id']) { 
+            $courseid = $p->userurl->params()['course'];    
+            $context = context_course::instance($courseid); 
+            $roles = get_user_roles($context, $userid); 
+            foreach ($roles as $role) { 
+                $roleclass .= $role->shortname.' '; 
+            }   
+            $roleclass = rtrim($roleclass); 
+        }
+
+        /*  
+         * CSS class for role   
+         * Addition 
+         * Adds colour to post entry dependant  
+         * on user that made the post.  
+        */  
+        $loggedinuser = ''; 
+        if($userid = $p->userurl->params()['id']) { 
+            if($loggedinuserid = $USER->id){    
+                if($userid === $loggedinuserid) {   
+                    $loggedinuser = 'loggedinuser'; 
+                }   
+            }   
+        }
+
+        if (isset($p->userid)) {    
+            $useridp = $p->userid;  
+        } else {    
+            $useridp = '';  
+        }
+
+        $tools = $p->tools; 
+        if (theme_legend_accessibility_enabled()) { 
+            $tools = '<ul class="hsuforum-thread-tools_list"><li>'.$p->tools.'</li></ul>';  
+        }
+
  return <<<HTML
+ <div class="hsuforum-post-parent">    
+    <div class="hsuforum-post-figure {$useridp} depth$p->depth">    
+        <a href="$p->userurl">  
+            <img class="userpicture" src="{$p->imagesrc}" alt="profile picture">    
+        </a>    
+        $flagandtimezone    
+    </div>  
+</div>
 <div class="hsuforum-post-wrapper hsuforum-post-target clearfix $unreadclass" id="p$p->id" data-postid="$p->id" data-discussionid="$p->discussionid" data-author="$author" data-ispost="true" tabindex="-1">
 
-    <div class="hsuforum-post-figure">
-
-        <img class="userpicture" src="{$p->imagesrc}" alt="">
-
-    </div>
     <div class="hsuforum-post-body">
-        <h6 role="heading" aria-level="6" class="hsuforum-post-byline" id="hsuforum-post-$p->id">
+        <h6 aria-level="6" class="hsuforum-post-byline" id="hsuforum-post-$p->id">
             $unread $byline $revealed
         </h6>
         <small class='hsuform-post-date'><a href="$p->permalink" class="disable-router"$newwindow>$datecreated</a></small>
@@ -903,6 +968,39 @@ HTML;
         $postreplies
     </div>
 </div>
+HTML;
+
+    return <<<HTML
+<article id="p{$d->postid}" class="hsuforum-thread hsuforum-post-target clearfix" role="article"
+    data-discussionid="$d->id" data-postid="$d->postid" data-author="$author" data-isdiscussion="true" $attrs>
+    <header id="h{$d->postid}" class="clearfix $unreadclass">
+        <div class="clearfix">
+            <div class="hsuforum-thread-author clearfix">
+                <a href="$d->userurl">
+                    <img class="userpicture img-circle" src="{$d->imagesrc}" alt="profile picture" />
+                </a>
+                $flagandtimezone
+                <p class="hsuforum-thread-byline">
+                    $group $revealed
+                </p>
+            </div>
+            <div class="hsuforum-thread-header-right clearfix">
+                $threadheader
+                <div class="hsuforum-thread-content" tabindex="0">
+                    $d->message
+                </div>
+                $tools
+            </div>
+        </div>
+    </header>
+    <div id="hsuforum-thread-{$d->id}" class="hsuforum-thread-body">
+        <!-- specific to blog style -->
+        $blogmeta
+        $filterandsort
+        $d->posts
+        $d->replyform
+    </div>
+</article>
 HTML;
     }
 
