@@ -105,8 +105,7 @@ class export_manager {
         } else {
             $conditions = array();
         }
-        //$posts = hsuforum_get_all_discussion_posts($discussion->id, $conditions);
-        $posts = hsuforum_get_discussion_firstpost_replies($discussion->id, $conditions);
+        $posts = hsuforum_get_all_discussion_posts($discussion->id, $conditions);
 
         if (array_key_exists($discussion->firstpost, $posts)) {
             $post = $posts[$discussion->firstpost];

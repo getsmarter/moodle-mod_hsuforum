@@ -1008,7 +1008,7 @@ if (!empty($parent)) {
     echo $renderer->post($cm, $discussion, $parent);
     if (empty($post->edit)) {
         if ($forum->type != 'qanda' || hsuforum_user_can_see_discussion($forum, $discussion, $modcontext)) {
-            $posts = hsuforum_get_discussion_firstpost_replies($discussion->id);
+            $posts = hsuforum_get_all_discussion_posts($discussion->id);
         }
     }
 } else {

@@ -280,7 +280,7 @@ class discussion_service {
             print_error('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
 
-        $posts        = hsuforum_get_discussion_firstpost_replies($discussion->id);
+        $posts        = hsuforum_get_all_discussion_posts($discussion->id);
         $canreply     = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $context);
 
         hsuforum_get_ratings_for_posts($context, $forum, $posts);
