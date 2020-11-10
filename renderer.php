@@ -43,7 +43,6 @@ require_once($CFG->dirroot.'/lib/formslib.php');
  * @author Mark Nielsen
  **/
 
-//class theme_legend_mod_hsuforum_renderer extends mod_hsuforum_renderer {
   class mod_hsuforum_renderer extends plugin_renderer_base {
     /**
      * @param $course
@@ -836,7 +835,7 @@ HTML;
             if (empty($p->parentuserpic)) {
                 $byline = get_string('replybyx', 'hsuforum', $byuser);
             } else {
-                $byline = get_string('postfromx', 'theme_legend', array(
+                $byline = get_string('postfromx', 'hsuforum', array(
                         'parent' => $p->parentuserpic.$parent,
                         'author' => $byuser,
                         'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
