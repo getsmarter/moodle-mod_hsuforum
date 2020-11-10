@@ -1948,7 +1948,7 @@ function hsuforum_get_post_full($postid) {
 }
 
 /**
- * Gets all posts in discussion including top parent.
+ * Gets the first post in discussion including top parent post.
  *
  * @global object
  * @global object
@@ -1957,7 +1957,8 @@ function hsuforum_get_post_full($postid) {
  * @param bool $tracking does user track the forum?
  * @return array of posts
  */
-function hsuforum_get_all_discussion_posts($discussionid, $conditions = array()) {
+
+function hsuforum_get_discussion_firstpost_replies ($discussionid, $conditions = array()){
     global $CFG, $DB, $USER; 
 
     $tr_sel  = "";
@@ -1978,51 +1979,50 @@ function hsuforum_get_all_discussion_posts($discussionid, $conditions = array())
     foreach ($conditions as $field => $value) {
         $conditionsql .= " AND $field = ?";
         $params[] = $value;
-    }
+    } 
 
-    if (!$posts = $DB->get_records_sql("SELECT p.*, $allnames, u.email, u.picture, u.imagealt $tr_sel
+    if (!$firstpost = $DB->get_record_sql("SELECT p.*, $allnames, u.email, u.picture, u.imagealt $tr_sel
                                      FROM {hsuforum_posts} p
-                                          LEFT JOIN {user} u ON p.userid = u.id
-                                          $tr_join
-                                    WHERE p.discussion = ?
-                                      AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
+                                     LEFT JOIN {user} u ON p.userid = u.id
+                                      $tr_join
+                                    WHERE p.discussion = $discussionid
+                                      AND (p.parent = 0 OR p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
                                       $conditionsql
-                                 ORDER BY p.created ASC", $params)) {
+                                      ORDER BY created ASC", $params)) {
         return array();
     }
 
-    foreach ($posts as $pid=>$p) {
+    if (!$firstreplies = $DB->get_records_sql("SELECT p.*, $allnames, u.email, u.picture, u.imagealt $tr_sel
+                                     FROM {hsuforum_posts} p
+                                     LEFT JOIN {user} u ON p.userid = u.id
+                                      $tr_join
+                                    WHERE p.discussion = $discussionid
+                                      AND (p.parent = $firstpost->id OR p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
+                                      $conditionsql
+                                      ORDER BY created ASC", $params)) {
+        return array();
+    }
+
+    foreach ($firstreplies as $pid=>$p) {
         if (hsuforum_tp_is_post_old($p)) {
-             $posts[$pid]->postread = true;
+             $firstreplies[$pid]->postread = true;
         }
         if (!$p->parent) {
             continue;
         }
-        if (!isset($posts[$p->parent])) {
+        if (!isset($firstreplies[$p->parent])) {
             continue; // parent does not exist??
         }
-        if (!isset($posts[$p->parent]->children)) {
-            $posts[$p->parent]->children = array();
+        if (!isset($firstreplies[$p->parent]->children)) {
+            $firstreplies[$p->parent]->children = array();
         }
-        $posts[$p->parent]->children[$pid] =& $posts[$pid];
+        $firstreplies[$p->parent]->children[$pid] =& $firstreplies[$pid];
+
     }
 
-    // Start with the last child of the first post.
-    $post = &$posts[reset($posts)->id];
-
-    $lastpost = false;
-    while (!$lastpost) {
-        if (!isset($post->children)) {
-            $post->lastpost = true;
-            $lastpost = true;
-        } else {
-             // Go to the last child of this post.
-            $post = &$posts[end($post->children)->id];
-        }
-    }
-
-    return $posts;
+    return $firstreplies;
 }
+
 
 function add_forum_js($scriptdata) {
 
@@ -5693,7 +5693,7 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $ca
 
     $posters = array();
 
-    $posts = hsuforum_get_all_discussion_posts($discussion->id);
+    $posts = hsuforum_get_discussion_firstpost_replies($discussion->id);
     $post = $posts[$post->id];
 
     foreach ($posts as $pid=>$p) {
