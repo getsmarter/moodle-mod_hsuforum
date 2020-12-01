@@ -334,11 +334,14 @@ function get_allowed_tag_users($forum_id=0, $group_id=0, $advancedforum=0, $repl
         }
 
         $users = array_merge($users, $course_staff);
+        $context = \context_course::instance($course_id);
 
         if (isset($users)) {
             $data = array();
             foreach ($users as $user) {
-                array_push($data, $user->firstname . ' ' . $user->lastname, $user->userid);
+                if (has_capability('local/getsmarter:mention_' . $user->shortname, $context)) {
+                    array_push($data, $user->firstname . ' ' . $user->lastname, $user->userid);
+                }
             }
 
             $post = $data;
