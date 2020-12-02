@@ -193,6 +193,8 @@ class mobile {
                 if(strpos($discussion->message, '@@PLUGINFILE@@') !== false) {
                     $discussion->message = returnEmbeddedImageMessage($discussion->message, $context->id, $discussion->id);
                 }
+
+                $discussion->message = preg_replace('#<a.*?>(@all)</a>#i', '<strong>\1</strong>', $discussion->message);
             }
         }
 
@@ -370,6 +372,8 @@ class mobile {
                 $firstpost->message = returnEmbeddedImageMessage($firstpost->message, $modcontext->id, $firstpost->id);
             }
 
+            $firstpost->message = preg_replace('#<a.*?>(@all)</a>#i', '<strong>\1</strong>', $firstpost->message);
+
             // Set forumid and groupid
             $firstpost->forumid = $forum->id;
             $firstpost->groupid = $discussion->groupid;
@@ -476,6 +480,9 @@ class mobile {
                 if(strpos($reply->message, '@@PLUGINFILE@@') !== false) {
                     $reply->message = returnEmbeddedImageMessage($reply->message, $modcontext->id, $reply->id);
                 }
+
+                $reply->message = preg_replace('#<a.*?>(@all)</a>#i', '<strong>\1</strong>', $reply->message);
+
                 // Check for nested replies
                 $reply->havereplies = hsuforum_count_replies($reply, $children=true);
                 $replies[] = $reply;
@@ -793,6 +800,8 @@ class mobile {
             if(strpos($reply->message, '@@PLUGINFILE@@') !== false) {
                 $reply->message = returnEmbeddedImageMessage($reply->message, $modcontext->id, $reply->id);
             }
+
+            $reply->message = preg_replace('#<a.*?>(@all)</a>#i', '<strong>\1</strong>', $reply->message);
         }
 
     /// Getting tagable users

@@ -157,6 +157,27 @@ function build_allowed_tag_users($userarray) {
 }
 
 /**
+ * @param context_course $context
+ * @param $user
+ * @return bool
+ */
+function check_capability($context, $user)
+{
+    global $result, $USER;
+
+    try {
+        return has_capability('local/getsmarter:mention_' . $user->shortname, $context, $USER->id);
+    } catch (Exception $e) {
+        error_log($e);
+        $result->result = false;
+        $result->content = $e;
+
+        header('Content-type: application/json');
+        echo json_encode($result);
+    }
+}
+
+/**
  * Function to return allowed tag users per group permission. Function rebuild from /mention_users/getusers.php
  * @param array $userarray @todo add everything here
  * @return array
@@ -333,11 +354,28 @@ function get_allowed_tag_users($forum_id=0, $group_id=0, $advancedforum=0, $repl
             $users = $DB->get_records_sql($sql, array($context_id, $course_id, $grouping_id));
         }
 
-        $users = array_merge($users, $course_staff);
         $context = \context_course::instance($course_id);
+        $users = array_merge($users, $course_staff);
+        $allUserIds = "";
+
+        if (!empty($users)) {
+
+            foreach($users AS $user) {
+                if(check_capability($context, $user)) {
+                    $allUserIds .= $user->userid . ",";
+                }
+            }
+
+            $allUserIds = rtrim($allUserIds, ",");
+        }
 
         if (isset($users)) {
             $data = array();
+
+            if(!empty($allUserIds) && has_capability('local/getsmarter:mention_all', $context)) {
+                array_push($data, '@all', $allUserIds);
+            }
+
             foreach ($users as $user) {
                 if (has_capability('local/getsmarter:mention_' . $user->shortname, $context)) {
                     array_push($data, $user->firstname . ' ' . $user->lastname, $user->userid);
