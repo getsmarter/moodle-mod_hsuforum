@@ -256,7 +256,7 @@ function get_allowed_tag_users($forum_id=0, $group_id=0, $advancedforum=0, $repl
             JOIN {role_assignments} ra ON (u.id = ra.userid AND ra.contextid = ?)
             JOIN {role} r ON (ra.roleid = r.id)
             WHERE e.courseid = ?
-            AND r.shortname IN ('coursecoach', 'headtutor', 'tutor', 'support')
+            AND r.shortname != 'student'
             ORDER BY firstname",
             array($context_id, $course_id)
         );
@@ -277,6 +277,7 @@ function get_allowed_tag_users($forum_id=0, $group_id=0, $advancedforum=0, $repl
                 JOIN {role} r ON (ra.roleid = r.id)
                 WHERE e.courseid = ?
                 AND r.shortname = 'student'
+                AND ue.status != 1
                 ORDER BY firstname
                 ;";
 
@@ -300,6 +301,7 @@ function get_allowed_tag_users($forum_id=0, $group_id=0, $advancedforum=0, $repl
                 WHERE e.courseid = ?
                 AND g.id = ?
                 AND r.shortname = 'student'
+                AND ue.status != 1
                 ORDER BY firstname
                 ;";
 
@@ -325,6 +327,7 @@ function get_allowed_tag_users($forum_id=0, $group_id=0, $advancedforum=0, $repl
                 AND gg.groupingid = ?
                 AND gm.groupid = ?
                 AND r.shortname = 'student'
+                AND ue.status != 1
                 ORDER BY firstname
                 ;";
 
@@ -348,6 +351,7 @@ function get_allowed_tag_users($forum_id=0, $group_id=0, $advancedforum=0, $repl
                 WHERE e.courseid = ?
                 AND gg.groupingid = ?
                 AND r.shortname = 'student'
+                AND ue.status != 1
                 ORDER BY firstname
                 ;";
 
