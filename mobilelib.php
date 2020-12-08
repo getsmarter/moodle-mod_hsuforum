@@ -157,6 +157,27 @@ function build_allowed_tag_users($userarray) {
 }
 
 /**
+ * @param context_course $context
+ * @param $user
+ * @return bool
+ */
+function check_capability($context, $user)
+{
+    global $result, $USER;
+
+    try {
+        return has_capability('local/getsmarter:mention_' . $user->shortname, $context, $USER->id);
+    } catch (Exception $e) {
+        error_log($e);
+        $result->result = false;
+        $result->content = $e;
+
+        header('Content-type: application/json');
+        echo json_encode($result);
+    }
+}
+
+/**
  * Function to return allowed tag users per group permission. Function rebuild from /mention_users/getusers.php
  * @param array $userarray @todo add everything here
  * @return array
@@ -235,7 +256,7 @@ function get_allowed_tag_users($forum_id=0, $group_id=0, $advancedforum=0, $repl
             JOIN {role_assignments} ra ON (u.id = ra.userid AND ra.contextid = ?)
             JOIN {role} r ON (ra.roleid = r.id)
             WHERE e.courseid = ?
-            AND r.shortname IN ('coursecoach', 'headtutor', 'tutor', 'support')
+            AND r.shortname != 'student'
             ORDER BY firstname",
             array($context_id, $course_id)
         );
@@ -256,6 +277,7 @@ function get_allowed_tag_users($forum_id=0, $group_id=0, $advancedforum=0, $repl
                 JOIN {role} r ON (ra.roleid = r.id)
                 WHERE e.courseid = ?
                 AND r.shortname = 'student'
+                AND ue.status != 1
                 ORDER BY firstname
                 ;";
 
@@ -279,6 +301,7 @@ function get_allowed_tag_users($forum_id=0, $group_id=0, $advancedforum=0, $repl
                 WHERE e.courseid = ?
                 AND g.id = ?
                 AND r.shortname = 'student'
+                AND ue.status != 1
                 ORDER BY firstname
                 ;";
 
@@ -304,6 +327,7 @@ function get_allowed_tag_users($forum_id=0, $group_id=0, $advancedforum=0, $repl
                 AND gg.groupingid = ?
                 AND gm.groupid = ?
                 AND r.shortname = 'student'
+                AND ue.status != 1
                 ORDER BY firstname
                 ;";
 
@@ -327,18 +351,39 @@ function get_allowed_tag_users($forum_id=0, $group_id=0, $advancedforum=0, $repl
                 WHERE e.courseid = ?
                 AND gg.groupingid = ?
                 AND r.shortname = 'student'
+                AND ue.status != 1
                 ORDER BY firstname
                 ;";
 
             $users = $DB->get_records_sql($sql, array($context_id, $course_id, $grouping_id));
         }
 
+        $context = \context_course::instance($course_id);
         $users = array_merge($users, $course_staff);
+        $allUserIds = "";
+
+        if (!empty($users)) {
+
+            foreach($users AS $user) {
+                if(check_capability($context, $user)) {
+                    $allUserIds .= $user->userid . ",";
+                }
+            }
+
+            $allUserIds = rtrim($allUserIds, ",");
+        }
 
         if (isset($users)) {
             $data = array();
+
+            if(!empty($allUserIds) && has_capability('local/getsmarter:mention_all', $context)) {
+                array_push($data, '@all', $allUserIds);
+            }
+
             foreach ($users as $user) {
-                array_push($data, $user->firstname . ' ' . $user->lastname, $user->userid);
+                if (has_capability('local/getsmarter:mention_' . $user->shortname, $context)) {
+                    array_push($data, $user->firstname . ' ' . $user->lastname, $user->userid);
+                }
             }
 
             $post = $data;
