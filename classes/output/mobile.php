@@ -615,7 +615,7 @@ class mobile {
 
         // Getting tagable users
         $tagusers = [];
-        $tagusers = get_allowed_tag_users($forum->id, $discussion->groupid, 1);
+        $tagusers = get_allowed_tag_users($forum->id, $discussion->groupid, 1,'','','tribute',true);
         $tagusers = ($tagusers->result && count($tagusers->content)) ? build_allowed_tag_users($tagusers->content) : [];
         $showtaguserul = count($tagusers) ? true : false;
 

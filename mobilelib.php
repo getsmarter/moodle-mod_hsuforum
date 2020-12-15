@@ -182,7 +182,7 @@ function check_capability($context, $user)
  * @param array $userarray @todo add everything here
  * @return array
  */
-function get_allowed_tag_users($forum_id=0, $group_id=0, $advancedforum=0, $reply_id=0, $grouping_id='', $action='tribute') {
+function get_allowed_tag_users($forum_id=0, $group_id=0, $advancedforum=0, $reply_id=0, $grouping_id='', $action='tribute', $new_discussion = false) {
     global $CFG, $DB;
 
     $result = new stdClass();
@@ -362,7 +362,7 @@ function get_allowed_tag_users($forum_id=0, $group_id=0, $advancedforum=0, $repl
         $users = array_merge($users, $course_staff);
         $allUserIds = "";
 
-        if (!empty($users)) {
+        if (!empty($users) && !$new_discussion) {
 
             foreach($users AS $user) {
                 if(check_capability($context, $user)) {
