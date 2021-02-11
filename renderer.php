@@ -424,7 +424,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         $filterandsort .= "</div></form>";
-                    
+
         $data->filterandsort = $filterandsort;
 
         $posts = $this->filter_sort_posts($posts, $filter, $sort, $course);
@@ -584,10 +584,10 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
     }
 
     public function discussion_template($d, $forumtype) {
-        global $PAGE;
-
         $replies = '';
         $pinned = '';
+        $filterandsort = '';
+
         if(!empty($d->replies)) {
             $xreplies = hsuforum_xreplies($d->replies);
             $replies = "<span class='hsuforum-replycount'>$xreplies</span>";
@@ -595,7 +595,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         if ($d->pinned != 0) {
             $pinned = '<span class="pinned"><img src="pix/i/pinned.png" alt="pinned" /></span>';
         }
-
         if (!empty($d->userurl)) {
             $byuser = html_writer::link($d->userurl, $d->fullname);
         } else {
@@ -624,28 +623,31 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         $participants = '<div class="hsuforum-thread-participants">'.implode(' ',$d->replyavatars).'</div>';
 
-
-        $datecreated = hsuforum_relative_time($d->rawcreated, array('class' => 'hsuforum-thread-pubdate'));
+        $datecreated = '<div class="hsuforum-replycount">'.get_string('posttimeago', 'hsuforum', hsuforum_relative_time($d->rawcreated, array('class' => 'hsuforum-thread-pubdate'))).'</div>';
 
         $threadtitle = $d->subject;
         if (!$d->fullthread) {
             $threadtitle = "<a class='disable-router' href='$d->viewurl'>$d->subject</a>";
         }
         $options = get_string('options', 'hsuforum');
+
+        //Add users country flag and timezone to the output.
         $threadmeta  =
             '<div class="hsuforum-thread-meta">'
-                .$replies
-                .$unread
-                .$participants
-                .$latestpost
-                .$pinned
-                .'<div class="hsuforum-thread-flags">'."{$d->subscribe} $d->postflags $d->timed</div>"
+            .$datecreated
+            .$unread
+            .$participants
+            .$latestpost
+            .$pinned
+            .'<div class="hsuforum-thread-flags">'."{$d->subscribe} $d->postflags</div>"
             .'</div>';
 
         if ($d->fullthread) {
             $tools = '<div role="region" class="hsuforum-tools hsuforum-thread-tools" aria-label="'.$options.'">'.$d->tools.'</div>';
             $blogmeta = '';
             $blogreplies = '';
+
+            $filterandsort = '<div role="region" class="hsuforum-filter-sort" aria-label="'.$options.'"><ul class="hsuforum-thread-filter_sort_list"><li>'.$d->filterandsort.'</li></ul></div>';
         } else {
             $blogreplies = hsuforum_xreplies($d->replies);
             $tools = "<a class='disable-router hsuforum-replycount-link' href='$d->viewurl'>$blogreplies</a>";
@@ -658,14 +660,67 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $revealed = '<span class="label label-danger">'.$nonanonymous.'</span>';
         }
 
+        // Flags and timezone
+        $flagandtimezone = '';
+        global $PAGE, $DB;
+        if ($PAGE->theme->settings->display_flag_and_time && !empty($d->userurl)) {
+            $userid = $d->userurl->params()['id'];
+
+            $data = $DB->get_record_sql('SELECT timezone, country FROM {user} WHERE id = ?',
+                array($userid));
+
+            $flagandtimezone = theme_legend_user_flag_and_timezone($data);
+        }
+
+        $repliescount = $d->replies.' Replies';
+        if ($d->replies == 1) {
+            $repliescount = $d->replies.' Reply';
+        }
+
+        $repliescount .= ' <i style="font-size: 4px; color: #767676; vertical-align: middle;" class="fa fa-circle"></i>';
+
+        $contribsql = "select count(distinct(userid)) as contributes from {hsuforum_posts} where discussion = ?";
+
+        $contribparams = array('discussion' => $d->id);
+
+        $contribcount = 0;
+
+        if ($c = $DB->get_record_sql($contribsql, $contribparams)) {
+            $contribs = $c->contributes;
+        }
+
+        $contribcount = $contribs.' Contributors';
+        if ($contribs == 1) {
+            $contribcount = $contribs.' Contributor';
+        }
+
+        $contribcount .= ' <i style="font-size: 4px; color: #767676; vertical-align: middle;" class="fa fa-circle"></i>';
+
+        $viewssql = "select count(userid) as views from {hsuforum_read} where forumid = ? and discussionid = ?";
+
+        $viewsparams = array('forumid' => $PAGE->cm->instance, 'discussionid' => $d->id);
+
+        $views = 0;
+
+        if ($v = $DB->get_record_sql($viewssql, $viewsparams)) {
+            $views = $v->views;
+        }
+
+        $viewcount = $views.' Views';
+        if ($views == 1) {
+            $viewcount = $views.' View';
+        }
 
         $threadheader = <<<HTML
         <div class="hsuforum-thread-header">
             <div class="hsuforum-thread-title">
-                <h4 id='thread-title-{$d->id}' role="heading" aria-level="4">
+                <h2 id='thread-title-{$d->id}' aria-level="4">
                     $threadtitle
-                </h4>
-                <small>$datecreated</small>
+                </h2>
+                <small><span class="topic-by">Topic by</span> $byuser  </small>
+                <div class="thread-info-bar">
+                    <small> $repliescount $contribcount $viewcount</small>
+                </div>
             </div>
             $threadmeta
         </div>
@@ -675,24 +730,29 @@ HTML;
 <article id="p{$d->postid}" class="hsuforum-thread hsuforum-post-target clearfix" role="article"
     data-discussionid="$d->id" data-postid="$d->postid" data-author="$author" data-isdiscussion="true" $attrs>
     <header id="h{$d->postid}" class="clearfix $unreadclass">
-        <div class="hsuforum-thread-author">
-            <img class="userpicture img-circle" src="{$d->imagesrc}" alt="" />
-            <p class="hsuforum-thread-byline">
-                $byuser $group $revealed
-            </p>
+        <div class="clearfix">
+            <div class="hsuforum-thread-author clearfix">
+                <a href="$d->userurl">
+                    <img class="userpicture img-circle" src="{$d->imagesrc}" alt="profile picture" />
+                </a>
+                $flagandtimezone
+                <p class="hsuforum-thread-byline">
+                    $group $revealed
+                </p>
+            </div>
+            <div class="hsuforum-thread-header-right clearfix">
+                $threadheader
+                <div class="hsuforum-thread-content" tabindex="0">
+                    $d->message
+                </div>
+                $tools
+            </div>
         </div>
-
-        $threadheader
-
-        <div class="hsuforum-thread-content" tabindex="0">
-            $d->message
-        </div>
-        $tools
     </header>
-
     <div id="hsuforum-thread-{$d->id}" class="hsuforum-thread-body">
         <!-- specific to blog style -->
         $blogmeta
+        $filterandsort
         $d->posts
         $d->replyform
     </div>
@@ -817,7 +877,9 @@ HTML;
      * @return string
      */
     public function post_template($p) {
-        global $PAGE;
+        global $PAGE, $DB, $USER;
+
+        $filterandsort = '';
 
         $byuser = $p->fullname;
         if (!empty($p->userurl)) {
@@ -832,10 +894,9 @@ HTML;
             if (empty($p->parentuserpic)) {
                 $byline = get_string('replybyx', 'hsuforum', $byuser);
             } else {
-                $byline = get_string('postbyxinreplytox', 'hsuforum', array(
-                        'parent' => $p->parentuserpic.$parent,
-                        'author' => $byuser,
-                        'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
+                $byline = get_string('postfromx', 'theme_legend', array(
+                    'author' => $byuser,
+                    'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
                 ));
             }
             if (!empty($p->privatereply)) {
@@ -843,9 +904,9 @@ HTML;
                     $byline = get_string('privatereplybyx', 'hsuforum', $byuser);
                 } else {
                     $byline = get_string('postbyxinprivatereplytox', 'hsuforum', array(
-                            'author' => $byuser,
-                            'parent' => $p->parentuserpic.$parent
-                        ));
+                        'author' => $byuser,
+                        'parent' => $p->parentuserpic.$parent
+                    ));
                 }
             }
         } else if (!empty($p->privatereply)) {
@@ -862,9 +923,11 @@ HTML;
         $options = get_string('options', 'hsuforum');
         $datecreated = hsuforum_relative_time($p->rawcreated, array('class' => 'hsuforum-post-pubdate'));
 
-
         $postreplies = '';
-        if($p->replycount) {
+
+        if ($p->depth == 0 && $p->nestedreplycount > 2) {
+            $postreplies = "<a class='post-reply-count posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#".$p->id."'>$p->nestedreplycount</a>";
+        } else {
             $postreplies = "<div class='post-reply-count accesshide'>$p->replycount</div>";
         }
 
@@ -879,27 +942,84 @@ HTML;
             $revealed = '<span class="label label-danger">'.$nonanonymous.'</span>';
         }
 
- return <<<HTML
-<div class="hsuforum-post-wrapper hsuforum-post-target clearfix $unreadclass" id="p$p->id" data-postid="$p->id" data-discussionid="$p->discussionid" data-author="$author" data-ispost="true" tabindex="-1">
+        /*
+         * Flags and timezone
+         * Add users country flag and timezone.
+        */
+        $flagandtimezone = '';
+        if ($PAGE->theme->settings->display_flag_and_time && !empty($p->userurl)) {
+            $userid = $p->userurl->params()['id'];
 
-    <div class="hsuforum-post-figure">
+            $data = $DB->get_record_sql('SELECT timezone, country FROM {user} WHERE id = ?',
+                array($userid));
 
-        <img class="userpicture" src="{$p->imagesrc}" alt="">
+            $flagandtimezone = theme_legend_user_flag_and_timezone($data);
+        }
 
+        /*
+         * Start CSS class for role
+         * Addition
+         * Adds colour to post entry dependant
+         * on user that made the post.
+        */
+        $roleclass = '';
+        if($userid = $p->userurl->params()['id']) {
+            $courseid = $p->userurl->params()['course'];
+            $context = context_course::instance($courseid);
+            $roles = get_user_roles($context, $userid);
+            foreach ($roles as $role) {
+                $roleclass .= $role->shortname.' ';
+            }
+            $roleclass = rtrim($roleclass);
+        }
+
+        /*
+         * CSS class for role
+         * Addition
+         * Adds colour to post entry dependant
+         * on user that made the post.
+        */
+        $loggedinuser = '';
+        if($userid = $p->userurl->params()['id']) {
+            if($loggedinuserid = $USER->id){
+                if($userid === $loggedinuserid) {
+                    $loggedinuser = 'loggedinuser';
+                }
+            }
+        }
+
+        if (isset($p->userid)) {
+            $useridp = $p->userid;
+        } else {
+            $useridp = '';
+        }
+
+        $tools = $p->tools;
+
+        return <<<HTML
+ <div class="hsuforum-post-parent">
+    <div class="hsuforum-post-figure {$useridp} depth$p->depth">
+        <a href="$p->userurl">
+            <img class="userpicture" src="{$p->imagesrc}" alt="profile picture">
+        </a>
+        $flagandtimezone
     </div>
+</div>
+<div class="hsuforum-post-wrapper hsuforum-post-target clearfix $roleclass $loggedinuser $unreadclass" id="p$p->id" data-postid="$p->id" data-discussionid="$p->discussionid" data-author="$author" data-ispost="true" tabindex="-1">
+
     <div class="hsuforum-post-body">
-        <h6 role="heading" aria-level="6" class="hsuforum-post-byline" id="hsuforum-post-$p->id">
+        <h6 aria-level="6" class="hsuforum-post-byline" id="hsuforum-post-$p->id">
             $unread $byline $revealed
         </h6>
         <small class='hsuform-post-date'><a href="$p->permalink" class="disable-router"$newwindow>$datecreated</a></small>
 
         <div class="hsuforum-post-content">
             <div class="hsuforum-post-title">$p->subject</div>
-                $p->message
+            $p->message
         </div>
         <div role="region" class='hsuforum-tools' aria-label='$options'>
             <div class="hsuforum-postflagging">$p->postflags</div>
-            $p->tools
+            $tools
         </div>
         $postreplies
     </div>
@@ -1338,7 +1458,7 @@ HTML;
         if (!empty($forum->displaywordcount)) {
             $postcontent .= "<div class='post-word-count'>".get_string('numwords', 'moodle', count_words($post->message))."</div>";
         }
-        
+
         // Check for substring @all
         // remove @all tag, replace with bold
         $postcontent = self::sanitizedAtTag($postcontent);
@@ -1357,7 +1477,7 @@ HTML;
         if (strpos( $postcontent, '@all')) {
             $postcontent = strip_tags($postcontent);
             return str_replace('@all', '<b>@all</b>', $postcontent);
-        } 
+        }
 
         return $postcontent;
     }
@@ -2175,7 +2295,7 @@ HTML;
         if (!(isset($post))) {
             return;
         }
-        
+
         $this->addallchildposts($post->id, $posts, $postsarray);
         $this->addallchildposts($post->parent, $posts, $postsarray);
         $this->addallparentposts($posts[$post->parent], $posts, $postsarray);
@@ -2183,5 +2303,5 @@ HTML;
         if (!(array_key_exists($post->parent, $postsarray))) {
             $postsarray[$post->parent] = $posts[$post->parent];
         }
-    }    
+    }
 }
