@@ -249,4 +249,42 @@ class mod_hsuforum_observer {
         return $id_array;
     }
 
+    /**
+     * @param $course_id
+     * @return mixed
+     * @throws dml_exception
+     */
+    public static function get_course_coach($course_id) {
+        global $CFG;
+
+        $context = context_course::instance($course_id);
+        $role_id = get_config('local_mention_users', 'emailfromrole');
+        if ($role_id == 'noreply') {
+            $email = $CFG->noreplyaddress;
+            return $email;
+        } else {
+            $users = get_role_users($role_id, $context);
+            $user = current($users);
+            return $user;
+        }
+    }
+
+    /**
+     * Function to get the user role on the current context, role short name if exists, if not,
+     * it returns if the user is admin in the current context, blank if not admin.
+     *
+     * @param string $userid Current user id number.
+     * @return string Current user's role shortname
+     */
+    static function get_user_role_on_current_context($userid) {
+        global $COURSE;
+
+        $coursecontext = context_course::instance($COURSE->id);
+        $userrole = current(get_user_roles($coursecontext, $userid));
+
+        if (!empty($userrole->shortname)) return $userrole->shortname;
+
+        return (is_siteadmin()) ? 'admin' : get_user_role_out_of_context($userid);
+    }
+
 }
