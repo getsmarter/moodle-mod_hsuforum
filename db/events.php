@@ -42,4 +42,8 @@ $observers = array(
         'eventname' => '\core\event\course_module_created',
         'callback'  => 'mod_hsuforum_observer::course_module_created',
     ),
+    array (
+        'eventname' => '\mod_hsuforum\event\assessable_uploaded',
+        'callback'  => 'mod_hsuforum_observer::email_mention_hsu',
+    ),
 );

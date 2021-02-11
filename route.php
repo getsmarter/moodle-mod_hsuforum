@@ -81,3 +81,4 @@ $router->add_controller(new edit_controller());
 
 $kernel = new kernel($router);
 $kernel->handle($action);
+
