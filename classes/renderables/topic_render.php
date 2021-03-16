@@ -12,26 +12,26 @@ class topic_render {
         if(!empty($currently_subbed)) {
             $button_group .= '<div class="d-block d-lg-block d-xl-block subscriber-wrapper">
                                 <div class="last-reply-block">' . $last_reply_html . '</div>
-                                    <button type="button" class="trigger-subscribe ' . self::BUTTON_CLASS . '">'
+                                    <button type="button" class="trigger-subscribe rounded-pill ' . self::BUTTON_CLASS . '">'
                                 . get_string('topicfollowing','hsuforum') .
                                 '</button>
                               </div>
                               <div class="d-none d-sm-block d-md-none mobile-btn subscriber-wrapper">
                                  <div class="last-reply-block">' . $last_reply_html . '</div>
-                                    <button  type="button" class="trigger-subscribe ' . self::BUTTON_CLASS . '">'
+                                    <button  type="button" class="trigger-subscribe rounded-pill ' . self::BUTTON_CLASS . '">'
                                     . get_string('topicfollowing','hsuforum') .
                                     '</button>
                               </div>';
         } else {
             $button_group .= '<div class="d-block d-lg-block d-xl-block subscriber-wrapper">
                                 <div class="last-reply-block">' . $last_reply_html . '</div>
-                                    <button type="button" class="trigger-subscribe ' . self::BUTTON_CLASS . '">'
+                                    <button type="button" class="trigger-subscribe rounded-pill ' . self::BUTTON_CLASS . '">'
                                     . get_string('topicfollowdesktop','hsuforum') .
                                     '</button>
                               </div>
                               <div class="d-none d-sm-block d-md-none mobile-btn subscriber-wrapper">
                                  <div class="last-reply-block">' . $last_reply_html . '</div>
-                                    <button  type="button" class="trigger-subscribe ' . self::BUTTON_CLASS . '">'
+                                    <button  type="button" class="trigger-subscribe rounded-pill ' . self::BUTTON_CLASS . '">'
                                     . get_string('topicfollowmobile','hsuforum') .
                                     '</button>
                               </div>';
@@ -42,11 +42,32 @@ class topic_render {
 
     public function contributors_html($users) {
         $participants = '';
+        $avatar_list = '';
+        $avatars = implode(' ', $users->replyavatars);
 
-        $participants .= '<div class="hsuforum-thread-participants">' . implode(' ', $users->replyavatars) . '</div>';
+        $config = get_config('hsuforum');
+
+        if(!empty($config->avatarnumberstorenders)) {
+            for($x = 0; $x < $config->avatarnumberstorenders; $x++) {
+
+                if(!empty($users->replyavatars[$x])) {
+                    $avatar_list .= $users->replyavatars[$x];
+                } else {
+                    continue;
+                }
+            }
+        }
+
+        if(empty($avatar_list)) {
+            $avatar_list = $avatars;
+        }
+
+        if(!empty($avatar_list)) {
+            $participants .= '<div class="hsuforum-thread-participants">' . $avatar_list . '<span class="badge badge-pink">' . get_string('avatarnewbadge', 'hsuforum') . '</span></div>';
+        }
 
         return $participants;
     }
 
-
 }
+

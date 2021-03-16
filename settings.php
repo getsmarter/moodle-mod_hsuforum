@@ -43,7 +43,7 @@ if ($ADMIN->fulltree) {
 
     // Number of discussions on a page
     $settings->add(new admin_setting_configtext('hsuforum/manydiscussions', get_string('manydiscussions', 'hsuforum'),
-                       get_string('configmanydiscussions', 'hsuforum'), 100, PARAM_INT));   
+                       get_string('configmanydiscussions', 'hsuforum'), 100, PARAM_INT));
 
     if (isset($CFG->maxbytes)) {
         $maxbytes = 0;
@@ -134,6 +134,13 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configcheckbox('hsuforum/hiderecentposts', get_string('hiderecentposts', 'hsuforum'),
                        get_string('confighiderecentposts', 'hsuforum'), 0));
+
+    $name = 'hsuforum/avatarnumberstorenders';
+    $title = get_string('avatarnumberstorenders', 'hsuforum');
+    $description = get_string('avatarnumberstorendersdescription', 'hsuforum');
+    $default = '';
+    $setting = new admin_setting_configtext($name, $title, $description, $default);
+    $settings->add($setting);
 
     // Logged in User
     $name = 'hsuforum/userloggedinheading';

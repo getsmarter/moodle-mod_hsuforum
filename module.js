@@ -31,11 +31,6 @@ M.mod_hsuforum.onToggleResponse = function(link) {
     }
 
     link._node.children[0].children[1].innerHTML = text;
-    // Set new link title;
-    // status = active ? 'toggled' : 'toggle';
-    // title = M.util.get_string(status+':'+link.getData('toggletype'),'hsuforum');
-    // svgTitle = link.one('svg title');
-    // // svgTitle.set('text', title);
 }
 
 
