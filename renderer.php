@@ -31,6 +31,7 @@ use mod_hsuforum\renderables\advanced_editor;
 
 require_once(__DIR__.'/lib/discussion/subscribe.php');
 require_once($CFG->dirroot.'/lib/formslib.php');
+require_once(__DIR__.'/classes/renderables/topic_render.php');
 
 /**
  * A custom renderer class that extends the plugin_renderer_base and
@@ -193,7 +194,9 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $this->get_js_module());
-        $output .= $this->svg_sprite();
+        // Removed code from here as it was rendering outside the main block which would make changes painful, moving away from sprites.
+        $topic_button = new Topic_render();
+        $output .= $topic_button->svg_sprite();
         $this->view($course, $cm, $forum, $context);
 
         // Don't allow non logged in users, or guest to try to manage subscriptions.
@@ -632,12 +635,15 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $options = get_string('options', 'hsuforum');
 
         //Add users country flag and timezone to the output.
+        // TODO: Rendering needs improving move button render here.
+        $topic_button = new Topic_render();
+        // $output .= $topic_button->svg_sprite();
         $threadmeta  =
             '<div class="hsuforum-thread-meta">'
             .$datecreated
             .$unread
             .$participants
-            .$latestpost
+//            .$latestpost
             .$pinned
             .'<div class="hsuforum-thread-flags">'."{$d->subscribe} $d->postflags</div>"
             .'</div>';
@@ -717,14 +723,22 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 <h2 id='thread-title-{$d->id}' aria-level="4">
                     $threadtitle
                 </h2>
-                <small><span class="topic-by">Topic by</span> $byuser  </small>
+                <div>
+                    <small>
+                        <span class="topic-by">Topic by</span> $byuser 
+                    </small>
+                </div>
                 <div class="thread-info-bar">
-                    <small> $repliescount $contribcount $viewcount</small>
+                    <div>
+                        <small> $repliescount $contribcount $viewcount</small>
+                    </div>
+                    $threadmeta
                 </div>
             </div>
-            $threadmeta
         </div>
 HTML;
+        // Adding topic subscription button to block.
+        $threadheader .= $topic_button->topic_subcription_button($latestpost);
 
         return <<<HTML
 <article id="p{$d->postid}" class="hsuforum-thread hsuforum-post-target clearfix" role="article"
@@ -2140,29 +2154,6 @@ HTML;
             $output .= '</div>';
         }
         return $output;
-    }
-
-    /**
-     * SVG icon sprite
-     *
-     * @return string
-     */
-     //fill="#FFFFFF"
-    public function svg_sprite() {
-        return '<svg style="display:none" x="0px" y="0px"
-             viewBox="0 0 100 100" enable-background="new 0 0 100 100">
-        <g id="substantive">
-            <polygon points="49.9,3.1 65,33.8 99,38.6 74.4,62.6 80.2,96.3 49.9,80.4 19.7,96.3 25.4,62.6
-            0.9,38.6 34.8,33.8 "/>
-        </g>
-        <g id="bookmark">
-            <polygon points="88.7,93.2 50.7,58.6 12.4,93.2 12.4,7.8 88.7,7.8 "/>
-        </g>
-        <g id="subscribe">
-           <polygon  enable-background="new    " points="96.7,84.3 3.5,84.3 3.5,14.8 50.1,49.6 96.7,14.8    "/>
-           <polygon  points="3.5,9.8 96.7,9.8 50.2,44.5     "/>
-        </g>
-        </svg>';
     }
 
     public function filter_sort_posts($posts, $filter, $sort, $course, $runfilter=true, $runsort=true) {
