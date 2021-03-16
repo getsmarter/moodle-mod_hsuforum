@@ -11,27 +11,33 @@ M.mod_hsuforum = M.mod_hsuforum || {};
  * @author Guy Thomas
  */
 M.mod_hsuforum.onToggleResponse = function(link) {
-    var active,
-        status,
-        title,
-        svgTitle;
+
+    var text;
 
     link.toggleClass('hsuforum-toggled');
 
     if (link.getAttribute('aria-pressed') == 'true') {
         link.setAttribute('aria-pressed', false);
-        active = false;
+        // Need to check for mobile here.
+        // Going to do that via class check.
+        if(link._node.children[0].children[1].classList.value.includes('mobile-btn')) {
+            text = M.str.hsuforum.topicfollowmobile;
+        } else {
+            text = M.str.hsuforum.topicfollowdesktop;
+        }
     } else {
         link.setAttribute('aria-pressed', true);
-        active = true;
+        text = M.str.hsuforum.topicfollowing;
     }
 
+    link._node.children[0].children[1].innerHTML = text;
     // Set new link title;
-    status = active ? 'toggled' : 'toggle';
-    title = M.util.get_string(status+':'+link.getData('toggletype'),'hsuforum');
-    svgTitle = link.one('svg title');
-    svgTitle.set('text', title);
+    // status = active ? 'toggled' : 'toggle';
+    // title = M.util.get_string(status+':'+link.getData('toggletype'),'hsuforum');
+    // svgTitle = link.one('svg title');
+    // // svgTitle.set('text', title);
 }
+
 
 M.mod_hsuforum.toggleStatesApplied = false;
 

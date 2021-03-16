@@ -735,3 +735,5 @@ $string['enablepostspinnerdesc'] = 'Spinner will be active for post reply, edit 
 // Topic page langs
 $string['topicfollowdesktop'] = 'Follow topic';
 $string['topicfollowmobile'] = 'Follow';
+$string['topicfollowing'] = 'Following';
+
