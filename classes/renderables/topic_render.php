@@ -2,10 +2,27 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Class topic_render
+ * @package    mod
+ * @subpackage hsuforum
+ * @author    khendricks@2u.com
+ * @copyright Copyright (c) 2U 2u.com
+ */
+
 class topic_render {
     // Should always follow default button class of css theme.
     const BUTTON_CLASS = 'btn btn-primary';
 
+    /**
+     * topic_subcription_button
+     * Builds new subscription button html desktop/mobile.
+     * @param string $last_reply_html html built in render.php,
+     * last replied date
+     * @param null $currently_subbed true/false if current user
+     * is subscribed to the current forum topic
+     * @return string
+     */
     public function topic_subcription_button($last_reply_html = '', $currently_subbed = null) {
 
         $button_group = '';
@@ -40,6 +57,12 @@ class topic_render {
         return $button_group;
     }
 
+    /**
+     * contributors_html
+     * Takes a llist of users, and builds the avatar html based on settings.
+     * @param $users list of user avatar img tags
+     * @return string
+     */
     public function contributors_html($users) {
         $participants = '';
         $avatar_list = '';
@@ -49,7 +72,6 @@ class topic_render {
 
         if(!empty($config->avatarnumberstorenders)) {
             for($x = 0; $x < $config->avatarnumberstorenders; $x++) {
-
                 if(!empty($users->replyavatars[$x])) {
                     $avatar_list .= $users->replyavatars[$x];
                 } else {

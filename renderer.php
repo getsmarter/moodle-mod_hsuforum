@@ -194,8 +194,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $this->get_js_module());
-        // Removed code from here as it was rendering outside the main block which would make changes painful, moving away from sprites.
-        $topic_button = new Topic_render();
         $output .= $this->svg_sprite();
         $this->view($course, $cm, $forum, $context);
 
@@ -626,10 +624,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
         $options = get_string('options', 'hsuforum');
 
-        //Add users country flag and timezone to the output.
-        // TODO: Rendering needs improving move button render here.
-        $topic_render = new Topic_render();
-        $participants = $topic_render->contributors_html($d);
+        $topicrender = new topic_render();
+        $participants = $topicrender->contributors_html($d);
 
         $threadmeta  =
             '<div class="hsuforum-thread-meta">'
@@ -1356,8 +1352,8 @@ HTML;
             $latestpost = '<small class="hsuforum-thread-replies-meta">'.get_string('lastposttimeago', 'hsuforum', hsuforum_relative_time($discussion->timemodified)).'</small>';
         }
 
-        $topic_render = new Topic_render();
-        $button = $topic_render->topic_subcription_button($latestpost, $pressed);
+        $topicrender = new topic_render();
+        $button = $topicrender->topic_subcription_button($latestpost, $pressed);
 
         if ($link) {
             $attributes['role']       = 'button';
@@ -2166,7 +2162,6 @@ HTML;
      *
      * @return string
      */
-    //fill="#FFFFFF"
     public function svg_sprite() {
         return '<svg style="display:none" x="0px" y="0px"
              viewBox="0 0 100 100" enable-background="new 0 0 100 100">
