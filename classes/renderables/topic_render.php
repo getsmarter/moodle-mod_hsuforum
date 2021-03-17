@@ -17,20 +17,19 @@ class topic_render {
     /**
      * topic_subcription_button
      * Builds new subscription button html desktop/mobile.
-     * @param string $last_reply_html html built in render.php,
-     * last replied date
-     * @param null $currentlysubbed true/false if current user
-     * is subscribed to the current forum topic
+     * @param object $discussion passing the entire discussion object,
+     * using that to build the last reply time.
+     * @param $currentlysubbed true/false if current user
+     * is subscribed to the current forum topic.
      * @return string
      */
-    public function topic_subcription_button($discussion, $currentlysubbed) {
+    public function topic_subcription_button($discussion, $currentlysubbed = false) {
 
         global $OUTPUT;
-        $following = $followingmobile = $pinned = '';
+        $following = $followingmobile = $pinned = $latestposttime = '';
 
-        $latestpost = '';
         if (!empty($discussion->timemodified) && !empty($discussion->replies)) {
-            $latestpost = '<small class="hsuforum-thread-replies-meta">'.get_string('lastposttimeago', 'hsuforum', hsuforum_relative_time($discussion->timemodified)).'</small>';
+            $latestposttime = get_string('lastposttimeago', 'hsuforum', hsuforum_relative_time($discussion->timemodified));
         }
 
         if(!empty($currentlysubbed)) {
@@ -48,7 +47,7 @@ class topic_render {
         return $OUTPUT->render_from_template('mod_hsuforum/hsuforum_topic_buttons',
             [
                 'buttonclass' => SELF::BUTTONCLASS,
-                'lastreplyhtml' => $latestpost,
+                'lastposttime' => $latestposttime,
                 'currentlysubbed' => $currentlysubbed,
                 'following' => $following,
                 'followingmobile' => $followingmobile,
