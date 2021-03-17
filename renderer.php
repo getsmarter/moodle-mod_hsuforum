@@ -31,6 +31,7 @@ use mod_hsuforum\renderables\advanced_editor;
 
 require_once(__DIR__.'/lib/discussion/subscribe.php');
 require_once($CFG->dirroot.'/lib/formslib.php');
+require_once(__DIR__.'/classes/renderables/topic_render.php');
 
 /**
  * A custom renderer class that extends the plugin_renderer_base and
@@ -434,7 +435,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         $subscribe = new hsuforum_lib_discussion_subscribe($forum, context_module::instance($cm->id));
-        $data->subscribe = $this->discussion_subscribe_link($cm, $discussion, $subscribe) ;
+        $data->subscribe = $this->discussion_subscribe_link($cm, $discussion, $subscribe);
 
         $config = get_config('hsuforum');
         $timeddiscussion = !empty($config->enabletimedposts) && ($discussion->timestart || $discussion->timeend);
@@ -588,10 +589,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $pinned = '';
         $filterandsort = '';
 
-        if(!empty($d->replies)) {
-            $xreplies = hsuforum_xreplies($d->replies);
-            $replies = "<span class='hsuforum-replycount'>$xreplies</span>";
-        }
         if ($d->pinned != 0) {
             $pinned = '<span class="pinned"><img src="pix/i/pinned.png" alt="pinned" /></span>';
         }
@@ -621,25 +618,20 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $latestpost = '<small class="hsuforum-thread-replies-meta">'.get_string('lastposttimeago', 'hsuforum', hsuforum_relative_time($d->rawmodified)).'</small>';
         }
 
-        $participants = '<div class="hsuforum-thread-participants">'.implode(' ',$d->replyavatars).'</div>';
-
-        $datecreated = '<div class="hsuforum-replycount">'.get_string('posttimeago', 'hsuforum', hsuforum_relative_time($d->rawcreated, array('class' => 'hsuforum-thread-pubdate'))).'</div>';
-
         $threadtitle = $d->subject;
         if (!$d->fullthread) {
             $threadtitle = "<a class='disable-router' href='$d->viewurl'>$d->subject</a>";
         }
         $options = get_string('options', 'hsuforum');
 
-        //Add users country flag and timezone to the output.
+        $topicrender = new topic_render();
+        $participants = $topicrender->contributors_html($d);
+
         $threadmeta  =
             '<div class="hsuforum-thread-meta">'
-            .$datecreated
             .$unread
             .$participants
-            .$latestpost
             .$pinned
-            .'<div class="hsuforum-thread-flags">'."{$d->subscribe} $d->postflags</div>"
             .'</div>';
 
         if ($d->fullthread) {
@@ -717,14 +709,24 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 <h2 id='thread-title-{$d->id}' aria-level="4">
                     $threadtitle
                 </h2>
-                <small><span class="topic-by">Topic by</span> $byuser  </small>
+                <div>
+                    <small>
+                        <span class="topic-by">Topic by</span> $byuser 
+                    </small>
+                </div>
                 <div class="thread-info-bar">
-                    <small> $repliescount $contribcount $viewcount</small>
+                    <div>
+                        <small>$repliescount</small> 
+                        <small>$contribcount</small>
+                        <small>$viewcount</small>
+                    </div>
+                    $threadmeta
                 </div>
             </div>
-            $threadmeta
         </div>
 HTML;
+        // Adding topic subscription button to block.
+        $threadheader .= '<div class="hsuforum-thread-flags">'."{$d->subscribe} $d->postflags</div>";
 
         return <<<HTML
 <article id="p{$d->postid}" class="hsuforum-thread hsuforum-post-target clearfix" role="article"
@@ -1204,8 +1206,10 @@ HTML;
                 array('toggle:substantive', 'hsuforum'),
                 array('toggled:bookmark', 'hsuforum'),
                 array('toggled:subscribe', 'hsuforum'),
-                array('toggled:substantive', 'hsuforum')
-
+                array('toggled:substantive', 'hsuforum'),
+                array('topicfollowdesktop', 'hsuforum'),
+                array('topicfollowmobile', 'hsuforum'),
+                array('topicfollowing', 'hsuforum')
             )
         );
     }
@@ -1277,7 +1281,8 @@ HTML;
                 $url,
                 $isflagged,
                 $canedit,
-                array('class' => 'hsuforum_flag')
+                array('class' => 'hsuforum_flag'),
+                $discussion
             );
 
         }
@@ -1320,7 +1325,8 @@ HTML;
      * @param null $attributes
      * @return string
      */
-    public function toggle_element($type, $describedby, $url, $pressed = false, $link = true, $attributes = null) {
+    public function toggle_element($type, $describedby, $url, $pressed = false, $link = true, $attributes = null, $discussion = null) {
+
         if ($pressed) {
             $label = get_string('toggled:'.$type, 'hsuforum');
         } else {
@@ -1333,24 +1339,31 @@ HTML;
             $attributes['class'] = '';
         }
         $classes = array($attributes['class'], 'hsuforum-toggle hsuforum-toggle-'.$type);
+
         if ($pressed) {
             $classes[] = 'hsuforum-toggled';
         }
         $classes = array_filter($classes);
         // Re-add classes to attributes.
         $attributes['class'] = implode(' ', $classes);
-        $icon = '<svg viewBox="0 0 100 100" class="svg-icon '.$type.'">
-        <title>'.$label.'</title>
-        <use xlink:href="#'.$type.'"></use></svg>';
+
+        $latestpost = '';
+        if (!empty($discussion->timemodified) && !empty($discussion->replies)) {
+            $latestpost = '<small class="hsuforum-thread-replies-meta">'.get_string('lastposttimeago', 'hsuforum', hsuforum_relative_time($discussion->timemodified)).'</small>';
+        }
+
+        $topicrender = new topic_render();
+        $button = $topicrender->topic_subcription_button($latestpost, $pressed);
+
         if ($link) {
             $attributes['role']       = 'button';
             $attributes['data-toggletype'] = $type;
             $attributes['aria-pressed'] = $pressed ? 'true' :  'false';
             $attributes['aria-describedby'] = $describedby;
             $attributes['title']       = $type;
-            return (html_writer::link($url, $icon, $attributes));
+            return (html_writer::link($url, $button, $attributes));
         } else {
-            return (html_writer::tag('span', $icon, $attributes));
+            return (html_writer::tag('span', $button, $attributes));
         }
     }
 
@@ -1384,8 +1397,10 @@ HTML;
             $url,
             $subscribe->is_subscribed($discussion->id),
             true,
-            array('class' => 'hsuforum_discussion_subscribe')
+            array('class' => 'hsuforum_discussion_subscribe'),
+            $discussion
         );
+
         return $o;
     }
 
@@ -2147,7 +2162,6 @@ HTML;
      *
      * @return string
      */
-     //fill="#FFFFFF"
     public function svg_sprite() {
         return '<svg style="display:none" x="0px" y="0px"
              viewBox="0 0 100 100" enable-background="new 0 0 100 100">

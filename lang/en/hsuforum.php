@@ -731,3 +731,11 @@ $string['loadingtext'] = 'Please wait while the forum is loading...';
 // Spinner settings
 $string['enablepostspinnername'] = 'Enable Spinner';
 $string['enablepostspinnerdesc'] = 'Spinner will be active for post reply, edit and like actions';
+
+// Topic page langs
+$string['topicfollowdesktop'] = 'Follow topic';
+$string['topicfollowmobile'] = 'Follow';
+$string['topicfollowing'] = 'Following';
+$string['avatarnumberstorenders'] = 'Topic avatar display number';
+$string['avatarnumberstorendersdescription'] = 'Number of avatars to display under topic title';
+$string['avatarnewbadge'] = 'NEW';
