@@ -735,7 +735,7 @@ $string['enablepostspinnerdesc'] = 'Spinner will be active for post reply, edit 
 // Topic page langs
 $string['topicfollowdesktop'] = 'Follow topic';
 $string['topicfollowmobile'] = 'Follow';
-$string['topicfollowing'] = 'Following';
+$string['topicfollowing'] = 'Following topic';
 $string['avatarnumberstorenders'] = 'Topic avatar display number';
 $string['avatarnumberstorendersdescription'] = 'Number of avatars to display under topic title';
 $string['avatarnewbadge'] = 'NEW';

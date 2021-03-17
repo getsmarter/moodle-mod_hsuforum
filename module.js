@@ -20,17 +20,31 @@ M.mod_hsuforum.onToggleResponse = function(link) {
         link.setAttribute('aria-pressed', false);
         // Need to check for mobile here.
         // Going to do that via class check.
-        if(link._node.children[0].children[1].classList.value.includes('mobile-btn')) {
-            text = M.str.hsuforum.topicfollowmobile;
+        if(typeof(link._node.children[0].children[1]) == 'undefined') {
+            if(link._node.children[1].children[1].classList.value.includes('mobile-btn')) {
+                text = M.str.hsuforum.topicfollowmobile;
+            } else {
+                text = M.str.hsuforum.topicfollowdesktop;
+            }
         } else {
-            text = M.str.hsuforum.topicfollowdesktop;
+            if(link._node.children[0].children[1].classList.value.includes('mobile-btn')) {
+                text = M.str.hsuforum.topicfollowmobile;
+            } else {
+                text = M.str.hsuforum.topicfollowdesktop;
+            }
         }
+        // console.log(typeof(link._node.children[0].children[1].classList.value));
+
+
     } else {
         link.setAttribute('aria-pressed', true);
         text = M.str.hsuforum.topicfollowing;
     }
-
-    link._node.children[0].children[1].innerHTML = text;
+    if(typeof(link._node.children[0].children[1]) == 'undefined') {
+        link._node.children[1].children[1].innerHTML = text;
+    } else {
+        link._node.children[0].children[1].innerHTML = text;
+    }
 }
 
 

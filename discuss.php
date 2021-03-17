@@ -370,7 +370,9 @@
 
 echo $renderer->render(new advanced_editor($modcontext));
 
-//Need this to execute earlier than it does in a JS module
+// Need this to execute earlier than it does in a JS module.
+// If this is required, we need to call jquery or it will fail.
+$PAGE->requires->jquery();
 echo "<script>
     $('.container :input').prop('disabled', true);
     $('.mod-hsuforum-posts-container').hide();
