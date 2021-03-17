@@ -12,7 +12,7 @@ defined('MOODLE_INTERNAL') || die();
 
 class topic_render {
     // Should always follow default button class of css theme.
-    const BUTTON_CLASS = 'btn btn-primary';
+    const BUTTONCLASS = 'btn btn-primary';
 
     /**
      * topic_subcription_button
@@ -23,38 +23,28 @@ class topic_render {
      * is subscribed to the current forum topic
      * @return string
      */
-    public function topic_subcription_button($last_reply_html = '', $currently_subbed = null) {
+    public function topic_subcription_button($lastreplyhtml = '', $currentlysubbed = null) {
 
-        $button_group = '';
-        if(!empty($currently_subbed)) {
-            $button_group .= '<div class="d-block d-lg-block d-xl-block subscriber-wrapper">
-                                <div class="last-reply-block">' . $last_reply_html . '</div>
-                                    <button type="button" class="trigger-subscribe rounded-pill ' . self::BUTTON_CLASS . '">'
-                                . get_string('topicfollowing','hsuforum') .
-                                '</button>
-                              </div>
-                              <div class="d-none d-sm-block d-md-none mobile-btn subscriber-wrapper">
-                                 <div class="last-reply-block">' . $last_reply_html . '</div>
-                                    <button  type="button" class="trigger-subscribe rounded-pill ' . self::BUTTON_CLASS . '">'
-                                    . get_string('topicfollowing','hsuforum') .
-                                    '</button>
-                              </div>';
+        global $OUTPUT;
+        $following = $followingmobile = '';
+
+        if(!empty($currentlysubbed)) {
+            $following = get_string('topicfollowing','hsuforum');
+            $followingmobile = get_string('topicfollowing','hsuforum');
         } else {
-            $button_group .= '<div class="d-block d-lg-block d-xl-block subscriber-wrapper">
-                                <div class="last-reply-block">' . $last_reply_html . '</div>
-                                    <button type="button" class="trigger-subscribe rounded-pill ' . self::BUTTON_CLASS . '">'
-                                    . get_string('topicfollowdesktop','hsuforum') .
-                                    '</button>
-                              </div>
-                              <div class="d-none d-sm-block d-md-none mobile-btn subscriber-wrapper">
-                                 <div class="last-reply-block">' . $last_reply_html . '</div>
-                                    <button  type="button" class="trigger-subscribe rounded-pill ' . self::BUTTON_CLASS . '">'
-                                    . get_string('topicfollowmobile','hsuforum') .
-                                    '</button>
-                              </div>';
+            $following = get_string('topicfollowdesktop','hsuforum');
+            $followingmobile = get_string('topicfollowmobile','hsuforum');
         }
 
-        return $button_group;
+        return $OUTPUT->render_from_template('mod_hsuforum/hsuforum_topic_buttons',
+            [
+                'buttonclass' => SELF::BUTTONCLASS,
+                'lastreplyhtml' => $lastreplyhtml,
+                'currentlysubbed' => $currentlysubbed,
+                'following' => $following,
+                'followingmobile' => $followingmobile
+            ]
+        );
     }
 
     /**
@@ -65,7 +55,7 @@ class topic_render {
      */
     public function contributors_html($users) {
         $participants = '';
-        $avatar_list = '';
+        $avatarlist = '';
         $avatars = implode(' ', $users->replyavatars);
 
         $config = get_config('hsuforum');
@@ -73,19 +63,19 @@ class topic_render {
         if(!empty($config->avatarnumberstorenders)) {
             for($x = 0; $x < $config->avatarnumberstorenders; $x++) {
                 if(!empty($users->replyavatars[$x])) {
-                    $avatar_list .= $users->replyavatars[$x];
+                    $avatarlist .= $users->replyavatars[$x];
                 } else {
                     continue;
                 }
             }
         }
 
-        if(empty($avatar_list)) {
-            $avatar_list = $avatars;
+        if(empty($avatarlist)) {
+            $avatarlist = $avatars;
         }
 
-        if(!empty($avatar_list)) {
-            $participants .= '<div class="hsuforum-thread-participants">' . $avatar_list . '<span class="badge badge-pink">' . get_string('avatarnewbadge', 'hsuforum') . '</span></div>';
+        if(!empty($avatarlist)) {
+            $participants .= '<div class="hsuforum-thread-participants">' . $avatarlist . '<span class="badge badge-pink">' . get_string('avatarnewbadge', 'hsuforum') . '</span></div>';
         }
 
         return $participants;
