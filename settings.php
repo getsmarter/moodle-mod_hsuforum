@@ -139,8 +139,14 @@ if ($ADMIN->fulltree) {
     $title = get_string('avatarnumberstorenders', 'hsuforum');
     $description = get_string('avatarnumberstorendersdescription', 'hsuforum');
     $default = '';
-    $setting = new admin_setting_configtext($name, $title, $description, $default);
-    $settings->add($setting);
+    $options = array(
+        ''  => 'default',
+        5  => '5',
+        10  => '10',
+        15  => '15',
+        20  => '20',
+    );
+    $settings->add(new admin_setting_configselect($name, $description, $default, 0, $options));
 
     // Logged in User
     $name = 'hsuforum/userloggedinheading';

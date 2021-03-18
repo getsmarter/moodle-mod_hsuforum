@@ -589,9 +589,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $pinned = '';
         $filterandsort = '';
 
-        if ($d->pinned != 0) {
-            $pinned = '<span class="pinned"><img src="pix/i/pinned.png" alt="pinned" /></span>';
-        }
         if (!empty($d->userurl)) {
             $byuser = html_writer::link($d->userurl, $d->fullname);
         } else {
@@ -600,12 +597,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $unread = '';
         $unreadclass = '';
         $attrs = '';
-        if ($d->unread != '-') {
-            $new  = get_string('unread', 'hsuforum');
-            $unread  = "<a class='hsuforum-unreadcount disable-router' href='$d->viewurl#unread'>$new</a>";
-            $attrs   = 'data-isunread="true"';
-            $unreadclass = 'hsuforum-post-unread';
-        }
 
         $author = s(strip_tags($d->fullname));
         $group = '';
@@ -631,7 +622,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             '<div class="hsuforum-thread-meta">'
             .$unread
             .$participants
-            .$pinned
             .'</div>';
 
         if ($d->fullthread) {
@@ -1347,13 +1337,8 @@ HTML;
         // Re-add classes to attributes.
         $attributes['class'] = implode(' ', $classes);
 
-        $latestpost = '';
-        if (!empty($discussion->timemodified) && !empty($discussion->replies)) {
-            $latestpost = '<small class="hsuforum-thread-replies-meta">'.get_string('lastposttimeago', 'hsuforum', hsuforum_relative_time($discussion->timemodified)).'</small>';
-        }
-
         $topicrender = new topic_render();
-        $button = $topicrender->topic_subcription_button($latestpost, $pressed);
+        $button = $topicrender->topic_subcription_button($discussion, $pressed);
 
         if ($link) {
             $attributes['role']       = 'button';
