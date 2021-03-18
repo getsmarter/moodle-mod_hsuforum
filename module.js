@@ -11,40 +11,15 @@ M.mod_hsuforum = M.mod_hsuforum || {};
  * @author Guy Thomas
  */
 M.mod_hsuforum.onToggleResponse = function(link) {
-
-    var text;
-
     link.toggleClass('hsuforum-toggled');
 
     if (link.getAttribute('aria-pressed') == 'true') {
         link.setAttribute('aria-pressed', false);
         // Need to check for mobile here.
-        // Going to do that via class check.
-        // Need to check if pin exists in HTML block.
-        if(typeof(link._node.children[0].children[1]) == 'undefined') {
-            // If evaluated to true we check to see if the button being clicked is mobile.
-            if(link._node.children[1].children[1].classList.value.includes('mobile-btn')) {
-                link._node.children[1].children[1].innerHTML = M.str.hsuforum.topicfollowmobile;
-            } else {
-                link._node.children[1].children[1].innerHTML = M.str.hsuforum.topicfollowdesktop;
-            }
-        } else {
-            // Check mobile again.
-            if(link._node.children[0].children[1].classList.value.includes('mobile-btn')) {
-                link._node.children[0].children[1].innerHTML = M.str.hsuforum.topicfollowmobile;
-            } else {
-                link._node.children[0].children[1].innerHTML = M.str.hsuforum.topicfollowdesktop;
-            }
-        }
+        link._node.children[0].children[0].innerHTML = M.str.hsuforum.topicfollowdesktop;
     } else {
         link.setAttribute('aria-pressed', true);
-        // Need to check if pin exists in HTML block.
-        // Setting different nodes based on if pin is in HTML block or not
-        if(typeof(link._node.children[0].children[1]) == 'undefined') {
-            link._node.children[1].children[1].innerHTML = M.str.hsuforum.topicfollowing;
-        } else {
-            link._node.children[0].children[1].innerHTML = M.str.hsuforum.topicfollowing;
-        }
+        link._node.children[0].children[0].innerHTML = M.str.hsuforum.topicfollowing;
     }
 }
 

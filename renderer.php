@@ -1338,7 +1338,8 @@ HTML;
         $attributes['class'] = implode(' ', $classes);
 
         $topicrender = new topic_render();
-        $button = $topicrender->topic_subcription_button($discussion, $pressed);
+        $button = $topicrender->topic_subcription_button($pressed);
+        $followbutton = null;
 
         if ($link) {
             $attributes['role']       = 'button';
@@ -1346,10 +1347,14 @@ HTML;
             $attributes['aria-pressed'] = $pressed ? 'true' :  'false';
             $attributes['aria-describedby'] = $describedby;
             $attributes['title']       = $type;
-            return (html_writer::link($url, $button, $attributes));
+            $followbutton = html_writer::link($url, $button, $attributes);
         } else {
-            return (html_writer::tag('span', $button, $attributes));
+            $followbutton = html_writer::tag('span', $button, $attributes);
         }
+
+        $followbutton = $topicrender->topic_button_meta($followbutton, $discussion);
+
+        return $followbutton;
     }
 
     /**
