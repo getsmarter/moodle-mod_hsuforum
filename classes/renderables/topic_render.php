@@ -16,44 +16,56 @@ class topic_render {
 
     /**
      * topic_subcription_button
-     * Builds new subscription button html desktop/mobile.
-     * @param object $discussion passing the entire discussion object,
-     * using that to build the last reply time.
+     * Builds new subscription button html.
      * @param $currentlysubbed true/false if current user
      * is subscribed to the current forum topic.
      * @return string
      */
-    public function topic_subcription_button($discussion, $currentlysubbed = false) {
-
+    public function topic_subcription_button($currentlysubbed = false) {
         global $OUTPUT;
-        $following = $followingmobile = $pinned = $latestposttime = '';
 
-        if (!empty($discussion->timemodified) && !empty($discussion->replies)) {
-            $latestposttime = get_string('lastposttimeago', 'hsuforum', hsuforum_relative_time($discussion->timemodified));
-        }
+        $following = $followingmobile = $pinned = $latestposttime = '';
 
         if(!empty($currentlysubbed)) {
             $following = get_string('topicfollowing','hsuforum');
-            $followingmobile = get_string('topicfollowing','hsuforum');
         } else {
             $following = get_string('topicfollowdesktop','hsuforum');
-            $followingmobile = get_string('topicfollowmobile','hsuforum');
-        }
-
-        if ($discussion->pinned == 1) {
-            $pinned = $OUTPUT->render_from_template('mod_hsuforum/_topic/hsuforum_topic_pinned',[]);
         }
 
         return $OUTPUT->render_from_template('mod_hsuforum/hsuforum_topic_buttons',
             [
                 'buttonclass' => SELF::BUTTONCLASS,
-                'lastposttime' => $latestposttime,
-                'currentlysubbed' => $currentlysubbed,
-                'following' => $following,
-                'followingmobile' => $followingmobile,
-                'pinned' => $pinned
+                'following' => $following
             ]
         );
+    }
+
+    /**
+     * topic_button_meta
+     * Return fully HTML, button with meta data.
+     * @param string $button button HTML.
+     * @param object $discussion dicussion object.
+     */
+    public function topic_button_meta($button, $discussion) {
+        global $OUTPUT;
+
+        $meta = $latestposttime = $pinned = '';
+
+        if (!empty($discussion->timemodified) && !empty($discussion->replies)) {
+            $latestposttime = get_string('lastposttimeago', 'hsuforum', hsuforum_relative_time($discussion->timemodified));
+        }
+
+        if ($discussion->pinned == 1) {
+            $pinned = $OUTPUT->render_from_template('mod_hsuforum/_topic/hsuforum_topic_button_meta',
+                [
+                    'lastposttime' => $latestposttime
+                ]
+            );
+        }
+
+        $meta = $pinned . $button;
+
+        return $meta;
     }
 
     /**
