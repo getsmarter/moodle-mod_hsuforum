@@ -819,9 +819,9 @@ HTML;
 
                     if ($post->nestedreplycount > 2 && $depth == 0) {
                         // Adding collapsable elements
-                        $output .= "<div id=".$post->id." class='posts-collapse-container collapse'>";
+                        $output .= "<div id=id".$post->id." class='posts-collapse-container collapse'>";
                         $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
-                        $output .= "<a class='posts-collapse-toggle collapse-bottom' data-toggle='collapse' data-target='#".$post->id."'></i></a>";
+                        $output .= "<a class='posts-collapse-toggle collapse-bottom' data-toggle='collapse' data-target='#id".$post->id."'></i></a>";
                         $output .= "</div>" ;
                     } else {
                         $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
@@ -918,7 +918,7 @@ HTML;
         $postreplies = '';
 
         if ($p->depth == 0 && $p->nestedreplycount > 2) {
-            $postreplies = "<a class='post-reply-count posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#".$p->id."'>$p->nestedreplycount</a>";
+            $postreplies = "<a class='post-reply-count posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#id".$p->id."'>$p->nestedreplycount</a>";
         } else {
             $postreplies = "<div class='post-reply-count accesshide'>$p->replycount</div>";
         }
