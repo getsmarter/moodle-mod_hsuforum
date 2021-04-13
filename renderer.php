@@ -988,6 +988,8 @@ HTML;
 
         $tools = $p->tools;
 
+        $tools = '<ul class="hsuforum-thread-tools_list"><li>'.$p->tools.'</li></ul>';
+
         return <<<HTML
  <div class="hsuforum-post-parent">
     <div class="hsuforum-post-figure {$useridp} depth$p->depth">

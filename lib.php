@@ -1062,7 +1062,7 @@ function hsuforum_cron() {
                     $posthtml .= '<link rel="stylesheet" type="text/css" href="'.$stylesheet.'" />'."\n";
                 }*/
                 $posthtml .= "</head>\n<body id=\"email\">\n";
-                $posthtml .= '<p>'.get_string('digestmailheader', 'hsuforum', $headerdata).'</p><br /><hr size="1" noshade="noshade" />';
+                $posthtml .= '<p>'.get_string('digestmailheader', 'hsuforum', $headerdata).'</p><hr size="1" noshade="noshade" />';
 
                 foreach ($thesediscussions as $discussionid) {
 
@@ -3833,7 +3833,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
                     $button->set_format_by_file($file);
                     $output .= $button->to_html(PORTFOLIO_ADD_ICON_LINK);
                 }
-                $output .= "<br />";
+
 
             } else if ($type == 'text') {
                 $output .= "$strattachment ".s($filename).":\n$path\n";
@@ -3841,7 +3841,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
             } else { //'returnimages'
                 if (in_array($mimetype, array('image/gif', 'image/jpeg', 'image/png'))) {
                     // Image attachments don't get printed as links
-                    $imagereturn .= "<br /><img src=\"$path\" alt=\"\" />";
+                    $imagereturn .= "<img src=\"$path\" alt=\"\" />";
                     if ($canexport) {
                         $button->set_callback_options('hsuforum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), 'mod_hsuforum');
                         $button->set_format_by_file($file);
@@ -3855,7 +3855,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
                         $button->set_format_by_file($file);
                         $output .= $button->to_html(PORTFOLIO_ADD_ICON_LINK);
                     }
-                    $output .= '<br />';
+
                 }
             }
 
@@ -3866,7 +3866,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
                     'cmid' => $cm->id,
                     'course' => $cm->course,
                     'hsuforum' => $cm->instance));
-                $output .= '<br />';
+
             }
         }
     }
