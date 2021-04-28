@@ -314,6 +314,13 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->modified = userdate($discussion->timemodified, $format);
         $data->replies  = $discussion->replies;
         $data->replyavatars = array();
+        // Set lastreplydid to last postid, if null handle in renderer.
+        if (!empty($discussion->lastpostid)) {
+            $data->lastreplyid  = $discussion->lastpostid;
+        } else {
+            $data->lastreplyid = 0;
+        }
+
         if ($data->replies > 0) {
             // Get actual replies
             $fields = user_picture::fields('u');
@@ -424,7 +431,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         $filterandsort .= "</div></form>";
-                    
+
         $data->filterandsort = $filterandsort;
 
         $posts = $this->filter_sort_posts($posts, $filter, $sort, $course);
@@ -1338,7 +1345,7 @@ HTML;
         if (!empty($forum->displaywordcount)) {
             $postcontent .= "<div class='post-word-count'>".get_string('numwords', 'moodle', count_words($post->message))."</div>";
         }
-        
+
         // Check for substring @all
         // remove @all tag, replace with bold
         $postcontent = self::sanitizedAtTag($postcontent);
@@ -1357,7 +1364,7 @@ HTML;
         if (strpos( $postcontent, '@all')) {
             $postcontent = strip_tags($postcontent);
             return str_replace('@all', '<b>@all</b>', $postcontent);
-        } 
+        }
 
         return $postcontent;
     }
@@ -2175,7 +2182,7 @@ HTML;
         if (!(isset($post))) {
             return;
         }
-        
+
         $this->addallchildposts($post->id, $posts, $postsarray);
         $this->addallchildposts($post->parent, $posts, $postsarray);
         $this->addallparentposts($posts[$post->parent], $posts, $postsarray);
@@ -2183,5 +2190,5 @@ HTML;
         if (!(array_key_exists($post->parent, $postsarray))) {
             $postsarray[$post->parent] = $posts[$post->parent];
         }
-    }    
+    }
 }
