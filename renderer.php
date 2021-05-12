@@ -315,6 +315,13 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->modified = userdate($discussion->timemodified, $format);
         $data->replies  = $discussion->replies;
         $data->replyavatars = array();
+        // Set lastreplydid to last postid, if null handle in renderer.
+        if (!empty($discussion->lastpostid)) {
+            $data->lastreplyid  = $discussion->lastpostid;
+        } else {
+            $data->lastreplyid = 0;
+        }
+
         if ($data->replies > 0) {
             // Get actual replies
             $fields = user_picture::fields('u');
