@@ -31,6 +31,7 @@
 
     require_once('../../config.php');
     require_once(__DIR__.'/lib/discussion/sort.php');
+    $PAGE->requires->jquery();
 
     // Get the discussion id, and deal with broken requests by browsers...
     // that don't understand the AJAX links. I'm looking at you IE.
