@@ -56,7 +56,7 @@
         $params['search'] = $search;
     }
     $PAGE->set_url('/mod/hsuforum/view.php', $params);
-
+    $PAGE->requires->jquery();
     $course = $DB->get_record('course', array('id' => $forum->course));
 
     if (empty($cm) && !$cm = get_coursemodule_from_instance("hsuforum", $forum->id, $course->id)) {
@@ -113,4 +113,10 @@
 
     echo '</div>';
     echo $renderer->render(new advanced_editor($context));
+
+    //Need this to execute earlier than it does in a JS module
+    echo "<script>
+        $('.container :input').prop('disabled', true);
+        $('.mod-hsuforum-posts-container').hide();
+    </script>";
     echo $OUTPUT->footer($course);

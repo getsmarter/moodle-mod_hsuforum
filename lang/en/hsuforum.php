@@ -739,3 +739,12 @@ $string['topicfollowing'] = 'Following topic';
 $string['avatarnumberstorenders'] = 'Topic avatar display number';
 $string['avatarnumberstorendersdescription'] = 'Number of avatars to display under topic title';
 $string['avatarnewbadge'] = 'NEW';
+
+$string['avatarnewbadgesettingsheader'] = 'NEW badge settings';
+$string['new_avatar_badge_backgroundcolour'] = 'NEW badge background colour';
+$string['new_avatar_badge_textcolour'] = 'NEW badge text colour';
+$string['new_avatar_badge_bordercolour'] = 'NEW badge border colour';
+$string['new_avatar_badge_borderradius'] = 'NEW badge border radius';
+$string['new_avatar_badge_borderradius_desc'] = 'The New badge button radius styling - i.e 3px';
+$string['new_avatar_badge_hoverbackgroundcolor'] = 'NEW badge hover background color';
+$string['new_avatar_badge_hovertextcolor'] = 'NEW badge hover text color';
