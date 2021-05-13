@@ -56,7 +56,7 @@
         $params['search'] = $search;
     }
     $PAGE->set_url('/mod/hsuforum/view.php', $params);
-    $PAGE->requires->jquery();
+$PAGE->requires->jquery();
     $course = $DB->get_record('course', array('id' => $forum->course));
 
     if (empty($cm) && !$cm = get_coursemodule_from_instance("hsuforum", $forum->id, $course->id)) {

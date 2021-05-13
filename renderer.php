@@ -630,11 +630,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $group = '<br>'.$d->group;
         }
 
-        $latestpost = '';
-        if (!empty($d->modified) && !empty($d->replies)) {
-            $latestpost = '<small class="hsuforum-thread-replies-meta">'.get_string('lastposttimeago', 'hsuforum', hsuforum_relative_time($d->rawmodified)).'</small>';
-        }
-
         $threadtitle = $d->subject;
         if (!$d->fullthread) {
             $threadtitle = "<a class='disable-router' href='$d->viewurl'>$d->subject</a>";
@@ -838,9 +833,9 @@ HTML;
 
                     if ($post->nestedreplycount > 2 && $depth == 0) {
                         // Adding collapsable elements
-                        $output .= "<div id=".$post->id." class='posts-collapse-container collapse'>";
+                        $output .= "<div id=id".$post->id." class='posts-collapse-container collapse'>";
                         $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
-                        $output .= "<a class='posts-collapse-toggle collapse-bottom' data-toggle='collapse' data-target='#".$post->id."'></i></a>";
+                        $output .= "<a class='posts-collapse-toggle collapse-bottom' data-toggle='collapse' data-target='#id".$post->id."'></i></a>";
                         $output .= "</div>" ;
                     } else {
                         $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
@@ -935,7 +930,10 @@ HTML;
 
 
         $postreplies = '';
-        if($p->replycount) {
+
+        if ($p->depth == 0 && $p->nestedreplycount > 2) {
+            $postreplies = "<a class='post-reply-count posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#id".$p->id."'>$p->nestedreplycount</a>";
+        } else {
             $postreplies = "<div class='post-reply-count accesshide'>$p->replycount</div>";
         }
 
@@ -1015,7 +1013,7 @@ HTML;
         $flagandtimezone
     </div>
 </div>
-<div class="hsuforum-post-wrapper hsuforum-post-target clearfix $unreadclass" id="p$p->id" data-postid="$p->id" data-discussionid="$p->discussionid" data-author="$author" data-ispost="true" tabindex="-1">
+<div class="hsuforum-post-wrapper hsuforum-post-target clearfix $roleclass $loggedinuser $unreadclass" id="p$p->id" data-postid="$p->id" data-discussionid="$p->discussionid" data-author="$author" data-ispost="true" tabindex="-1">
 
     <div class="hsuforum-post-body">
         <h6 aria-level="6" class="hsuforum-post-byline" id="hsuforum-post-$p->id">
