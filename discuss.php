@@ -32,6 +32,7 @@
     require_once('../../config.php');
     require_once(__DIR__.'/lib/discussion/sort.php');
     $PAGE->requires->jquery();
+
     // Get the discussion id, and deal with broken requests by browsers...
     // that don't understand the AJAX links. I'm looking at you IE.
     $d = optional_param('d', null, PARAM_INT); // Forum discussion id
@@ -370,9 +371,7 @@
 
 echo $renderer->render(new advanced_editor($modcontext));
 
-// Need this to execute earlier than it does in a JS module.
-// If this is required, we need to call jquery or it will fail.
-$PAGE->requires->jquery();
+//Need this to execute earlier than it does in a JS module
 echo "<script>
     $('.container :input').prop('disabled', true);
     $('.mod-hsuforum-posts-container').hide();

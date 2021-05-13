@@ -315,6 +315,13 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->modified = userdate($discussion->timemodified, $format);
         $data->replies  = $discussion->replies;
         $data->replyavatars = array();
+        // Set lastreplydid to last postid, if null handle in renderer.
+        if (!empty($discussion->lastpostid)) {
+            $data->lastreplyid  = $discussion->lastpostid;
+        } else {
+            $data->lastreplyid = 0;
+        }
+
         if ($data->replies > 0) {
             // Get actual replies
             $fields = user_picture::fields('u');
@@ -360,8 +367,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $toolsmenu .= $toolsmenuoptions;
             $toolsmenu .= '</div></div>';
         }
-
-
 
         $data->group      = $group;
         $data->imagesrc   = $postuser->user_picture->get_url($this->page)->out();
@@ -585,9 +590,17 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
     }
 
     public function discussion_template($d, $forumtype) {
+        global $PAGE;
+
         $replies = '';
         $pinned = '';
-        $filterandsort = '';
+        if(!empty($d->replies)) {
+            $xreplies = hsuforum_xreplies($d->replies);
+            $replies = "<span class='hsuforum-replycount'>$xreplies</span>";
+        }
+        if ($d->pinned != 0) {
+            $pinned = '<span class="pinned"><img src="pix/i/pinned.png" alt="pinned" /></span>';
+        }
 
         if (!empty($d->userurl)) {
             $byuser = html_writer::link($d->userurl, $d->fullname);
@@ -597,6 +610,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $unread = '';
         $unreadclass = '';
         $attrs = '';
+
+        if ($d->unread != '-' && !empty($d->lastreplyid)) {
+            $new  = get_string('unread', 'hsuforum');
+            $unread = "<div class='hsuforum-thread-participants'>".implode(' ',$d->replyavatars)."<a class='hsuforum-newunreadcount disable-router' href='$d->viewurl&postid=$d->lastreplyid'>$new</a></div>";
+            $attrs   = 'data-isunread="true"';
+            $unreadclass = 'hsuforum-post-unread';
+        } else {
+            $unread = "<div class='hsuforum-thread-participants'>".implode(' ',$d->replyavatars)."</div>";
+        }
+
 
         $author = s(strip_tags($d->fullname));
         $group = '';
@@ -614,22 +637,15 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $threadtitle = "<a class='disable-router' href='$d->viewurl'>$d->subject</a>";
         }
         $options = get_string('options', 'hsuforum');
-
-        $topicrender = new topic_render();
-        $participants = $topicrender->contributors_html($d);
-
         $threadmeta  =
             '<div class="hsuforum-thread-meta">'
             .$unread
-            .$participants
             .'</div>';
 
         if ($d->fullthread) {
             $tools = '<div role="region" class="hsuforum-tools hsuforum-thread-tools" aria-label="'.$options.'">'.$d->tools.'</div>';
             $blogmeta = '';
             $blogreplies = '';
-
-            $filterandsort = '<div role="region" class="hsuforum-filter-sort" aria-label="'.$options.'"><ul class="hsuforum-thread-filter_sort_list"><li>'.$d->filterandsort.'</li></ul></div>';
         } else {
             $blogreplies = hsuforum_xreplies($d->replies);
             $tools = "<a class='disable-router hsuforum-replycount-link' href='$d->viewurl'>$blogreplies</a>";
@@ -696,7 +712,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $threadheader = <<<HTML
         <div class="hsuforum-thread-header">
             <div class="hsuforum-thread-title">
-                <h2 id='thread-title-{$d->id}' aria-level="4">
+                <h2 id='thread-title-{$d->id}' role="heading" aria-level="4">
                     $threadtitle
                 </h2>
                 <div>
@@ -819,9 +835,9 @@ HTML;
 
                     if ($post->nestedreplycount > 2 && $depth == 0) {
                         // Adding collapsable elements
-                        $output .= "<div id=id".$post->id." class='posts-collapse-container collapse'>";
+                        $output .= "<div id=".$post->id." class='posts-collapse-container collapse'>";
                         $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
-                        $output .= "<a class='posts-collapse-toggle collapse-bottom' data-toggle='collapse' data-target='#id".$post->id."'></i></a>";
+                        $output .= "<a class='posts-collapse-toggle collapse-bottom' data-toggle='collapse' data-target='#".$post->id."'></i></a>";
                         $output .= "</div>" ;
                     } else {
                         $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
@@ -869,9 +885,7 @@ HTML;
      * @return string
      */
     public function post_template($p) {
-        global $PAGE, $DB, $USER;
-
-        $filterandsort = '';
+        global $PAGE;
 
         $byuser = $p->fullname;
         if (!empty($p->userurl)) {
@@ -886,7 +900,8 @@ HTML;
             if (empty($p->parentuserpic)) {
                 $byline = get_string('replybyx', 'hsuforum', $byuser);
             } else {
-                $byline = get_string('postfromx', 'theme_legend', array(
+                $byline = get_string('postbyxinreplytox', 'hsuforum', array(
+                    'parent' => $p->parentuserpic.$parent,
                     'author' => $byuser,
                     'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
                 ));
@@ -898,7 +913,7 @@ HTML;
                     $byline = get_string('postbyxinprivatereplytox', 'hsuforum', array(
                         'author' => $byuser,
                         'parent' => $p->parentuserpic.$parent
-                    ));
+                        ));
                 }
             }
         } else if (!empty($p->privatereply)) {
@@ -915,11 +930,9 @@ HTML;
         $options = get_string('options', 'hsuforum');
         $datecreated = hsuforum_relative_time($p->rawcreated, array('class' => 'hsuforum-post-pubdate'));
 
-        $postreplies = '';
 
-        if ($p->depth == 0 && $p->nestedreplycount > 2) {
-            $postreplies = "<a class='post-reply-count posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#id".$p->id."'>$p->nestedreplycount</a>";
-        } else {
+        $postreplies = '';
+        if($p->replycount) {
             $postreplies = "<div class='post-reply-count accesshide'>$p->replycount</div>";
         }
 
@@ -999,7 +1012,7 @@ HTML;
         $flagandtimezone
     </div>
 </div>
-<div class="hsuforum-post-wrapper hsuforum-post-target clearfix $roleclass $loggedinuser $unreadclass" id="p$p->id" data-postid="$p->id" data-discussionid="$p->discussionid" data-author="$author" data-ispost="true" tabindex="-1">
+<div class="hsuforum-post-wrapper hsuforum-post-target clearfix $unreadclass" id="p$p->id" data-postid="$p->id" data-discussionid="$p->discussionid" data-author="$author" data-ispost="true" tabindex="-1">
 
     <div class="hsuforum-post-body">
         <h6 aria-level="6" class="hsuforum-post-byline" id="hsuforum-post-$p->id">

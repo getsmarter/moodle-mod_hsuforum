@@ -327,17 +327,26 @@ color: white !important;
 
 
 /* unread posts flag */
-.hsuforum-unreadcount {
-    background-color: #FFA500;
-    color: #FFF !important;
-    display:inline-block;
-    text-align:center;
-    padding:0 2.36%;
-    margin:0.3em 1.18%;
-    font-size:small;
-    line-height:2;
-    border-radius:3px;
+.hsuforum-newunreadcount {
+    background-color: [[setting:newavatarbadgebackgroundcolour]] !important;
+    color: [[setting:newavatarbadgetextcolour]] !important;
+    height: 30px;
+    margin-top: 5px;
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    border-radius: [[setting:newavatarbadgeborderradius]];
+    border-color: [[setting:newavatarbadgebordercolour]];
+    display: inline-block;
+    padding: .7em .4em;
+
 }
+#page-mod-hsuforum-view #discussionsview a.hsuforum-newunreadcount.disable-router:hover {
+    background-color: [[setting:newavatarbadgehoverbackgroundcolour]] !important;
+    color: [[setting:newavatarbadgehovertextcolour]] !important;
+}
+
 .hsuforum-post .hsuforum-unreadcount {
     display:inline-block;
 
@@ -941,9 +950,9 @@ FUN WITH FORMS
     font-size: 14px;
 }
 
-#page-mod-hsuforum-view #page-wrapper #region-main .mod-hsuforum-posts-container .hsuforum-thread-header-right 
+#page-mod-hsuforum-view #page-wrapper #region-main .mod-hsuforum-posts-container .hsuforum-thread-header-right
 .hsuforum-thread-header .hsuforum-thread-title .topic-by,
-#page-mod-hsuforum-view #page-wrapper #region-main .mod-hsuforum-posts-container .hsuforum-thread-header-right 
+#page-mod-hsuforum-view #page-wrapper #region-main .mod-hsuforum-posts-container .hsuforum-thread-header-right
 .hsuforum-thread-header .hsuforum-thread-title .thread-info-bar small,
 #page-mod-hsuforum-discuss .hsuforum-thread .hsuforum-thread-header .hsuforum-thread-title span.topic-by,
 #page-mod-hsuforum-discuss .hsuforum-thread .hsuforum-thread-header .hsuforum-thread-title .thread-info-bar small {
@@ -1020,7 +1029,7 @@ FUN WITH FORMS
     .hsuforum-post.depth5:before {
       margin-left: 125px;
     }
-    
+
     .hsuforum-post-figure {
         margin-top: 11px;
     }
@@ -1271,6 +1280,7 @@ FUN WITH FORMS
     margin-left: -50px;
     z-index: 1000;
     background-color: rgba(192, 192, 192, 0.5);
+    border: 16px solid [[setting:themeheaderbordercolour]];
     border-radius: 50%;
     border-top: 16px solid grey;
     border-bottom: 16px solid #ddd;
@@ -1328,7 +1338,7 @@ FUN WITH FORMS
     text-align: center;
     z-index: 9999;
     width: 100%;
-    margin: 0 auto; 
+    margin: 0 auto;
  }
 }
 

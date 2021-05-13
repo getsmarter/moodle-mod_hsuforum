@@ -851,7 +851,7 @@ function hsuforum_cron() {
                 $a->forumname = $cleanforumname;
                 $a->subject = $data->get_subject();
                 $postsubject = html_to_text(get_string('postmailsubject', 'hsuforum', $a), 0);
-                
+
                 $postfullmessage = get_string('mobileappnotification', 'hsuforum');
                 $postfullmessage = str_replace("{student_full_name}", fullname($postuser), $postfullmessage);
                 $postfullmessage = str_replace("{course_short_name}", $a->courseshortname, $postfullmessage);
@@ -1062,7 +1062,7 @@ function hsuforum_cron() {
                     $posthtml .= '<link rel="stylesheet" type="text/css" href="'.$stylesheet.'" />'."\n";
                 }*/
                 $posthtml .= "</head>\n<body id=\"email\">\n";
-                $posthtml .= '<p>'.get_string('digestmailheader', 'hsuforum', $headerdata).'</p><hr size="1" noshade="noshade" />';
+                $posthtml .= '<p>'.get_string('digestmailheader', 'hsuforum', $headerdata).'</p><br /><hr size="1" noshade="noshade" />';
 
                 foreach ($thesediscussions as $discussionid) {
 
@@ -1964,7 +1964,7 @@ function hsuforum_get_post_full($postid) {
  * @return array of posts
  */
 function hsuforum_get_all_discussion_posts($discussionid, $conditions = array()) {
-    global $CFG, $DB, $USER; 
+    global $CFG, $DB, $USER;
 
     $tr_sel  = "";
     $tr_join = "";
@@ -3833,7 +3833,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
                     $button->set_format_by_file($file);
                     $output .= $button->to_html(PORTFOLIO_ADD_ICON_LINK);
                 }
-
+                $output .= "<br />";
 
             } else if ($type == 'text') {
                 $output .= "$strattachment ".s($filename).":\n$path\n";
@@ -3841,7 +3841,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
             } else { //'returnimages'
                 if (in_array($mimetype, array('image/gif', 'image/jpeg', 'image/png'))) {
                     // Image attachments don't get printed as links
-                    $imagereturn .= "<img src=\"$path\" alt=\"\" />";
+                    $imagereturn .= "<br /><img src=\"$path\" alt=\"\" />";
                     if ($canexport) {
                         $button->set_callback_options('hsuforum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), 'mod_hsuforum');
                         $button->set_format_by_file($file);
@@ -3855,7 +3855,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
                         $button->set_format_by_file($file);
                         $output .= $button->to_html(PORTFOLIO_ADD_ICON_LINK);
                     }
-
+                    $output .= '<br />';
                 }
             }
 
@@ -3866,7 +3866,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
                     'cmid' => $cm->id,
                     'course' => $cm->course,
                     'hsuforum' => $cm->instance));
-
+                $output .= '<br />';
             }
         }
     }
@@ -4151,7 +4151,7 @@ function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload
     }
 
     // Handle draftid's that has been passed via the post (typically mobile).
-    if ($post->draftid) { 
+    if ($post->draftid) {
         $draftid = $post->draftid;
         $filearea = 'attachment';
     }
@@ -5550,18 +5550,18 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         echo "<div id='hsuforum-filter-options'>";
             echo "<div class='filter-option-wrapper row'>";
                 echo "<div class='filter-option'>";
-                
+
                     if ($groupselect && strpos($groupselect, '<form') !== false) {
                         echo'<label for="selectgroup" >Filter:</label>';
                     }
                     echo $groupselect;
-                
+
                 echo "</div>";
 
                 echo "<div class='filter-option'>";
-                
+
                     echo $sortselect;
-                
+
                 echo "</div>";
 
             echo "</div>";
@@ -7278,7 +7278,7 @@ function hsuforum_cm_info_view(cm_info $cm) {
         $out .= '</a>';
     }
 
-    $cm->set_content($out);
+    $cm->set_content($cm->content . $out); // append the unreadpost section to existing content
 }
 
 /**
