@@ -322,7 +322,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $data->lastreplyid = 0;
         }
 
-
         if ($data->replies > 0) {
             // Get actual replies
             $fields = user_picture::fields('u');
@@ -368,8 +367,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $toolsmenu .= $toolsmenuoptions;
             $toolsmenu .= '</div></div>';
         }
-
-
 
         $data->group      = $group;
         $data->imagesrc   = $postuser->user_picture->get_url($this->page)->out();
@@ -904,9 +901,9 @@ HTML;
                 $byline = get_string('replybyx', 'hsuforum', $byuser);
             } else {
                 $byline = get_string('postbyxinreplytox', 'hsuforum', array(
-                        'parent' => $p->parentuserpic.$parent,
-                        'author' => $byuser,
-                        'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
+                    'parent' => $p->parentuserpic.$parent,
+                    'author' => $byuser,
+                    'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
                 ));
             }
             if (!empty($p->privatereply)) {
