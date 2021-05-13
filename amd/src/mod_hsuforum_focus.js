@@ -21,6 +21,7 @@
                             let parentId = $(this).parent().attr('id');
                             // Only scroll once collapse event is done
                             $('#'+id).on('hidden.bs.collapse', function() {
+                             //relpace id from the div as its added by moodle by default
                                 id = id.replace("id", "");
                                 let yAxis = $('#p'+id).offset().top - 80;
                                 // Smoothing out the animation
