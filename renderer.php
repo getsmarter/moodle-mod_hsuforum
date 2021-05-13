@@ -2334,7 +2334,12 @@ HTML;
             $postsarray[$post->parent] = $posts[$post->parent];
         }
     }
-
+    
+    /**
+     * @param $discussionid
+     * @return bool
+     * @throws dml_exception
+     */
     private function check_lastpost_unread($discussionid) {
         global $DB, $USER;
 
