@@ -347,6 +347,17 @@ color: white !important;
     color: [[setting:newavatarbadgehovertextcolour]] !important;
 }
 
+.hsuforum-unreadcount {
+    background-color: [[setting:newavatarbadgebackgroundcolour]] !important;
+    color: [[setting:newavatarbadgetextcolour]] !important;
+    border-radius: [[setting:newavatarbadgeborderradius]];
+    border-color: [[setting:newavatarbadgebordercolour]];
+    line-height: normal;
+    padding: 3px 10px;
+    margin-top: -7px;
+    margin-left: 0;
+}
+
 .hsuforum-post .hsuforum-unreadcount {
     display:inline-block;
 
