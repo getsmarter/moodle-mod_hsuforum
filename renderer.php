@@ -911,8 +911,8 @@ HTML;
                     $byline = get_string('privatereplybyx', 'hsuforum', $byuser);
                 } else {
                     $byline = get_string('postbyxinprivatereplytox', 'hsuforum', array(
-                            'author' => $byuser,
-                            'parent' => $p->parentuserpic.$parent
+                        'author' => $byuser,
+                        'parent' => $p->parentuserpic.$parent
                         ));
                 }
             }
