@@ -330,16 +330,16 @@ color: white !important;
 .hsuforum-newunreadcount {
     background-color: [[setting:newavatarbadgebackgroundcolour]] !important;
     color: [[setting:newavatarbadgetextcolour]] !important;
-    height: 30px;
+    height: 34px;
     margin-top: 5px;
-    font-size: 75%;
-    font-weight: 700;
+    font-size: 82%;
+    font-weight: 600;
     line-height: 1;
     text-align: center;
     border-radius: [[setting:newavatarbadgeborderradius]];
     border-color: [[setting:newavatarbadgebordercolour]];
     display: inline-block;
-    padding: .7em .4em;
+    padding: .8em .4em;
 
 }
 #page-mod-hsuforum-view #discussionsview a.hsuforum-newunreadcount.disable-router:hover {
@@ -352,6 +352,7 @@ color: white !important;
     color: [[setting:newavatarbadgetextcolour]] !important;
     border-radius: [[setting:newavatarbadgeborderradius]];
     border-color: [[setting:newavatarbadgebordercolour]];
+    font-size: 80%;
     line-height: normal;
     padding: 3px 10px;
     margin-top: -7px;
@@ -1208,7 +1209,7 @@ FUN WITH FORMS
     color: #717171;
     cursor: pointer;
     float: left;
-    position: absolute;
+    position: relative;
     bottom: 0;
 }
 

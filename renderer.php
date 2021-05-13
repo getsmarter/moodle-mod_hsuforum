@@ -322,7 +322,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $data->lastreplyid = 0;
         }
 
-
         if ($data->replies > 0) {
             // Get actual replies
             $fields = user_picture::fields('u');
@@ -368,8 +367,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $toolsmenu .= $toolsmenuoptions;
             $toolsmenu .= '</div></div>';
         }
-
-
 
         $data->group      = $group;
         $data->imagesrc   = $postuser->user_picture->get_url($this->page)->out();
@@ -593,8 +590,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
     }
 
     public function discussion_template($d, $forumtype) {
-        global $PAGE;
-
         $replies = '';
         $pinned = '';
         if(!empty($d->replies)) {
@@ -623,11 +618,15 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $unread = "<div class='hsuforum-thread-participants'>".implode(' ',$d->replyavatars)."</div>";
         }
 
-
         $author = s(strip_tags($d->fullname));
         $group = '';
         if (!empty($d->group)) {
             $group = '<br>'.$d->group;
+        }
+
+        $latestpost = '';
+        if (!empty($d->modified) && !empty($d->replies)) {
+            $latestpost = '<small class="hsuforum-thread-replies-meta">'.get_string('lastposttimeago', 'hsuforum', hsuforum_relative_time($d->rawmodified)).'</small>';
         }
 
         $threadtitle = $d->subject;
@@ -644,6 +643,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $tools = '<div role="region" class="hsuforum-tools hsuforum-thread-tools" aria-label="'.$options.'">'.$d->tools.'</div>';
             $blogmeta = '';
             $blogreplies = '';
+
+            $filterandsort = '<div role="region" class="hsuforum-filter-sort" aria-label="'.$options.'"><ul class="hsuforum-thread-filter_sort_list"><li>'.$d->filterandsort.'</li></ul></div>';
         } else {
             $blogreplies = hsuforum_xreplies($d->replies);
             $tools = "<a class='disable-router hsuforum-replycount-link' href='$d->viewurl'>$blogreplies</a>";
@@ -710,7 +711,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $threadheader = <<<HTML
         <div class="hsuforum-thread-header">
             <div class="hsuforum-thread-title">
-                <h2 id='thread-title-{$d->id}' role="heading" aria-level="4">
+                <h2 id='thread-title-{$d->id}' aria-level="4">
                     $threadtitle
                 </h2>
                 <div>
@@ -883,7 +884,9 @@ HTML;
      * @return string
      */
     public function post_template($p) {
-        global $PAGE;
+        global $PAGE, $DB, $USER;
+
+        $filterandsort = '';
 
         $byuser = $p->fullname;
         if (!empty($p->userurl)) {
@@ -899,9 +902,9 @@ HTML;
                 $byline = get_string('replybyx', 'hsuforum', $byuser);
             } else {
                 $byline = get_string('postbyxinreplytox', 'hsuforum', array(
-                        'parent' => $p->parentuserpic.$parent,
-                        'author' => $byuser,
-                        'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
+                    'parent' => $p->parentuserpic.$parent,
+                    'author' => $byuser,
+                    'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
                 ));
             }
             if (!empty($p->privatereply)) {
@@ -909,8 +912,8 @@ HTML;
                     $byline = get_string('privatereplybyx', 'hsuforum', $byuser);
                 } else {
                     $byline = get_string('postbyxinprivatereplytox', 'hsuforum', array(
-                            'author' => $byuser,
-                            'parent' => $p->parentuserpic.$parent
+                        'author' => $byuser,
+                        'parent' => $p->parentuserpic.$parent
                         ));
                 }
             }
@@ -933,6 +936,13 @@ HTML;
 
         if ($p->depth == 0 && $p->nestedreplycount > 2) {
             $postreplies = "<a class='post-reply-count posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#id".$p->id."'>$p->nestedreplycount</a>";
+            $hasnestedreply = self::check_lastpost_unread($p->discussionid);
+            if ($hasnestedreply) {
+                $postreplies = "<a class='post-reply-count posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#id".$p->id."'>$p->nestedreplycount</a><span class='hsuforum-unreadcount'>new</span>";
+            } else {
+                $postreplies = "<a class='post-reply-count posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#id".$p->id."'>$p->nestedreplycount</a>";
+            }
+
         } else {
             $postreplies = "<div class='post-reply-count accesshide'>$p->replycount</div>";
         }
@@ -1027,7 +1037,7 @@ HTML;
         </div>
         <div role="region" class='hsuforum-tools' aria-label='$options'>
             <div class="hsuforum-postflagging">$p->postflags</div>
-            $tools
+            $p->tools
         </div>
         $postreplies
     </div>
@@ -2323,5 +2333,28 @@ HTML;
         if (!(array_key_exists($post->parent, $postsarray))) {
             $postsarray[$post->parent] = $posts[$post->parent];
         }
+    }
+
+    private function check_lastpost_unread($discussionid) {
+        global $DB, $USER;
+
+        $params[] = $discussionid;
+        $params[] = $USER->id;
+
+        $id =  $DB->get_record_sql(
+            "SELECT id FROM {hsuforum_read} 
+                  WHERE postid = (SELECT id FROM {hsuforum_posts} 
+                        WHERE
+                        discussion = ?
+                        AND parent != 0 
+                        ORDER BY created DESC
+                        LIMIT 1)
+                  AND userid = ?;", $params);
+
+        if (empty($id)) {
+            return true;
+        }
+        return false;
+
     }
 }

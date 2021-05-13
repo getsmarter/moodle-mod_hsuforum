@@ -3,7 +3,7 @@
  * into view if not on the viewport
  */
  define(['jquery'], function($) {
- 
+
     return {
         init: function() {
             $('.posts-collapse-container').on('hide.bs.collapse', function() {
@@ -21,6 +21,7 @@
                             let parentId = $(this).parent().attr('id');
                             // Only scroll once collapse event is done
                             $('#'+id).on('hidden.bs.collapse', function() {
+                                id = id.replace("id", "");
                                 let yAxis = $('#p'+id).offset().top - 80;
                                 // Smoothing out the animation
                                 $([document.documentElement, document.body]).animate({
