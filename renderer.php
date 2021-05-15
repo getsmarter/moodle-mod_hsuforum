@@ -2360,46 +2360,4 @@ HTML;
 
         return $actualparent;
     }
-
-//    /**
-//     * @param $discussionid
-//     * @return bool
-//     * @throws dml_exception
-//     */
-//    private function check_lastpost_unread($parent, $discussion) {
-//        global $DB, $USER;
-//
-//        $params[] = $USER->id;
-//        $params[] = $discussion;
-//        $params[] = $parent;
-//        $params[] = $USER->id;
-//
-////        SELECT * FROM tt310.mdl_hsuforum_posts
-////        WHERE id NOT IN (SELECT id FROM tt310.mdl_hsuforum_posts
-////        WHERE discussion = 2
-////                AND parent = 16
-////                AND userid != 18)
-////        AND discussion = 2
-////                AND parent = 16;
-//
-//        $id =  $DB->get_record_sql(
-//            "SELECT id FROM {hsuforum_read}
-//                    WHERE postid = (
-//                        SELECT id FROM {hsuforum_posts}
-//                        WHERE userid != ?
-//                        AND discussion = ?
-//                        AND parent = ?
-//                        ORDER BY id DESC
-//                        LIMIT 1
-//                    )
-//                    AND userid = ?;", $params);
-//
-//        var_dump($id);
-//
-//        if (!empty($id->id)) {
-//            return true;
-//        }
-//        return false;
-//
-//    }
 }
