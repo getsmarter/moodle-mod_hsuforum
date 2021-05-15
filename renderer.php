@@ -1031,7 +1031,10 @@ HTML;
 <div class="hsuforum-post-wrapper hsuforum-post-target clearfix $roleclass $loggedinuser $unreadclass $unreadparentclass" id="p$p->id" data-postid="$p->id" data-discussionid="$p->discussionid" data-author="$author" data-ispost="true" $unreadparenthtml tabindex="-1">
 
     <div class="hsuforum-post-body">
-        <h6 aria-level="6" class="hsuforum-post-byline" id="hsuforum-post-$p->id" >
+        <span id="hsuforum-new-parent-container-$p->id">
+            
+        </span>
+        <h6 aria-level="6" class="hsuforum-post-byline" id="hsuforum-post-$p->id">
             $unread $byline $revealed
         </h6>
         <small class='hsuform-post-date'><a href="$p->permalink" class="disable-router"$newwindow>$datecreated</a></small>
