@@ -2048,12 +2048,21 @@ HTML;
             $replytitle = get_string('replybuttontitle', 'hsuforum', strip_tags($postuser->fullname));
             $commands['reply'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)),
-                '<i class="fa fa-reply"></i> <div class="hsuforumdropdownmenuitem">'.get_string('reply', 'hsuforum').'</div>',
+                '<div class="hsuforumdropdownmenuitem">'.get_string('reply', 'hsuforum').'<i class="fa fa-reply"></i></div>',
                 array(
                     'title' => $replytitle,
                     'class' => 'hsuforum-reply-link btn btn-default',
                 )
             );
+
+//            $commands['like'] = html_writer::link(
+//                new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)),
+//                '<div class="hsuforumdropdownmenuitem">like<i class="fa fa-reply"></i></div>',
+//                array(
+//                    'title' => $replytitle,
+//                    'class' => 'hsuforum-reply-link btn btn-default',
+//                )
+//            );
         }
 
         // Hack for allow to edit news posts those are not displayed yet until they are displayed
@@ -2334,7 +2343,7 @@ HTML;
             $postsarray[$post->parent] = $posts[$post->parent];
         }
     }
-    
+
     /**
      * @param $discussionid
      * @return bool

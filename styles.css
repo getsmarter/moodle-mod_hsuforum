@@ -379,6 +379,7 @@ color: white !important;
     font-family:'Roboto','Open sans','Helvetica Neue', Helvetica, Arial, sans-serif;
     font-weight:normal;
     padding-bottom:1em;
+    float: right;
 }
 .hsuforum-tools .hsuforum-reply-link{
     margin-left:0;
@@ -387,9 +388,14 @@ color: white !important;
     padding: 0 0.2em;
 }
 
+.hsuforum-tools .fa.fa-reply, .hsuforum-tools .hsuforumdropdownmenuitem{
+    /*float: left;*/
+}
 
-
-
+.hsuforum-tools .fa.fa-reply {
+    float: left;
+    padding-right: 0.15em;
+}
 
 /* -------------------------
 ACTIONS
