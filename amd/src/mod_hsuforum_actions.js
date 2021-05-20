@@ -30,14 +30,19 @@ define(['jquery', 'mod_hsuforum/chosen_jquery'], function($) {
 
     module.init = function() {
 
-        console.log('808');
+        console.log('802');
 
         var discussionId = $('.hsuforum-thread').attr('data-discussionid');
 
         function getActions(discussionId) {
+
+            console.log( 'discussion id: ' + discussionId)
+
+            console.log('get actions')
+
             $.ajax({
                 dataType: "json",
-                url: '/mod/hsuforum/action.php',
+                url: '/mod/hsuforum/getactions.php',
                 data: 'd=' + discussionId,
                 success: function(json) {
 
@@ -269,9 +274,12 @@ define(['jquery', 'mod_hsuforum/chosen_jquery'], function($) {
 
     module.add = function(postId, action) {
         document.body.dispatchEvent(spinnerStartEvent);
+
+        console.log('add actions')
+
         $.ajax({
             dataType: "json",
-            url: '/local/hsuforum_actions/addaction.php',
+            url: '/mod/hsuforum/addaction.php',
             data: 'p=' + postId + '&action=' + action,
             success: function(json) {
                 document.body.dispatchEvent(spinnerStopEvent);
@@ -297,9 +305,12 @@ define(['jquery', 'mod_hsuforum/chosen_jquery'], function($) {
 
     module.remove = function(postId, action) {
         document.body.dispatchEvent(spinnerStartEvent);
+
+        console.log('remove actions')
+
         $.ajax({
             dataType: "json",
-            url: '/local/hsuforum_actions/removeaction.php',
+            url: '/mod/hsuforum/removeaction.php',
             data: 'p=' + postId + '&action=' + action,
             success: function(json) {
                 document.body.dispatchEvent(spinnerStopEvent);

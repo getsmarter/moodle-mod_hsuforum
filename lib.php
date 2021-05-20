@@ -28,6 +28,8 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir.'/filelib.php');
 require_once($CFG->libdir.'/deprecatedlib.php');
 require_once($CFG->dirroot.'/user/selector/lib.php');
+// hsuforum actions lib
+require_once($CFG->dirroot.'/mod/hsuforum/hsuforum_actions_lib.php');
 
 /// CONSTANTS ///////////////////////////////////////////////////////////
 
