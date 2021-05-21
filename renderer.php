@@ -2031,7 +2031,7 @@ HTML;
      * @author Mark Nielsen
      */
     public function post_get_commands($post, $discussion, $cm, $canreply) {
-        global $CFG, $USER;
+        global $CFG, $USER, $DB;
 
         $discussionlink = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion));
         $ownpost        = (isloggedin() and $post->userid == $USER->id);
@@ -2055,14 +2055,33 @@ HTML;
                 )
             );
 
-//            $commands['like'] = html_writer::link(
-//                new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)),
-//                '<div class="hsuforumdropdownmenuitem">like<i class="fa fa-reply"></i></div>',
-//                array(
-//                    'title' => $replytitle,
-//                    'class' => 'hsuforum-reply-link btn btn-default',
-//                )
-//            );
+            // TODO: move this to class, check to see if current post for user has been liked or not.            
+            $sql = "SELECT * FROM mdl_hsuforum_actions
+                    WHERE postid = ? 
+                    AND userid = ?
+                    AND action = 'like'";
+
+            $params = [
+                $post->id,
+                $USER->id
+            ];
+
+            $like = $DB->record_exists_sql($sql, $params);
+
+            if ($like) {
+                $commands['like'] = '
+                <a title="" class="hsuforum-reply-link btn btn-default" href="javascript:M.local_hsuforum_actions.unlike(' . $post->id . ');">
+                    <div class="hsuforumdropdownmenuitem">unlike<i class="fa fa-thumbs-down"></i>
+                    </div>
+                </a>';
+            } else {
+                $commands['like'] = '
+                <a title="" class="hsuforum-reply-link btn btn-default" href="javascript:M.local_hsuforum_actions.like(' . $post->id . ');">
+                    <div class="hsuforumdropdownmenuitem">like<i class="fa fa-thumbs-up"></i>
+                    </div>
+                </a>';
+            }
+            
         }
 
         // Hack for allow to edit news posts those are not displayed yet until they are displayed
