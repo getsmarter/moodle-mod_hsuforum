@@ -342,12 +342,16 @@ define(['jquery', 'mod_hsuforum/chosen_jquery'], function($) {
             success: function(json) {
                 console.log(json);
                 document.body.dispatchEvent(spinnerStopEvent);
-                if(json.result) {
-                   console.log('I have been liked');
-                }
-                else
-                {
-                    window.alert(json.content);
+                if(json.result == true) {
+                    console.log('I have been liked');
+                    let like = document.getElementById('like-'+postId);
+
+                    if(like.classList.contains('fa-thumbs-up')) {
+                        console.log('does contain thumbsup');
+                        like.classList.remove('fa-thumbs-up');
+                        like.classList.add('fa-thumbs-down');
+                    }
+                } else {
                     document.body.dispatchEvent(spinnerStopEvent);
                 }
 
@@ -366,17 +370,17 @@ define(['jquery', 'mod_hsuforum/chosen_jquery'], function($) {
             success: function(json) {
                 console.log(json);
                 document.body.dispatchEvent(spinnerStopEvent);
-                if(json.result) {
-
+                if(json.result == true) {   
                     console.log('post has been unliked');
-                    // // Remove actions if already exist
-                    // $('#p' + postId + 'actions').remove();
-                    // // Add new actions
-                    // $('div#p' + postId).children('.hsuforum-post-body').append(json.content[postId].actionHTML);
-                    // $('article#p' + postId).children('header').append(json.content[postId].actionHTML);
+                    let unlike = document.getElementById('like-'+postId);
 
-                    // // Like and Thanks Buttons
-                    // likeAndThanksButtons(json.content[postId]);
+                    if(unlike.classList.contains('fa-thumbs-down')) {
+                        console.log('does contain thumbsdown');
+                        unlike.classList.remove('fa-thumbs-down');
+                        unlike.classList.add('fa-thumbs-up');
+                    }
+                } else {
+                    document.body.dispatchEvent(spinnerStopEvent);
                 }
             }
         });

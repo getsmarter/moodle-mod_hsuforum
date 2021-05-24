@@ -2071,13 +2071,13 @@ HTML;
             if ($like) {
                 $commands['like'] = '
                 <a title="" class="hsuforum-reply-link btn btn-default" href="javascript:M.local_hsuforum_actions.unlike(' . $post->id . ');">
-                    <div class="hsuforumdropdownmenuitem">unlike<i class="fa fa-thumbs-down"></i>
+                    <div class="hsuforumdropdownmenuitem"><i class="fa fa-thumbs-down" id="like-' .$post->id. '"></i>
                     </div>
                 </a>';
             } else {
                 $commands['like'] = '
                 <a title="" class="hsuforum-reply-link btn btn-default" href="javascript:M.local_hsuforum_actions.like(' . $post->id . ');">
-                    <div class="hsuforumdropdownmenuitem">like<i class="fa fa-thumbs-up"></i>
+                    <div class="hsuforumdropdownmenuitem"><i class="fa fa-thumbs-up" id="like-' .$post->id. '"></i>
                     </div>
                 </a>';
             }

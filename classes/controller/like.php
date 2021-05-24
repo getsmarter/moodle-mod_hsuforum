@@ -15,7 +15,10 @@ class like implements action {
     public function __construct() {}
 
     /**
-     * 
+     * function get_action 
+     * returns all like data for specific discussion.
+     * @param $discussionid
+     * @return object
      **/ 
     public function get_action($discussionid) {
 
@@ -56,7 +59,10 @@ class like implements action {
     }
 
     /**
-     * 
+     * function set_action
+     * Add action 'like' to database
+     * @param $postid
+     * @return object
      **/ 
 	public function set_action($postid) {
         global $DB, $CFG, $USER;
@@ -123,7 +129,11 @@ class like implements action {
 	}
 
     /**
-     * 
+     * function delete_action
+     * Remove action 'like' from database
+     * unliking a post.
+     * @param $postid
+     * @return object
      **/ 
 	public function delete_action($postid) {
         global $DB, $CFG, $USER;
@@ -164,4 +174,9 @@ class like implements action {
 
         return $result;
 	}
+
+    /**
+     * 
+     **/
+    public function render_action() {}
 }
