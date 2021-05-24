@@ -268,13 +268,10 @@ define(['jquery', 'mod_hsuforum/chosen_jquery'], function($) {
 
     module.add = function(postId, action) {
         document.body.dispatchEvent(spinnerStartEvent);
-
-        console.log('add actions')
-
         $.ajax({
             dataType: "json",
-            url: '/mod/hsuforum/addaction.php',
-            data: 'p=' + postId + '&action=' + action,
+            url: '/mod/hsuforum/action_handler.php',
+            data: 'p=' + postId + '&action=like' + '&type=add',
             success: function(json) {
                 document.body.dispatchEvent(spinnerStopEvent);
                 if(json.result) {
@@ -300,12 +297,10 @@ define(['jquery', 'mod_hsuforum/chosen_jquery'], function($) {
     module.remove = function(postId, action) {
         document.body.dispatchEvent(spinnerStartEvent);
 
-        console.log('remove actions')
-
         $.ajax({
             dataType: "json",
-            url: '/mod/hsuforum/removeaction.php',
-            data: 'p=' + postId + '&action=' + action,
+            url: '/mod/hsuforum/action_handler.php',
+            data: 'p=' + postId + '&action=like' + '&type=remove',
             success: function(json) {
                 document.body.dispatchEvent(spinnerStopEvent);
                 if(json.result) {
