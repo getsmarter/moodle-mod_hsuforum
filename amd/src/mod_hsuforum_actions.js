@@ -337,9 +337,10 @@ define(['jquery', 'mod_hsuforum/chosen_jquery'], function($) {
         // Call webservice
         $.ajax({
             dataType: "json",
-            url: '/mod/hsuforum/addaction.php',
-            data: 'p=' + postId + '&action=like',
+            url: '/mod/hsuforum/action_handler.php',
+            data: 'p=' + postId + '&action=like' + '&type=add',
             success: function(json) {
+                console.log(json);
                 document.body.dispatchEvent(spinnerStopEvent);
                 if(json.result) {
                    console.log('I have been liked');
@@ -360,9 +361,10 @@ define(['jquery', 'mod_hsuforum/chosen_jquery'], function($) {
         // Call webservice, not the removeaction.php
         $.ajax({
             dataType: "json",
-            url: '/mod/hsuforum/removeaction.php',
-            data: 'p=' + postId + '&action=like',
+            url: '/mod/hsuforum/action_handler.php',
+            data: 'p=' + postId + '&action=like' + '&type=remove',
             success: function(json) {
+                console.log(json);
                 document.body.dispatchEvent(spinnerStopEvent);
                 if(json.result) {
 

@@ -8,8 +8,9 @@ defined('MOODLE_INTERNAL') || die();
 
 class like implements action {
 
-    CONST LIKE = 'like';
+    CONST ACTION = 'like';
     CONST TABLE = '{hsuforum_posts}';
+    CONST ACTIONS_TABLE = '{hsuforum_actions}';
 
     public function __construct() {}
 
@@ -22,7 +23,7 @@ class like implements action {
 
         require_once($CFG->dirroot.'/mod/hsuforum/hsuforum_actions_lib.php');
 
-        $result = new \stdClass();
+        $result = (object)[];
         $result->result = false; // set in case uncaught error happens
         $result->content = 'Unknown error';
 
@@ -62,7 +63,7 @@ class like implements action {
 
         require_once($CFG->dirroot.'/mod/hsuforum/hsuforum_actions_lib.php');
 
-        $result = new stdClass();
+        $result = (object)[];
         $result->result = false; // set in case uncaught error happens
         $result->content = 'Unknown error';
 
@@ -73,7 +74,7 @@ class like implements action {
             * Checking if user has already liked the post
             */
             
-            $sql = "SELECT COUNT(id) AS likescounter FROM mdl_hsuforum_actions WHERE postid = ? AND userid = ?";
+            $sql = "SELECT COUNT(id) AS likescounter FROM " . self::ACTIONS_TABLE . " WHERE postid = ? AND userid = ?";
             $sqlreturn = $DB->get_record_sql($sql,
                 [
                     'postid' => $postid,
@@ -87,10 +88,10 @@ class like implements action {
             }
 
             // Insert new action record
-            $record = new stdClass();
-            $record->postid = $p;
+            $record = (object)[];
+            $record->postid = $postid;
             $record->userid = $USER->id;
-            $record->action = $action;
+            $record->action = self::ACTION;
             $record->created = time();
             $actionid = $DB->insert_record('hsuforum_actions', $record, true);
 
@@ -102,7 +103,7 @@ class like implements action {
             FROM
                 " . self::TABLE . " p
             WHERE
-                p.id = $p
+                p.id = $postid
             ";
 
             $post = $DB->get_records_sql($sql);
@@ -124,29 +125,29 @@ class like implements action {
     /**
      * 
      **/ 
-	public function delete_action($id) {
-        global $DB, $CFG;
+	public function delete_action($postid) {
+        global $DB, $CFG, $USER;
 
         require_once($CFG->dirroot.'/mod/hsuforum/hsuforum_actions_lib.php');
 
-        $result = new stdClass();
+        $result = (object)[];
         $result->result = false; // set in case uncaught error happens
         $result->content = 'Unknown error';
 
         //Only allow to remove action if logged in
         if(isloggedin()) {
 
-            $deleted = $DB->delete_records('hsuforum_actions', array('postid' => $p, 'userid' => $USER->id, 'action' => $action));
-
+            $deleted = $DB->delete_records('hsuforum_actions', array('postid' => $postid, 'userid' => $USER->id, 'action' => self::ACTION));
+            
             //Get post to return
             $sql = "
             SELECT
                 p.id,
                 p.discussion
             FROM
-                {hsuforum_posts} p
+                " . self::TABLE . " p
             WHERE
-                p.id = $p
+                p.id = $postid
             ";
 
             $post = $DB->get_records_sql($sql);

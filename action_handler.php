@@ -20,16 +20,16 @@ switch ($type) {
 		break;
 	case 'add':
 		if ($action == 'like' && !empty($postid)) {
-			$like = new like($postid);
+			$like = new like();
 			header('Content-type: application/json');
-			echo json_encode($result);
+			echo json_encode($like->set_action($postid));
 		}
 		break;
 	case 'remove':
 		if ($action == 'like' && !empty($postid)) {
-			$like = new like($postid);
+			$like = new like();
 			header('Content-type: application/json');
-			echo json_encode($result);
+			echo json_encode($like->delete_action($postid));
 		}
 		break;
 	default:
