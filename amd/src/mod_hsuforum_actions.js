@@ -36,8 +36,8 @@ define(['jquery', 'mod_hsuforum/chosen_jquery'], function($) {
 
             $.ajax({
                 dataType: "json",
-                url: '/mod/hsuforum/getactions.php',
-                data: 'd=' + discussionId,
+                url: '/mod/hsuforum/action_handler.php',
+                data: 'd=' + discussionId + '&action=like' + '&type=get',
                 success: function(json) {
 
                     if(json.result) {
