@@ -28,6 +28,7 @@
 use mod_hsuforum\local;
 use mod_hsuforum\renderables\discussion_dateform;
 use mod_hsuforum\renderables\advanced_editor;
+use mod_hsuforum\controller\like;
 
 require_once(__DIR__.'/lib/discussion/subscribe.php');
 require_once($CFG->dirroot.'/lib/formslib.php');
@@ -1036,8 +1037,8 @@ HTML;
             $p->message
         </div>
         <div role="region" class='hsuforum-tools' aria-label='$options'>
-            <div class="hsuforum-postflagging">$p->postflags</div>
-            $p->tools
+            $tools
+            <div class="hsuforum-postflagging"> $p->postflags</div>
         </div>
         $postreplies
     </div>
@@ -2055,32 +2056,8 @@ HTML;
                 )
             );
 
-            // TODO: move this to class, check to see if current post for user has been liked or not.            
-            $sql = "SELECT * FROM mdl_hsuforum_actions
-                    WHERE postid = ? 
-                    AND userid = ?
-                    AND action = 'like'";
-
-            $params = [
-                $post->id,
-                $USER->id
-            ];
-
-            $like = $DB->record_exists_sql($sql, $params);
-
-            if ($like) {
-                $commands['like'] = '
-                <a title="" class="hsuforum-reply-link btn btn-default" href="javascript:M.local_hsuforum_actions.unlike(' . $post->id . ');">
-                    <div class="hsuforumdropdownmenuitem"><i class="fa fa-thumbs-down" id="like-' .$post->id. '"></i>
-                    </div>
-                </a>';
-            } else {
-                $commands['like'] = '
-                <a title="" class="hsuforum-reply-link btn btn-default" href="javascript:M.local_hsuforum_actions.like(' . $post->id . ');">
-                    <div class="hsuforumdropdownmenuitem"><i class="fa fa-thumbs-up" id="like-' .$post->id. '"></i>
-                    </div>
-                </a>';
-            }
+            $like = new like();
+            $commands['like'] = $like->render_action($post);
             
         }
 

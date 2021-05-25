@@ -24,7 +24,7 @@
 /**
  * @module local_hsuforum_actions/hsuforum_actions
  */
-define(['jquery', 'mod_hsuforum/chosen_jquery'], function($) {
+define(['jquery'], function($) {
 
     var module = {};
 
@@ -99,6 +99,7 @@ define(['jquery', 'mod_hsuforum/chosen_jquery'], function($) {
         $('div[role=main]').append(otherUsersModal);
 
         function hsuforum_populate_post_actions(posts) {
+
             for (var p in posts) {
 
                 // Remove actions if already exist
@@ -112,8 +113,6 @@ define(['jquery', 'mod_hsuforum/chosen_jquery'], function($) {
                 var url = window.location.protocol + '//' + window.location.hostname + window.location.pathname + '?d=' + discussionId + '&postid=' + posts[p].id;
                 $('div#p' + posts[p].id).children('.hsuforum-post-body').children('.hsuforum-tools').find('.hsuforum-thread-tools_list').append('<a class="permalink dropdown-item" href="' + url + '" onclick="M.local_hsuforum_actions.showPermalinkModal(\'#p' + posts[p].id + '\');" title="' + url + '"><i class="fa fa-link"></i> Share</a>');
 
-                // Like and Thanks Buttons
-                likeAndThanksButtons(posts[p]);
             }
 
             // Permalink event handlers
@@ -238,91 +237,6 @@ define(['jquery', 'mod_hsuforum/chosen_jquery'], function($) {
         }
     }
 
-    function likeAndThanksButtons(post) {
-        // Remove like and thanks
-        // $('#p' + post.id + '-likeandthanks').remove();
-
-        // // Add like and thanks buttons to replies
-        // if ($('div#p' + post.id).find('.hsuforum-tools .permalink').length) {
-        //     permalink = $('#p' + post.id).find('.hsuforum-tools .permalink');
-        //     $(post.likeandthanksHTML).insertBefore(permalink);
-        // } else {
-        //     $('div#p' + post.id).find('.hsuforum-tools').after(post.likeandthanksHTML);
-        // }
-
-        // permalink = $('div#p' + post.id).find('.hsuforum-tools .permalink');
-
-        // $('#p' + post.id).find('.dropdown-menu.dropdown-menu-right').prepend(permalink);
-
-        // $('div#p' + post.id).find('.hsuforum-thread-tools_list').find('.hsuforum-reply-link').after(post.likeandthanksHTML);
-
-
-        // Add like and thanks buttons to initial post
-        // if ($('article#p' + post.id).find('header .hsuforum-tools .permalink').length) {
-        //     permalink = $('article#p' + post.id).find('header .hsuforum-tools .permalink');
-        //     $(post.likeandthanksHTML).insertBefore(permalink);
-        // } else {
-        //     $('article#p' + post.id).find('.hsuforum-tools.hsuforum-thread-tools').find('.hsuforum-reply-link').after(post.likeandthanksHTML);
-        // }
-    }
-
-    module.add = function(postId, action) {
-        document.body.dispatchEvent(spinnerStartEvent);
-        $.ajax({
-            dataType: "json",
-            url: '/mod/hsuforum/action_handler.php',
-            data: 'p=' + postId + '&action=like' + '&type=add',
-            success: function(json) {
-                document.body.dispatchEvent(spinnerStopEvent);
-                if(json.result) {
-                    // Remove actions if already exist
-                    $('#p' + postId + 'actions').remove();
-                    // Add new actions
-                    $('div#p' + postId).children('.hsuforum-post-body').append(json.content[postId].actionHTML);
-                    $('article#p' + postId).children('header').append(json.content[postId].actionHTML);
-
-                    // Like and Thanks Buttons
-                    likeAndThanksButtons(json.content[postId]);
-                }
-                else
-                {
-                    window.alert(json.content);
-                    document.body.dispatchEvent(spinnerStopEvent);
-                }
-
-            }
-        });
-    };
-
-    module.remove = function(postId, action) {
-        document.body.dispatchEvent(spinnerStartEvent);
-
-        $.ajax({
-            dataType: "json",
-            url: '/mod/hsuforum/action_handler.php',
-            data: 'p=' + postId + '&action=like' + '&type=remove',
-            success: function(json) {
-                document.body.dispatchEvent(spinnerStopEvent);
-                if(json.result) {
-                    // Remove actions if already exist
-                    $('#p' + postId + 'actions').remove();
-                    // Add new actions
-                    $('div#p' + postId).children('.hsuforum-post-body').append(json.content[postId].actionHTML);
-                    $('article#p' + postId).children('header').append(json.content[postId].actionHTML);
-
-                    // Like and Thanks Buttons
-                    likeAndThanksButtons(json.content[postId]);
-                }
-                else
-                {
-                    window.alert(json.content);
-                    document.body.dispatchEvent(spinnerStopEvent);
-                }
-
-            }
-        });
-    };
-
     module.showPermalinkModal = function(pId) {
         var content = '<p>Copy the following URL to link to this post.</p>';
         content += '<input type="text" style="width:500px;" onClick="this.select();" value="' + $(pId).children('.hsuforum-post-body').find('.permalink').attr('title') + '">';
@@ -332,25 +246,38 @@ define(['jquery', 'mod_hsuforum/chosen_jquery'], function($) {
         $('#permalinkModal').modal('show');
     };
 
-    module.like = function(postId) {
-        console.log(postId)
-        // Call webservice
+    // New work for https://jira.2u.com/browse/CTED-1949
+    module.action = function(action,postId) {
+        if (action == 'like') {
+            like(postId);
+        } else if (action == 'unlike') {
+            unlike(postId);
+        }
+    }
+
+    like = function(postId) {
         $.ajax({
             dataType: "json",
             url: '/mod/hsuforum/action_handler.php',
             data: 'p=' + postId + '&action=like' + '&type=add',
             success: function(json) {
-                console.log(json);
-                document.body.dispatchEvent(spinnerStopEvent);
+
                 if(json.result == true) {
-                    console.log('I have been liked');
-                    let like = document.getElementById('like-'+postId);
+                    let like = document.getElementById('like-' + postId);
+                    let like_action = document.getElementById('like-action-' + postId);
+                    let banner = document.getElementById('p' + postId + 'actions');
 
                     if(like.classList.contains('fa-thumbs-up')) {
-                        console.log('does contain thumbsup');
+                        // javascript:M.local_hsuforum_actions.action(`unlike`,' . $post->id . ');
                         like.classList.remove('fa-thumbs-up');
                         like.classList.add('fa-thumbs-down');
+                        // like_action url change
+                        like_action.href = 'javascript:M.local_hsuforum_actions.action(`unlike`,' + postId + ');';
+                        banner.innerHTML = '<div class="alert alert-info like">You like this</div>';
                     }
+
+                    document.body.dispatchEvent(spinnerStopEvent);
+
                 } else {
                     document.body.dispatchEvent(spinnerStopEvent);
                 }
@@ -360,25 +287,29 @@ define(['jquery', 'mod_hsuforum/chosen_jquery'], function($) {
         
     };
 
-    module.unlike = function(postId) {
-        console.log(postId)
-        // Call webservice, not the removeaction.php
+    unlike = function(postId) {
         $.ajax({
             dataType: "json",
             url: '/mod/hsuforum/action_handler.php',
             data: 'p=' + postId + '&action=like' + '&type=remove',
             success: function(json) {
-                console.log(json);
-                document.body.dispatchEvent(spinnerStopEvent);
-                if(json.result == true) {   
-                    console.log('post has been unliked');
+                
+                if(json.result == true) {
                     let unlike = document.getElementById('like-'+postId);
+                    let like_action = document.getElementById('like-action-' + postId);
+                    let banner = document.getElementById('p' + postId + 'actions');
 
                     if(unlike.classList.contains('fa-thumbs-down')) {
-                        console.log('does contain thumbsdown');
+                        // javascript:M.local_hsuforum_actions.action(`unlike`,' . $post->id . ');
                         unlike.classList.remove('fa-thumbs-down');
                         unlike.classList.add('fa-thumbs-up');
+                        // like_action url change
+                        like_action.href = 'javascript:M.local_hsuforum_actions.action(`like`,' + postId + ');';
+                        banner.innerHTML = '';
                     }
+
+                    document.body.dispatchEvent(spinnerStopEvent);
+
                 } else {
                     document.body.dispatchEvent(spinnerStopEvent);
                 }

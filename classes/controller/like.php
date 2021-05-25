@@ -178,5 +178,34 @@ class like implements action {
     /**
      * 
      **/
-    public function render_action() {}
+    public function render_action($post) {
+        global $DB, $USER;
+
+        // TODO: move this to class, check to see if current post for user has been liked or not.            
+        $sql = "SELECT * FROM mdl_hsuforum_actions
+                WHERE postid = ? 
+                AND userid = ?
+                AND action = 'like'";
+
+        $params = [
+            $post->id,
+            $USER->id
+        ];
+
+        $like = $DB->record_exists_sql($sql, $params);
+
+        if ($like) {
+            return '
+            <a title="" class="hsuforum-reply-link btn btn-default" id="like-action-'. $post->id .'" href="javascript:M.local_hsuforum_actions.action(`unlike`,' . $post->id . ');">
+                <div class="hsuforumdropdownmenuitem"><i class="fa fa-thumbs-down" id="like-' .$post->id. '"></i>
+                </div>
+            </a>';
+        } else {
+            return '
+            <a title="" class="hsuforum-reply-link btn btn-default" id="like-action-'. $post->id .'" href="javascript:M.local_hsuforum_actions.action(`like`,' . $post->id . ');">
+                <div class="hsuforumdropdownmenuitem"><i class="fa fa-thumbs-up" id="like-' . $post->id . '"></i>
+                </div>
+            </a>';
+        }
+    }
 }
