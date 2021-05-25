@@ -176,7 +176,6 @@ function hsuforum_populate_post_actions(&$posts)
    }
 }
 
-//
 function hsuforum_generate_post_action_HTML($post)
 {
 
@@ -267,7 +266,6 @@ function hsuforum_generate_user_list($users, $discussionid)
    return $html;
 }
 
-//
 function hsuforum_create_user_link($name, $id, $courseid)
 {
    global $CFG;

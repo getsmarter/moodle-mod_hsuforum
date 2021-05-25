@@ -45,6 +45,12 @@ class like implements action {
             ";
             $posts = $DB->get_records_sql($sql);
 
+            if (empty($posts)) {
+                $result->result = false;
+                $result->content = 'No post data';
+                return $result;
+            }
+
             hsuforum_populate_post_actions($posts);
 
             $result->result = true;
@@ -63,6 +69,7 @@ class like implements action {
      * Add action 'like' to database
      * @param $postid
      * @return object
+     * TODO: get all users for have liked post and return liked banner text.
      **/ 
 	public function set_action($postid) {
         global $DB, $CFG, $USER;
@@ -114,6 +121,12 @@ class like implements action {
 
             $post = $DB->get_records_sql($sql);
 
+            if (empty($post)) {
+                $result->result = false;
+                $result->content = 'No post data';
+                return $result;
+            }
+
             hsuforum_populate_post_actions($post);
 
             $result->result = true;
@@ -134,6 +147,7 @@ class like implements action {
      * unliking a post.
      * @param $postid
      * @return object
+     * TODO: get all users for have liked post and return liked banner text.
      **/ 
 	public function delete_action($postid) {
         global $DB, $CFG, $USER;
@@ -162,6 +176,12 @@ class like implements action {
 
             $post = $DB->get_records_sql($sql);
 
+            if (empty($post)) {
+                $result->result = false;
+                $result->content = 'No post data';
+                return $result;
+            }
+
             hsuforum_populate_post_actions($post);
 
             $result->result = true;
@@ -176,7 +196,10 @@ class like implements action {
 	}
 
     /**
-     * 
+     * function render_action
+     * Returns HTML for rendering of action.
+     * @param $post array
+     * @return string
      **/
     public function render_action($post) {
         global $DB, $USER;
