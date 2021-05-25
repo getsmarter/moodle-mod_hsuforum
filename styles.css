@@ -388,10 +388,6 @@ color: white !important;
     padding: 0 0.2em;
 }
 
-.hsuforum-tools .fa.fa-reply, .hsuforum-tools .hsuforumdropdownmenuitem{
-    /*float: left;*/
-}
-
 .hsuforum-tools .fa.fa-reply {
     float: left;
     padding-right: 0.15em;
@@ -440,11 +436,6 @@ ACTIONS
 .hsuforum-toggle-bookmark:focus .svg-icon{
     fill:#f05454;
 }
-
-
-
-
-
 
 /* -------------------------
 FUN WITH FORMS

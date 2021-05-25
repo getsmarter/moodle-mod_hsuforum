@@ -182,7 +182,7 @@ class like implements action {
         global $DB, $USER;
 
         // TODO: move this to class, check to see if current post for user has been liked or not.            
-        $sql = "SELECT * FROM mdl_hsuforum_actions
+        $sql = "SELECT * FROM " . self::ACTIONS_TABLE . "
                 WHERE postid = ? 
                 AND userid = ?
                 AND action = 'like'";

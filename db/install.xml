@@ -191,8 +191,8 @@
       </INDEXES>
     </TABLE>
     <!-- table for forum actions -->
-    <!-- TODO: Will need to look at moving the table create here, rename table as well, will need to discuss this with team -->
-    <!-- <TABLE NAME="hsuforum_actions" COMMENT="Each record is one action (like or thanks) on a forum post">
+    <!-- TODO: Will need to look at moving the table create here, since we are removing hsuforum_actions we need to install table from hsuforum_actions -->
+    <TABLE NAME="hsuforum_actions" COMMENT="Each record is one action (like or thanks) on a forum post">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="postid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
@@ -206,7 +206,7 @@
       <INDEXES>
         <INDEX NAME="postid" UNIQUE="false" FIELDS="postid"/>
       </INDEXES>
-    </TABLE> -->
+    </TABLE>
     <!-- table for forum actions -->
   </TABLES>
 </XMLDB>

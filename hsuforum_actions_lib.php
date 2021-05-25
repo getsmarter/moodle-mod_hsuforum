@@ -1,8 +1,4 @@
 <?php
-
-// required for LIKE functionality move to hsuforum.
-
-
 /**
 * Forum Actions
 *
@@ -11,15 +7,6 @@
 * @author    Mikhail Janowski <mikhail@getsmarter.co.za>
 * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
-
-// Add javascript to the advanced forum pages
-// if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'mod/hsuforum/discuss.php')) {
-//    global $PAGE;
-//    // $PAGE->requires->js_call_amd('local_hsuforum_actions/hsuforum_actions', 'init');
-// }
-
-// This function is included to force moodle to run the local lib.php on every page.
-function local_hsuforum_actions_extend_navigation($param) {}
 
 function hsuforum_populate_post_actions(&$posts)
 {
@@ -308,7 +295,3 @@ function hsuforum_wrap_action_text($actiontext, $action)
 
    return $html;
 }
-
-//// End of required functions for hsu_forum actions
-///
-///

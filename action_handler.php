@@ -14,6 +14,7 @@ switch ($type) {
 	case 'get':
 		if ($action == 'like' && !empty($discussionid)) {
 			$like = new like();
+			header('HTTP/1.1 200 OK');
 			header('Content-type: application/json');
 			echo json_encode($like->get_action($discussionid));
 		}
@@ -21,6 +22,7 @@ switch ($type) {
 	case 'add':
 		if ($action == 'like' && !empty($postid)) {
 			$like = new like();
+			header('HTTP/1.1 200 OK');
 			header('Content-type: application/json');
 			echo json_encode($like->set_action($postid));
 		}
@@ -28,11 +30,13 @@ switch ($type) {
 	case 'remove':
 		if ($action == 'like' && !empty($postid)) {
 			$like = new like();
+			header('HTTP/1.1 200 OK');
 			header('Content-type: application/json');
 			echo json_encode($like->delete_action($postid));
 		}
 		break;
 	default:
+		header('HTTP/1.1 404 Not Found');
 		header('Content-type: application/json');
-		echo json_encode('404');
+		echo json_encode('404 Action type not found');
 }
