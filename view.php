@@ -95,6 +95,13 @@
 
     echo $OUTPUT->render_from_template('mod_hsuforum/loading', []);
     $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_loader', 'init');
+    // https://jira.2u.com/browse/CTED-1785
+    $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_button_animate', 'init', 
+        [
+            'following' => get_string('topicfollowing', 'hsuforum'),
+            'unfollow'  => get_string('topicunfollow', 'hsuforum')
+        ]
+    );
 
     echo $renderer->render(new discussion_dateform($context));
 

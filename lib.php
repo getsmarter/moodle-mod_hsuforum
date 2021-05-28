@@ -3622,7 +3622,9 @@ function hsuforum_search_form($course, $forumid=null, $search='') {
     $output .= '<form action="'.$CFG->wwwroot.'/mod/hsuforum/search.php">';
     $output .= '<fieldset class="invisiblefieldset">';
     $output .= '<input id="search" name="search" type="search" placeholder="'.get_string('search', 'hsuforum').'" value="'.s($search, true).'"/>';
-    $output .= '<input id="searchforums" value="'.get_string('searchforums', 'hsuforum').'" type="submit" />';
+    $output .= '<button id="searchforums" type="submit">
+                    <i class="fa fa-search"></i>
+                </button>';
     $output .= '<input name="id" type="hidden" value="'.$course->id.'" />';
     if ($forumid != null) {
         $output .= '<input name="forumid" type="hidden" value="'.s($forumid).'" />';
@@ -5516,7 +5518,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
 
     if ($discussions) {
-        echo "<h3 class='hsuforum-discussion-count' data-count='$numdiscussions'>".get_string('xdiscussions', 'hsuforum', $numdiscussions)."</h3>";
+        echo "<h3 class='hsuforum-discussion-count rounded discussion-meta' data-count='$numdiscussions'>".get_string('xdiscussions', 'hsuforum', $numdiscussions)."</h3>";
     }
 
     // lots of echo instead of building up and printing - bad
@@ -5526,7 +5528,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         '<form class="hsuforum-add-discussion" id="newdiscussionform" method="get" action="'.$CFG->wwwroot.'/mod/hsuforum/post.php">
         <div>
         <input type="hidden" name="forum" value="'.$forum->id.'" />
-        <input type="submit" value="'.get_string('addanewtopic', 'hsuforum').'" />
+        <input class="rounded-pill btn btn-primary" type="submit" value="'.get_string('addanewtopic', 'hsuforum').'" />
         </div>
         </form>';
     }
