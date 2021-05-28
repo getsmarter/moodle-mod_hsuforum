@@ -58,7 +58,8 @@ class topic_render {
         if ($discussion->pinned == 1) {
             $pinned = $OUTPUT->render_from_template('mod_hsuforum/_topic/hsuforum_topic_button_meta',
                 [
-                    'lastposttime' => $latestposttime
+                    'lastposttime' => $latestposttime,
+                    'pinned' => get_string('discussionpinnedpost', 'hsuforum'),
                 ]
             );
         }
