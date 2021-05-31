@@ -506,21 +506,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         $toolsarray = $commands;
         $toolstring = '';
-        $toolsbuttons = '';
-        $toolsmenu = '<div class="dropdown inline">
-                        <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="hsuforumpostdropdownmenubutton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-h"></i></button>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">';
-
-
-        foreach ($toolsarray as $tools) {
-            if (!is_array($tools)) {
-                $toolsbuttons .= $tools;
-            } else {
-                $toolsmenu .= implode(' ', $tools);
+        $toolsbuttons = ''; 
+        $toolsmenu = '';
+            foreach ($toolsarray as $tools) {
+                if (!is_array($tools)) {
+                    $toolsbuttons .= $tools;
+                } else {
+                    $toolsmenu .= implode(' ', $tools);
+                }
             }
-        }
-
-        $toolsmenu .= '</div></div>';
+        $toolsmenu .= '';
 
         $postuser = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
         $postuser->user_picture->size = 100;
@@ -2048,7 +2043,7 @@ HTML;
             $replytitle = get_string('replybuttontitle', 'hsuforum', strip_tags($postuser->fullname));
             $commands['reply'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)),
-                '<i class="fa fa-reply"></i> <div class="hsuforumdropdownmenuitem">'.get_string('reply', 'hsuforum').'</div>',
+                '<i class="fa fa-reply fa-2"></i>',
                 array(
                     'title' => $replytitle,
                     'class' => 'hsuforum-reply-link btn btn-default',
@@ -2064,9 +2059,9 @@ HTML;
         if (($ownpost && $age < $CFG->maxeditingtime) || local::cached_has_capability('mod/hsuforum:editanypost', context_module::instance($cm->id))) {
             $commands['menu']['edit'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('edit' => $post->id)),
-                '<i class="fa fa-pencil"></i> '.get_string('edit', 'hsuforum'),
+                '<i class="fa fa-edit fa-2"></i> ',
                 array(
-                    'class' => 'dropdown-item'
+                    'class' => ''
                 )
             );
         }
@@ -2074,9 +2069,9 @@ HTML;
         if (($ownpost && $age < $CFG->maxeditingtime && local::cached_has_capability('mod/hsuforum:deleteownpost', context_module::instance($cm->id))) || local::cached_has_capability('mod/hsuforum:deleteanypost', context_module::instance($cm->id))) {
             $commands['menu']['delete'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('delete' => $post->id)),
-                '<i class="fa fa-trash"></i> '.get_string('delete', 'hsuforum'),
+                '<i class="fa fa-trash fa-2"></i>',
                 array(
-                    'class' => 'dropdown-item'
+                    'class' => ''
                 )
             );
         }
@@ -2087,10 +2082,10 @@ HTML;
                 && $forum->type != 'single') {
             $commands['menu']['split'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('prune' => $post->id)),
-                '<i class="fa fa-plus-square"></i> '.get_string('prune', 'hsuforum'),
+                '<i class="fa fa-plus-square fa-2"></i>',
                 array(
                     'title' => get_string('pruneheading', 'hsuforum'),
-                    'class' => 'dropdown-item'
+                    'class' => ''
                 )
             );
         }
