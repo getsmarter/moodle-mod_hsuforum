@@ -558,6 +558,7 @@ $string['discussionsortkey:like'] = 'Most likes';
 $string['discussionsortkey:pinned'] = 'Pinned';
 $string['discussionpin'] = 'Pin';
 $string['discussionpinned'] = 'Pinned';
+$string['discussionpinnedpost'] = 'Pinned post';
 $string['discussionpinned_help'] = 'Pinned discussions will appear at the top of a forum.';
 $string['discussionunpin'] = 'Unpin';
 $string['eventdiscussionunpinned'] = 'Discussion unpinned';
@@ -739,6 +740,7 @@ $string['topicfollowing'] = 'Following topic';
 $string['avatarnumberstorenders'] = 'Topic avatar display number';
 $string['avatarnumberstorendersdescription'] = 'Number of avatars to display under topic title';
 $string['avatarnewbadge'] = 'NEW';
+$string[topicunfollow] = 'Unfollow topic';
 
 $string['avatarnewbadgesettingsheader'] = 'NEW badge settings';
 $string['new_avatar_badge_backgroundcolour'] = 'NEW badge background colour';
