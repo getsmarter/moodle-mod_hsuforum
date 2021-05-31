@@ -740,7 +740,7 @@ $string['topicfollowing'] = 'Following topic';
 $string['avatarnumberstorenders'] = 'Topic avatar display number';
 $string['avatarnumberstorendersdescription'] = 'Number of avatars to display under topic title';
 $string['avatarnewbadge'] = 'NEW';
-$string[topicunfollow] = 'Unfollow topic';
+$string['topicunfollow'] = 'Unfollow topic';
 
 $string['avatarnewbadgesettingsheader'] = 'NEW badge settings';
 $string['new_avatar_badge_backgroundcolour'] = 'NEW badge background colour';
