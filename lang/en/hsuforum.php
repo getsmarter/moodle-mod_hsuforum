@@ -490,7 +490,7 @@ $string['trackingtype_help'] = 'If enabled, participants can track read and unre
 * Optional - Participants can choose whether to turn tracking on or off via a link in the administration block. Forum tracking must also be enabled in the user\'s profile settings.
 * Forced - Tracking is always on, regardless of user setting. Available depending on administrative setting.
 * Off - Read and unread posts are not tracked.';
-$string['unread'] = 'New';
+$string['unread'] = 'New Replies';
 $string['unreadposts'] = 'Unread posts';
 $string['unreadpostsnumber'] = '{$a} unread posts';
 $string['unreadpostsone'] = '1 unread post';
