@@ -750,3 +750,6 @@ $string['new_avatar_badge_borderradius'] = 'NEW badge border radius';
 $string['new_avatar_badge_borderradius_desc'] = 'The New badge button radius styling - i.e 3px';
 $string['new_avatar_badge_hoverbackgroundcolor'] = 'NEW badge hover background color';
 $string['new_avatar_badge_hovertextcolor'] = 'NEW badge hover text color';
+
+// Discussion page
+$string['expandalldisccussions'] = 'Expand all';

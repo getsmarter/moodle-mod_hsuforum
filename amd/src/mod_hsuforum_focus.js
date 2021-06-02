@@ -33,6 +33,24 @@
                     }
                 }
             });
+
+            $('.expandalldiscussions').on('click', function () {
+                if ($('.expandalldiscussions').hasClass('expanded')) {
+                    $('.expandalldiscussions')[0].innerHTML = 'Expand All'
+                    const collapsable = $('.posts-collapse-container.collapse');
+                    for (let x = 0; x < collapsable.length; x++) {
+                        $('#' + collapsable[x].id).removeClass('show')
+                        $('.expandalldiscussions').removeClass('expanded')
+                    }
+                } else {
+                    $('.expandalldiscussions')[0].innerHTML = 'Collapse All'
+                    const collapsable = $('.posts-collapse-container.collapse');
+                    for (let x = 0; x < collapsable.length; x++) {
+                        $('#' + collapsable[x].id).addClass('show')
+                        $('.expandalldiscussions').addClass('expanded')
+                    }
+                }
+            });
         }
     };
 });

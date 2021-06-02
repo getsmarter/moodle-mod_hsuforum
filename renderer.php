@@ -361,11 +361,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         if ($toolsmenuoptions != '') {
-            $toolsmenu .= '<div class="dropdown inline">
-                            <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="hsuforumpostdropdownmenubutton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-h"></i></button>
-                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">';
             $toolsmenu .= $toolsmenuoptions;
-            $toolsmenu .= '</div></div>';
         }
 
         $data->group      = $group;
@@ -424,12 +420,12 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                             <option ".($sort == 2 ? 'selected' : '')." value='2'>".get_string('sortmostreplies','hsuforum')."</option>
                             <option ".($sort == 3 ? 'selected' : '')." value='3'>".get_string('sortmostlikes','hsuforum')."</option>
                         </select>
-                        <input type='submit' value='Apply'>";
+                        <input class='rounded-pill btn btn-primary' type='submit' value='Apply'>";
         if ($filter > 0 || $sort > 0) {
             $filterandsort .= "<input type='submit' name='filterandsortreset' value='Reset'>";
         }
 
-        $filterandsort .= "</div></form>";
+        $filterandsort .= "</div></form><button class='rounded-pill btn btn-primary expandalldiscussions'>" . get_string('expandalldisccussions','hsuforum') . "</button>";
 
         $data->filterandsort = $filterandsort;
 
@@ -895,12 +891,6 @@ HTML;
             }
             if (empty($p->parentuserpic)) {
                 $byline = get_string('replybyx', 'hsuforum', $byuser);
-            } else {
-                $byline = get_string('postbyxinreplytox', 'hsuforum', array(
-                    'parent' => $p->parentuserpic.$parent,
-                    'author' => $byuser,
-                    'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
-                ));
             }
             if (!empty($p->privatereply)) {
                 if (empty($p->parentuserpic)) {
@@ -1944,7 +1934,7 @@ HTML;
             $files .= <<<HTML
                 <label>
                     <span class="accesshide">$t->attachmentlabel</span>
-                    <input type="file" name="attachment[]" multiple="multiple" />
+                    <input class="rounded pill btn btn-secondary" type="file" name="attachment[]" multiple="multiple" />
                 </label>
 HTML;
         }
@@ -1971,9 +1961,9 @@ HTML;
 
                 $t->extrahtml
                 $hidden
-                <button type="submit">$t->submitlabel</button>
-                <a href="#" class="hsuforum-cancel disable-router">$t->cancellabel</a>
-                <a href="$advancedurl" aria-pressed="false" class="hsuforum-use-advanced disable-router">$t->advancedlabel</a>
+                <button class="rounded-pill btn btn-primary" type="submit">$t->submitlabel</button>
+                <a href="#" class="hsuforum-cancel disable-router rounded-pill btn btn-secondary">$t->cancellabel</a>
+                <a href="$advancedurl" aria-pressed="false" class="hsuforum-use-advanced disable-router rounded-pill btn btn-secondary">$t->advancedlabel</a>
             </div>
         </fieldset>
     </form>
