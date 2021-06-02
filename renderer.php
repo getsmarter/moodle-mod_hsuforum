@@ -2034,9 +2034,8 @@ HTML;
             $commands['reply'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)),
                 '<i class="fa fa-reply fa-2"></i>',
-                array(
-                    'title' => $replytitle,
-                    'class' => 'hsuforum-reply-link btn btn-default',
+                array (
+                    'class' => 'hsuforum-reply-link',
                 )
             );
         }
@@ -2050,8 +2049,8 @@ HTML;
             $commands['menu']['edit'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('edit' => $post->id)),
                 '<i class="fa fa-edit fa-2"></i> ',
-                array(
-                    'class' => ''
+                array (
+                    'class' => 'hsuforum-edit-link'
                 )
             );
         }
@@ -2060,8 +2059,8 @@ HTML;
             $commands['menu']['delete'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('delete' => $post->id)),
                 '<i class="fa fa-trash fa-2"></i>',
-                array(
-                    'class' => ''
+                array (
+                    'class' => 'hsuforum-delete-link'
                 )
             );
         }
@@ -2073,9 +2072,8 @@ HTML;
             $commands['menu']['split'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('prune' => $post->id)),
                 '<i class="fa fa-plus-square fa-2"></i>',
-                array(
-                    'title' => get_string('pruneheading', 'hsuforum'),
-                    'class' => ''
+                array (
+                    'class' => 'hsuforum-split-link'
                 )
             );
         }
