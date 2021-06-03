@@ -328,8 +328,8 @@ color: white !important;
 
 /* unread posts flag */
 .hsuforum-newunreadcount {
-    background-color: [[setting:newavatarbadgebackgroundcolour]] !important;
-    color: [[setting:newavatarbadgetextcolour]] !important;
+    background-color: [[setting:newavatarbadgebackgroundcolour]];
+    color: [[setting:newavatarbadgetextcolour]];
     height: 34px;
     margin-top: 5px;
     font-size: 82%;
@@ -343,13 +343,13 @@ color: white !important;
 
 }
 #page-mod-hsuforum-view #discussionsview a.hsuforum-newunreadcount.disable-router:hover {
-    background-color: [[setting:newavatarbadgehoverbackgroundcolour]] !important;
-    color: [[setting:newavatarbadgehovertextcolour]] !important;
+    background-color: [[setting:newavatarbadgehoverbackgroundcolour]];
+    color: [[setting:newavatarbadgehovertextcolour]];
 }
 
 .hsuforum-unreadcount {
-    background-color: [[setting:newavatarbadgebackgroundcolour]] !important;
-    color: [[setting:newavatarbadgetextcolour]] !important;
+    background-color: [[setting:newavatarbadgebackgroundcolour]];
+    color: [[setting:newavatarbadgetextcolour]];
     border-radius: [[setting:newavatarbadgeborderradius]];
     border-color: [[setting:newavatarbadgebordercolour]];
     font-size: 80%;
