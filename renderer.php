@@ -923,7 +923,7 @@ HTML;
             $postreplies = "<a class='post-reply-count posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#id".$p->id."'>$p->nestedreplycount</a>";
             $hasnestedreply = self::check_lastpost_unread($p->discussionid);
             if ($hasnestedreply) {
-                $postreplies = "<a class='post-reply-count posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#id".$p->id."'>$p->nestedreplycount</a><span class='hsuforum-unreadcount'>new</span>";
+                $postreplies = "<a class='post-reply-count posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#id".$p->id."'>$p->nestedreplycount</a><span class='hsuforum-unreadcount'>" . get_string('newreplies', 'hsuforum') . "</span>";
             } else {
                 $postreplies = "<a class='post-reply-count posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#id".$p->id."'>$p->nestedreplycount</a>";
             }
