@@ -420,7 +420,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                             <option ".($sort == 2 ? 'selected' : '')." value='2'>".get_string('sortmostreplies','hsuforum')."</option>
                             <option ".($sort == 3 ? 'selected' : '')." value='3'>".get_string('sortmostlikes','hsuforum')."</option>
                         </select>
-                        <input class='rounded-pill btn btn-primary' type='submit' value='Apply'>";
+                        <input class='rounded-pill btn btn-secondary' type='submit' value='Apply'>";
         if ($filter > 0 || $sort > 0) {
             $filterandsort .= "<input type='submit' name='filterandsortreset' value='Reset'>";
         }
@@ -1934,7 +1934,7 @@ HTML;
             $files .= <<<HTML
                 <label>
                     <span class="accesshide">$t->attachmentlabel</span>
-                    <input class="rounded pill btn btn-secondary" type="file" name="attachment[]" multiple="multiple" />
+                    <input class="rounded pill btn" type="file" name="attachment[]" multiple="multiple" />
                 </label>
 HTML;
         }
