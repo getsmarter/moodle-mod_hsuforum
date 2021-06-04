@@ -492,6 +492,7 @@ $string['trackingtype_help'] = 'If enabled, participants can track read and unre
 * Off - Read and unread posts are not tracked.';
 $string['unread'] = 'New';
 $string['newreplies'] = 'New';
+$string['unread'] = 'New';
 $string['unreadposts'] = 'Unread posts';
 $string['unreadpostsnumber'] = '{$a} unread posts';
 $string['unreadpostsone'] = '1 unread post';
