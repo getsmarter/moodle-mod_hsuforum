@@ -899,6 +899,10 @@ function hsuforum_cron() {
                 $eventdata->contexturl = $contexturl->out();
                 $eventdata->contexturlname = $discussion->name;
 
+                $customdata = array('courseid' => $course->id, 'cmid' => $cm->id, 'discussionid' => $discussion->id, 'postid' => $postid);
+
+                $eventdata->customdata = $customdata;
+
                 $mailresult = message_send($eventdata);
                 if (!$mailresult) {
                     mtrace("Error: mod/hsuforum/lib.php hsuforum_cron(): Could not send out mail for id $post->id to user $userto->id".
