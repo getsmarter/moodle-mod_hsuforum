@@ -930,12 +930,11 @@ FUN WITH FORMS
 }
 
 #page-mod-hsuforum-discuss #region-main .hsuforum-thread .actions .alert.like {
+    display: inline-block;
     border-color: #b1d7eb;
     background-color: #f1fbff;
     color: #4178a0;
     border-radius: 2px;
-    float: left;
-    margin-bottom: 30px;
     padding: 8px;
     width: 100%;
 }
@@ -1146,10 +1145,6 @@ FUN WITH FORMS
         float: none;
     }
 
-    #page-mod-hsuforum-discuss #region-main .hsuforum-thread .actions .alert.like {
-        margin-top: 20px;
-    }
-
     .hsuforum-unreadcount {
         margin-left: 0 !important;
         text-align: left !important;
@@ -1179,13 +1174,6 @@ FUN WITH FORMS
 
 }
 
-@media screen and (min-width: 992px){
-    #page-mod-hsuforum-discuss .hsuforum-post-body .actions .alert-info.like {
-        margin-top: 20px !important;
-        margin-bottom: 25px;
-    }
-}
-
 #page-mod-hsuforum-discuss .posts-collapse-container {
     border: 1px solid #ccc;
     position: relative;
@@ -1197,20 +1185,10 @@ FUN WITH FORMS
     padding-bottom: 5px;
 }
 
-#page-mod-hsuforum-discuss .posts-collapse-toggle:not(.collapse-bottom):hover,
-#page-mod-hsuforum-discuss .posts-collapse-toggle:not(.collapse-bottom) {
-    border-bottom: none !important;
-    margin-bottom: 8px;
-}
-
 #page-mod-hsuforum-discuss .posts-collapse-toggle[aria-expanded="true"],
 #page-mod-hsuforum-discuss .posts-collapse-toggle[data-toggle="collapse"] {
     display: inline-block;
-    color: #717171;
     cursor: pointer;
-    float: left;
-    position: relative;
-    bottom: 0;
 }
 
 #page-mod-hsuforum-discuss .collapse-bottom[aria-expanded="true"] {
@@ -1266,92 +1244,3 @@ FUN WITH FORMS
 #page-mod-hsuforum-discuss #hsuforum-overlay-box{
     min-height: 400px !important;
 }
-
-#hsuforum-loading-container {
-    display: block;
-    position: fixed;
-    width: 330px;
-    border: 1px solid dimgrey;
-    border-radius: 4px;
-    padding: 10px;
-    height: 280px;
-    background-color: white;
-    z-index: 9999;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-
-}
-
-.hsuforum-loading {
-    display: block;
-    position: relative;
-    top: 40%;
-    left: 50%;
-    margin-top: -50px;
-    margin-left: -50px;
-    z-index: 1000;
-    background-color: rgba(192, 192, 192, 0.5);
-    border: 16px solid [[setting:themeheaderbordercolour]];
-    border-radius: 50%;
-    border-top: 16px solid grey;
-    border-bottom: 16px solid #ddd;
-    width: 100px;
-    height: 100px;
-    -webkit-animation: spin 2s linear infinite;
-    animation: spin 2s linear infinite;
-}
-
-#hsuforum-overlay-box {
-    display: block;
-    position: fixed;
-    background-color: #dddddd;
-    opacity: 0.8;
-    overflow: hidden -moz-scrollbars-none;
-    left: 0;
-    right: 0;
-    top: 53px;
-    bottom: 0;
-    z-index: 9999;
-    width: 100%;
-}
-
-@media only screen and (max-width: 500px){
-  #hsuforum-loading-container {
-    width: 70%;
-    height: 305px;
-  }
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* CTED-1486 add fix div around loader and responsive  */
-
-@media screen and (min-width: 768px) and (max-width: 991px){
-#hsuforum-overlay-fixed {
-    width: 67%;
- }
-}
-
-@media only screen and (max-width: 500px){
-#hsuforum-overlay-fixed {
-    position: fixed;
-    margin-left: auto;
-    margin-right: auto;
-    left: 0;
-    right: 0;
-    text-align: center;
-    z-index: 9999;
-    width: 100%;
-    margin: 0 auto;
- }
-}
-
-

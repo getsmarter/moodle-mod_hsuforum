@@ -1023,9 +1023,9 @@ HTML;
         <div role="region" class='hsuforum-tools' aria-label='$options'>
             <div class="hsuforum-postflagging">$p->postflags</div>
             $p->tools
-        </div>
-        $postreplies
+        </div>   
     </div>
+    <div class="replies-collapse-section d-inline-block">$postreplies</div>
 </div>
 HTML;
     }

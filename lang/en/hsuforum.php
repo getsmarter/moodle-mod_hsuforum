@@ -633,7 +633,7 @@ $string['validationerrorx'] = 'There was an error with your submission: {$a}';
 $string['validationerrorsx'] = 'There were {$a->count} errors with your submission: {$a->errors}';
 $string['messageisrequired'] = 'The message is required';
 $string['subjectisrequired'] = 'The subject is required';
-$string['replytox'] = 'Reply to {$a}';
+$string['replytox'] = 'Reply to <span>{$a}</span>';
 $string['addareply'] = 'Add your reply';
 $string['submit'] = 'Submit';
 $string['useadvancededitor'] = 'Use advanced editor';
@@ -755,3 +755,17 @@ $string['new_avatar_badge_hovertextcolor'] = 'NEW badge hover text color';
 
 // Discussion page
 $string['expandalldisccussions'] = 'Expand all';
+
+// Reply timestamps
+$string['second'] = 'sec';
+$string['seconds'] = 'sec';
+$string['minute'] = 'm';
+$string['minutes'] = 'm';
+$string['hour'] = 'hr';
+$string['hours'] = 'hr';
+$string['day'] = 'd';
+$string['days'] = 'd';
+$string['year'] = 'y';
+$string['years'] = 'y';
+$string['ago'] = '{$a} ago';
+$string['now'] = 'now';
