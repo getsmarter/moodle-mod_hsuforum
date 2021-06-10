@@ -491,6 +491,8 @@ $string['trackingtype_help'] = 'If enabled, participants can track read and unre
 * Forced - Tracking is always on, regardless of user setting. Available depending on administrative setting.
 * Off - Read and unread posts are not tracked.';
 $string['unread'] = 'New';
+$string['newreplies'] = 'New';
+$string['unread'] = 'New';
 $string['unreadposts'] = 'Unread posts';
 $string['unreadpostsnumber'] = '{$a} unread posts';
 $string['unreadpostsone'] = '1 unread post';
@@ -558,6 +560,7 @@ $string['discussionsortkey:like'] = 'Most likes';
 $string['discussionsortkey:pinned'] = 'Pinned';
 $string['discussionpin'] = 'Pin';
 $string['discussionpinned'] = 'Pinned';
+$string['discussionpinnedpost'] = 'Pinned post';
 $string['discussionpinned_help'] = 'Pinned discussions will appear at the top of a forum.';
 $string['discussionunpin'] = 'Unpin';
 $string['eventdiscussionunpinned'] = 'Discussion unpinned';
@@ -630,7 +633,7 @@ $string['validationerrorx'] = 'There was an error with your submission: {$a}';
 $string['validationerrorsx'] = 'There were {$a->count} errors with your submission: {$a->errors}';
 $string['messageisrequired'] = 'The message is required';
 $string['subjectisrequired'] = 'The subject is required';
-$string['replytox'] = 'Reply to {$a}';
+$string['replytox'] = 'Reply to <span>{$a}</span>';
 $string['addareply'] = 'Add your reply';
 $string['submit'] = 'Submit';
 $string['useadvancededitor'] = 'Use advanced editor';
@@ -739,6 +742,7 @@ $string['topicfollowing'] = 'Following topic';
 $string['avatarnumberstorenders'] = 'Topic avatar display number';
 $string['avatarnumberstorendersdescription'] = 'Number of avatars to display under topic title';
 $string['avatarnewbadge'] = 'NEW';
+$string['topicunfollow'] = 'Unfollow topic';
 
 $string['avatarnewbadgesettingsheader'] = 'NEW badge settings';
 $string['new_avatar_badge_backgroundcolour'] = 'NEW badge background colour';
@@ -748,3 +752,20 @@ $string['new_avatar_badge_borderradius'] = 'NEW badge border radius';
 $string['new_avatar_badge_borderradius_desc'] = 'The New badge button radius styling - i.e 3px';
 $string['new_avatar_badge_hoverbackgroundcolor'] = 'NEW badge hover background color';
 $string['new_avatar_badge_hovertextcolor'] = 'NEW badge hover text color';
+
+// Discussion page
+$string['expandalldisccussions'] = 'Expand all';
+
+// Reply timestamps
+$string['second'] = 'sec';
+$string['seconds'] = 'sec';
+$string['minute'] = 'm';
+$string['minutes'] = 'm';
+$string['hour'] = 'hr';
+$string['hours'] = 'hr';
+$string['day'] = 'd';
+$string['days'] = 'd';
+$string['year'] = 'y';
+$string['years'] = 'y';
+$string['ago'] = '{$a} ago';
+$string['now'] = 'now';

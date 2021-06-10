@@ -361,11 +361,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         if ($toolsmenuoptions != '') {
-            $toolsmenu .= '<div class="dropdown inline">
-                            <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="hsuforumpostdropdownmenubutton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-h"></i></button>
-                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">';
             $toolsmenu .= $toolsmenuoptions;
-            $toolsmenu .= '</div></div>';
         }
 
         $data->group      = $group;
@@ -424,12 +420,12 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                             <option ".($sort == 2 ? 'selected' : '')." value='2'>".get_string('sortmostreplies','hsuforum')."</option>
                             <option ".($sort == 3 ? 'selected' : '')." value='3'>".get_string('sortmostlikes','hsuforum')."</option>
                         </select>
-                        <input type='submit' value='Apply'>";
+                        <input class='rounded-pill btn btn-secondary' type='submit' value='Apply'>";
         if ($filter > 0 || $sort > 0) {
             $filterandsort .= "<input type='submit' name='filterandsortreset' value='Reset'>";
         }
 
-        $filterandsort .= "</div></form>";
+        $filterandsort .= "</div></form><button class='rounded-pill btn btn-primary expandalldiscussions'>" . get_string('expandalldisccussions','hsuforum') . "</button>";
 
         $data->filterandsort = $filterandsort;
 
@@ -506,21 +502,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         $toolsarray = $commands;
         $toolstring = '';
-        $toolsbuttons = '';
-        $toolsmenu = '<div class="dropdown inline">
-                        <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="hsuforumpostdropdownmenubutton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-h"></i></button>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">';
-
-
-        foreach ($toolsarray as $tools) {
-            if (!is_array($tools)) {
-                $toolsbuttons .= $tools;
-            } else {
-                $toolsmenu .= implode(' ', $tools);
+        $toolsbuttons = ''; 
+        $toolsmenu = '';
+            foreach ($toolsarray as $tools) {
+                if (!is_array($tools)) {
+                    $toolsbuttons .= $tools;
+                } else {
+                    $toolsmenu .= implode(' ', $tools);
+                }
             }
-        }
-
-        $toolsmenu .= '</div></div>';
+        $toolsmenu .= '';
 
         $postuser = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
         $postuser->user_picture->size = 100;
@@ -901,12 +892,6 @@ HTML;
             }
             if (empty($p->parentuserpic)) {
                 $byline = get_string('replybyx', 'hsuforum', $byuser);
-            } else {
-                $byline = get_string('postbyxinreplytox', 'hsuforum', array(
-                    'parent' => $p->parentuserpic.$parent,
-                    'author' => $byuser,
-                    'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
-                ));
             }
             if (!empty($p->privatereply)) {
                 if (empty($p->parentuserpic)) {
@@ -1046,9 +1031,9 @@ HTML;
         <div role="region" class='hsuforum-tools' aria-label='$options'>
             <div class="hsuforum-postflagging">$p->postflags</div>
             $p->tools
-        </div>
-        $postreplies
+        </div>   
     </div>
+    <div class="replies-collapse-section d-inline-block">$postreplies</div>
 </div>
 HTML;
     }
@@ -1439,12 +1424,12 @@ HTML;
         $url = new moodle_url('/mod/hsuforum/view.php');
 
         $sortselect = html_writer::select($sort->get_key_options_menu(), 'dsortkey', $sort->get_key(), false, array('class' => ''));
+        //https://jira.2u.com/browse/CTED-1785
         $sortform = "<form method='get' action='$url' class='hsuforum-discussion-sort'>
                     <legend class='accesshide'>".get_string('sortdiscussions', 'hsuforum')."</legend>
                     <input type='hidden' name='id' value='{$cm->id}'>
-                    <label for='dsortkey' class=''>Sort:</label>
                     $sortselect
-                    <input type='submit' value='".get_string('sortdiscussionsby', 'hsuforum')."'>
+                    <input class='rounded-pill btn btn-secondary sort-btn' type='submit' value='".get_string('sortdiscussionsby', 'hsuforum')."'>
                     </form>";
 
         return $sortform;
@@ -1957,7 +1942,7 @@ HTML;
             $files .= <<<HTML
                 <label>
                     <span class="accesshide">$t->attachmentlabel</span>
-                    <input type="file" name="attachment[]" multiple="multiple" />
+                    <input class="rounded pill btn" type="file" name="attachment[]" multiple="multiple" />
                 </label>
 HTML;
         }
@@ -1984,9 +1969,9 @@ HTML;
 
                 $t->extrahtml
                 $hidden
-                <button type="submit">$t->submitlabel</button>
-                <a href="#" class="hsuforum-cancel disable-router">$t->cancellabel</a>
-                <a href="$advancedurl" aria-pressed="false" class="hsuforum-use-advanced disable-router">$t->advancedlabel</a>
+                <button class="rounded-pill btn btn-primary" type="submit">$t->submitlabel</button>
+                <a href="#" class="hsuforum-cancel disable-router rounded-pill btn btn-secondary">$t->cancellabel</a>
+                <a href="$advancedurl" aria-pressed="false" class="hsuforum-use-advanced disable-router rounded-pill btn btn-secondary">$t->advancedlabel</a>
             </div>
         </fieldset>
     </form>
@@ -2056,10 +2041,9 @@ HTML;
             $replytitle = get_string('replybuttontitle', 'hsuforum', strip_tags($postuser->fullname));
             $commands['reply'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)),
-                '<i class="fa fa-reply"></i> <div class="hsuforumdropdownmenuitem">'.get_string('reply', 'hsuforum').'</div>',
-                array(
-                    'title' => $replytitle,
-                    'class' => 'hsuforum-reply-link btn btn-default',
+                '<i class="fa fa-reply fa-2"></i>',
+                array (
+                    'class' => 'hsuforum-reply-link',
                 )
             );
         }
@@ -2072,9 +2056,9 @@ HTML;
         if (($ownpost && $age < $CFG->maxeditingtime) || local::cached_has_capability('mod/hsuforum:editanypost', context_module::instance($cm->id))) {
             $commands['menu']['edit'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('edit' => $post->id)),
-                '<i class="fa fa-pencil"></i> '.get_string('edit', 'hsuforum'),
-                array(
-                    'class' => 'dropdown-item'
+                '<i class="fa fa-edit fa-2"></i> ',
+                array (
+                    'class' => 'hsuforum-edit-link'
                 )
             );
         }
@@ -2082,9 +2066,9 @@ HTML;
         if (($ownpost && $age < $CFG->maxeditingtime && local::cached_has_capability('mod/hsuforum:deleteownpost', context_module::instance($cm->id))) || local::cached_has_capability('mod/hsuforum:deleteanypost', context_module::instance($cm->id))) {
             $commands['menu']['delete'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('delete' => $post->id)),
-                '<i class="fa fa-trash"></i> '.get_string('delete', 'hsuforum'),
-                array(
-                    'class' => 'dropdown-item'
+                '<i class="fa fa-trash fa-2"></i>',
+                array (
+                    'class' => 'hsuforum-delete-link'
                 )
             );
         }
@@ -2095,10 +2079,9 @@ HTML;
                 && $forum->type != 'single') {
             $commands['menu']['split'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('prune' => $post->id)),
-                '<i class="fa fa-plus-square"></i> '.get_string('prune', 'hsuforum'),
-                array(
-                    'title' => get_string('pruneheading', 'hsuforum'),
-                    'class' => 'dropdown-item'
+                '<i class="fa fa-plus-square fa-2"></i>',
+                array (
+                    'class' => 'hsuforum-split-link'
                 )
             );
         }
