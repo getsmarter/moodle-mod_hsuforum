@@ -385,5 +385,6 @@ echo "<script>
 
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_focus', 'init');
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_loader', 'init');
+$PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_parent_reply_display', 'init');
 
 echo $OUTPUT->footer();

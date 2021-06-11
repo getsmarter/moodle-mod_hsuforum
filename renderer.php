@@ -564,6 +564,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $parentuser = hsuforum_extract_postuser($parent, $forum, context_module::instance($cm->id));
             $data->parenturl = $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$parent->discussion.'#p'.$parent->id;
             $data->parentfullname = $parentuser->fullname;
+            $data->parentid = $parent->id;
             if (!empty($parentuser->user_picture)) {
                 $parentuser->user_picture->size = 100;
                 $data->parentuserurl = $this->get_post_user_url($cm, $parentuser);
@@ -909,25 +910,29 @@ HTML;
         $author = s(strip_tags($p->fullname));
         $unread = '';
         $unreadclass = '';
+        $unreadparenthtml = '';
+        $unreadparentclass = '';
+        $actualparentid = 0;
         if ($p->unread) {
+            // Need to get the overarching parentid.
+            // Depending on depth we need to go as deep as depth.
+            $actualparentid = $p->parentid;
+            if ($p->depth > 1) {
+                $actualparentid = self::check_parents_parent($p->parentid, $p->depth);
+            }
+
             $unread = "<span class='hsuforum-unreadcount'>".get_string('unread', 'hsuforum')."</span>";
             $unreadclass = "hsuforum-post-unread";
+            $unreadparenthtml = "data-unreadparentid='" . $actualparentid->parent . "'";
+            $unreadparentclass = 'unreadparent';
         }
         $options = get_string('options', 'hsuforum');
         $datecreated = hsuforum_relative_time($p->rawcreated, array('class' => 'hsuforum-post-pubdate'));
-
 
         $postreplies = '';
 
         if ($p->depth == 0 && $p->nestedreplycount > 2) {
             $postreplies = "<a class='post-reply-count posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#id".$p->id."'>$p->nestedreplycount</a>";
-            $hasnestedreply = self::check_lastpost_unread($p->discussionid);
-            if ($hasnestedreply) {
-                $postreplies = "<a class='post-reply-count posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#id".$p->id."'>$p->nestedreplycount</a><span class='hsuforum-unreadcount'>" . get_string('newreplies', 'hsuforum') . "</span>";
-            } else {
-                $postreplies = "<a class='post-reply-count posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#id".$p->id."'>$p->nestedreplycount</a>";
-            }
-
         } else {
             $postreplies = "<div class='post-reply-count accesshide'>$p->replycount</div>";
         }
@@ -1008,9 +1013,12 @@ HTML;
         $flagandtimezone
     </div>
 </div>
-<div class="hsuforum-post-wrapper hsuforum-post-target clearfix $roleclass $loggedinuser $unreadclass" id="p$p->id" data-postid="$p->id" data-discussionid="$p->discussionid" data-author="$author" data-ispost="true" tabindex="-1">
+<div class="hsuforum-post-wrapper hsuforum-post-target clearfix $roleclass $loggedinuser $unreadclass $unreadparentclass" id="p$p->id" data-postid="$p->id" data-discussionid="$p->discussionid" data-author="$author" data-ispost="true" $unreadparenthtml tabindex="-1">
 
     <div class="hsuforum-post-body">
+        <span id="hsuforum-new-parent-container-$p->id">
+            
+        </span>
         <h6 aria-level="6" class="hsuforum-post-byline" id="hsuforum-post-$p->id">
             $unread $byline $revealed
         </h6>
@@ -2317,32 +2325,25 @@ HTML;
             $postsarray[$post->parent] = $posts[$post->parent];
         }
     }
-    
+
     /**
-     * @param $discussionid
-     * @return bool
-     * @throws dml_exception
+     * @param $parentid
+     * @param $depth
      */
-    private function check_lastpost_unread($discussionid) {
-        global $DB, $USER;
+    private function check_parents_parent($parentid, $depth) {
+        global $DB;
 
-        $params[] = $discussionid;
-        $params[] = $USER->id;
+        $initparent = $parentid;
+        $actualparent = 0;
 
-        $id =  $DB->get_record_sql(
-            "SELECT id FROM {hsuforum_read} 
-                  WHERE postid = (SELECT id FROM {hsuforum_posts} 
-                        WHERE
-                        discussion = ?
-                        AND parent != 0 
-                        ORDER BY created DESC
-                        LIMIT 1)
-                  AND userid = ?;", $params);
-
-        if (empty($id)) {
-            return true;
+        for ($x = 0; $x < $depth - 1; $x++ ) {
+            if (empty($actualparent)){
+                $actualparent = $DB->get_record('hsuforum_posts', array('id' => $initparent), 'parent');
+            } else {
+                $actualparent = $DB->get_record('hsuforum_posts', array('id' => $actualparent->parent), 'parent');
+            }
         }
-        return false;
 
+        return $actualparent;
     }
 }
