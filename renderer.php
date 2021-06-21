@@ -31,6 +31,7 @@ use mod_hsuforum\renderables\advanced_editor;
 
 require_once(__DIR__.'/lib/discussion/subscribe.php');
 require_once($CFG->dirroot.'/lib/formslib.php');
+require_once(__DIR__.'/classes/renderables/topic_render.php');
 
 /**
  * A custom renderer class that extends the plugin_renderer_base and
@@ -360,14 +361,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         if ($toolsmenuoptions != '') {
-            $toolsmenu .= '<div class="dropdown inline">
-                            <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="hsuforumpostdropdownmenubutton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-h"></i></button>
-                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">';
             $toolsmenu .= $toolsmenuoptions;
-            $toolsmenu .= '</div></div>';
         }
-
-
 
         $data->group      = $group;
         $data->imagesrc   = $postuser->user_picture->get_url($this->page)->out();
@@ -425,12 +420,12 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                             <option ".($sort == 2 ? 'selected' : '')." value='2'>".get_string('sortmostreplies','hsuforum')."</option>
                             <option ".($sort == 3 ? 'selected' : '')." value='3'>".get_string('sortmostlikes','hsuforum')."</option>
                         </select>
-                        <input type='submit' value='Apply'>";
+                        <input class='rounded-pill btn btn-secondary' type='submit' value='Apply'>";
         if ($filter > 0 || $sort > 0) {
             $filterandsort .= "<input type='submit' name='filterandsortreset' value='Reset'>";
         }
 
-        $filterandsort .= "</div></form>";
+        $filterandsort .= "</div></form><button class='rounded-pill btn btn-primary expandalldiscussions'>" . get_string('expandalldisccussions','hsuforum') . "</button>";
 
         $data->filterandsort = $filterandsort;
 
@@ -441,7 +436,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         $subscribe = new hsuforum_lib_discussion_subscribe($forum, context_module::instance($cm->id));
-        $data->subscribe = $this->discussion_subscribe_link($cm, $discussion, $subscribe) ;
+        $data->subscribe = $this->discussion_subscribe_link($cm, $discussion, $subscribe);
 
         $config = get_config('hsuforum');
         $timeddiscussion = !empty($config->enabletimedposts) && ($discussion->timestart || $discussion->timeend);
@@ -507,21 +502,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         $toolsarray = $commands;
         $toolstring = '';
-        $toolsbuttons = '';
-        $toolsmenu = '<div class="dropdown inline">
-                        <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="hsuforumpostdropdownmenubutton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-h"></i></button>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">';
-
-
-        foreach ($toolsarray as $tools) {
-            if (!is_array($tools)) {
-                $toolsbuttons .= $tools;
-            } else {
-                $toolsmenu .= implode(' ', $tools);
+        $toolsbuttons = ''; 
+        $toolsmenu = '';
+            foreach ($toolsarray as $tools) {
+                if (!is_array($tools)) {
+                    $toolsbuttons .= $tools;
+                } else {
+                    $toolsmenu .= implode(' ', $tools);
+                }
             }
-        }
-
-        $toolsmenu .= '</div></div>';
+        $toolsmenu .= '';
 
         $postuser = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
         $postuser->user_picture->size = 100;
@@ -574,6 +564,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $parentuser = hsuforum_extract_postuser($parent, $forum, context_module::instance($cm->id));
             $data->parenturl = $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$parent->discussion.'#p'.$parent->id;
             $data->parentfullname = $parentuser->fullname;
+            $data->parentid = $parent->id;
             if (!empty($parentuser->user_picture)) {
                 $parentuser->user_picture->size = 100;
                 $data->parentuserurl = $this->get_post_user_url($cm, $parentuser);
@@ -591,8 +582,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
     }
 
     public function discussion_template($d, $forumtype) {
-        global $PAGE;
-
         $replies = '';
         $pinned = '';
         if(!empty($d->replies)) {
@@ -611,11 +600,14 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $unread = '';
         $unreadclass = '';
         $attrs = '';
-        if ($d->unread != '-') {
+
+        if ($d->unread != '-' && !empty($d->lastreplyid)) {
             $new  = get_string('unread', 'hsuforum');
-            $unread  = "<a class='hsuforum-unreadcount disable-router' href='$d->viewurl#unread'>$new</a>";
+            $unread = "<div class='hsuforum-thread-participants'>".implode(' ',$d->replyavatars)."<a class='hsuforum-newunreadcount disable-router' href='$d->viewurl&postid=$d->lastreplyid'>$new</a></div>";
             $attrs   = 'data-isunread="true"';
             $unreadclass = 'hsuforum-post-unread';
+        } else {
+            $unread = "<div class='hsuforum-thread-participants'>".implode(' ',$d->replyavatars)."</div>";
         }
 
         $author = s(strip_tags($d->fullname));
@@ -629,11 +621,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $latestpost = '<small class="hsuforum-thread-replies-meta">'.get_string('lastposttimeago', 'hsuforum', hsuforum_relative_time($d->rawmodified)).'</small>';
         }
 
-        $participants = '<div class="hsuforum-thread-participants">'.implode(' ',$d->replyavatars).'</div>';
-
-
-        $datecreated = hsuforum_relative_time($d->rawcreated, array('class' => 'hsuforum-thread-pubdate'));
-
         $threadtitle = $d->subject;
         if (!$d->fullthread) {
             $threadtitle = "<a class='disable-router' href='$d->viewurl'>$d->subject</a>";
@@ -641,18 +628,15 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $options = get_string('options', 'hsuforum');
         $threadmeta  =
             '<div class="hsuforum-thread-meta">'
-                .$replies
-                .$unread
-                .$participants
-                .$latestpost
-                .$pinned
-                .'<div class="hsuforum-thread-flags">'."{$d->subscribe} $d->postflags $d->timed</div>"
+            .$unread
             .'</div>';
 
         if ($d->fullthread) {
             $tools = '<div role="region" class="hsuforum-tools hsuforum-thread-tools" aria-label="'.$options.'">'.$d->tools.'</div>';
             $blogmeta = '';
             $blogreplies = '';
+
+            $filterandsort = '<div role="region" class="hsuforum-filter-sort" aria-label="'.$options.'"><ul class="hsuforum-thread-filter_sort_list"><li>'.$d->filterandsort.'</li></ul></div>';
         } else {
             $blogreplies = hsuforum_xreplies($d->replies);
             $tools = "<a class='disable-router hsuforum-replycount-link' href='$d->viewurl'>$blogreplies</a>";
@@ -665,41 +649,109 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $revealed = '<span class="label label-danger">'.$nonanonymous.'</span>';
         }
 
+        // Flags and timezone
+        $flagandtimezone = '';
+        global $PAGE, $DB;
+        if ($PAGE->theme->settings->display_flag_and_time && !empty($d->userurl)) {
+            $userid = $d->userurl->params()['id'];
+
+            $data = $DB->get_record_sql('SELECT timezone, country FROM {user} WHERE id = ?',
+                array($userid));
+
+            $flagandtimezone = theme_legend_user_flag_and_timezone($data);
+        }
+
+        $repliescount = $d->replies.' Replies';
+        if ($d->replies == 1) {
+            $repliescount = $d->replies.' Reply';
+        }
+
+        $repliescount .= ' <i style="font-size: 4px; color: #767676; vertical-align: middle;" class="fa fa-circle"></i>';
+
+        $contribsql = "select count(distinct(userid)) as contributes from {hsuforum_posts} where discussion = ?";
+
+        $contribparams = array('discussion' => $d->id);
+
+        $contribcount = 0;
+
+        if ($c = $DB->get_record_sql($contribsql, $contribparams)) {
+            $contribs = $c->contributes;
+        }
+
+        $contribcount = $contribs.' Contributors';
+        if ($contribs == 1) {
+            $contribcount = $contribs.' Contributor';
+        }
+
+        $contribcount .= ' <i style="font-size: 4px; color: #767676; vertical-align: middle;" class="fa fa-circle"></i>';
+
+        $viewssql = "select count(userid) as views from {hsuforum_read} where forumid = ? and discussionid = ?";
+
+        $viewsparams = array('forumid' => $PAGE->cm->instance, 'discussionid' => $d->id);
+
+        $views = 0;
+
+        if ($v = $DB->get_record_sql($viewssql, $viewsparams)) {
+            $views = $v->views;
+        }
+
+        $viewcount = $views.' Views';
+        if ($views == 1) {
+            $viewcount = $views.' View';
+        }
 
         $threadheader = <<<HTML
         <div class="hsuforum-thread-header">
             <div class="hsuforum-thread-title">
-                <h4 id='thread-title-{$d->id}' role="heading" aria-level="4">
+                <h2 id='thread-title-{$d->id}' aria-level="4">
                     $threadtitle
-                </h4>
-                <small>$datecreated</small>
+                </h2>
+                <div>
+                    <small>
+                        <span class="topic-by">Topic by</span> $byuser 
+                    </small>
+                </div>
+                <div class="thread-info-bar">
+                    <div>
+                        <small>$repliescount</small> 
+                        <small>$contribcount</small>
+                        <small>$viewcount</small>
+                    </div>
+                    $threadmeta
+                </div>
             </div>
-            $threadmeta
         </div>
 HTML;
+        // Adding topic subscription button to block.
+        $threadheader .= '<div class="hsuforum-thread-flags">'."{$d->subscribe} $d->postflags</div>";
 
         return <<<HTML
 <article id="p{$d->postid}" class="hsuforum-thread hsuforum-post-target clearfix" role="article"
     data-discussionid="$d->id" data-postid="$d->postid" data-author="$author" data-isdiscussion="true" $attrs>
     <header id="h{$d->postid}" class="clearfix $unreadclass">
-        <div class="hsuforum-thread-author">
-            <img class="userpicture img-circle" src="{$d->imagesrc}" alt="" />
-            <p class="hsuforum-thread-byline">
-                $byuser $group $revealed
-            </p>
+        <div class="clearfix">
+            <div class="hsuforum-thread-author clearfix">
+                <a href="$d->userurl">
+                    <img class="userpicture img-circle" src="{$d->imagesrc}" alt="profile picture" />
+                </a>
+                $flagandtimezone
+                <p class="hsuforum-thread-byline">
+                    $group $revealed
+                </p>
+            </div>
+            <div class="hsuforum-thread-header-right clearfix">
+                $threadheader
+                <div class="hsuforum-thread-content" tabindex="0">
+                    $d->message
+                </div>
+                $tools
+            </div>
         </div>
-
-        $threadheader
-
-        <div class="hsuforum-thread-content" tabindex="0">
-            $d->message
-        </div>
-        $tools
     </header>
-
     <div id="hsuforum-thread-{$d->id}" class="hsuforum-thread-body">
         <!-- specific to blog style -->
         $blogmeta
+        $filterandsort
         $d->posts
         $d->replyform
     </div>
@@ -774,9 +826,9 @@ HTML;
 
                     if ($post->nestedreplycount > 2 && $depth == 0) {
                         // Adding collapsable elements
-                        $output .= "<div id=".$post->id." class='posts-collapse-container collapse'>";
+                        $output .= "<div id=id".$post->id." class='posts-collapse-container collapse'>";
                         $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
-                        $output .= "<a class='posts-collapse-toggle collapse-bottom' data-toggle='collapse' data-target='#".$post->id."'></i></a>";
+                        $output .= "<a class='posts-collapse-toggle collapse-bottom' data-toggle='collapse' data-target='#id".$post->id."'></i></a>";
                         $output .= "</div>" ;
                     } else {
                         $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
@@ -824,7 +876,9 @@ HTML;
      * @return string
      */
     public function post_template($p) {
-        global $PAGE;
+        global $PAGE, $DB, $USER;
+
+        $filterandsort = '';
 
         $byuser = $p->fullname;
         if (!empty($p->userurl)) {
@@ -838,20 +892,14 @@ HTML;
             }
             if (empty($p->parentuserpic)) {
                 $byline = get_string('replybyx', 'hsuforum', $byuser);
-            } else {
-                $byline = get_string('postbyxinreplytox', 'hsuforum', array(
-                        'parent' => $p->parentuserpic.$parent,
-                        'author' => $byuser,
-                        'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
-                ));
             }
             if (!empty($p->privatereply)) {
                 if (empty($p->parentuserpic)) {
                     $byline = get_string('privatereplybyx', 'hsuforum', $byuser);
                 } else {
                     $byline = get_string('postbyxinprivatereplytox', 'hsuforum', array(
-                            'author' => $byuser,
-                            'parent' => $p->parentuserpic.$parent
+                        'author' => $byuser,
+                        'parent' => $p->parentuserpic.$parent
                         ));
                 }
             }
@@ -862,16 +910,30 @@ HTML;
         $author = s(strip_tags($p->fullname));
         $unread = '';
         $unreadclass = '';
+        $unreadparenthtml = '';
+        $unreadparentclass = '';
+        $actualparentid = 0;
         if ($p->unread) {
+            // Need to get the overarching parentid.
+            // Depending on depth we need to go as deep as depth.
+            $actualparentid = $p->parentid;
+            if ($p->depth > 1) {
+                $actualparentid = self::check_parents_parent($p->parentid, $p->depth);
+            }
+
             $unread = "<span class='hsuforum-unreadcount'>".get_string('unread', 'hsuforum')."</span>";
             $unreadclass = "hsuforum-post-unread";
+            $unreadparenthtml = "data-unreadparentid='" . $actualparentid->parent . "'";
+            $unreadparentclass = 'unreadparent';
         }
         $options = get_string('options', 'hsuforum');
         $datecreated = hsuforum_relative_time($p->rawcreated, array('class' => 'hsuforum-post-pubdate'));
 
-
         $postreplies = '';
-        if($p->replycount) {
+
+        if ($p->depth == 0 && $p->nestedreplycount > 2) {
+            $postreplies = "<a class='post-reply-count posts-collapse-toggle collapse-top' data-toggle='collapse' data-target='#id".$p->id."'>$p->nestedreplycount</a>";
+        } else {
             $postreplies = "<div class='post-reply-count accesshide'>$p->replycount</div>";
         }
 
@@ -886,30 +948,89 @@ HTML;
             $revealed = '<span class="label label-danger">'.$nonanonymous.'</span>';
         }
 
- return <<<HTML
-<div class="hsuforum-post-wrapper hsuforum-post-target clearfix $unreadclass" id="p$p->id" data-postid="$p->id" data-discussionid="$p->discussionid" data-author="$author" data-ispost="true" tabindex="-1">
+        /*
+         * Flags and timezone
+         * Add users country flag and timezone.
+        */
+        $flagandtimezone = '';
+        if ($PAGE->theme->settings->display_flag_and_time && !empty($p->userurl)) {
+            $userid = $p->userurl->params()['id'];
 
-    <div class="hsuforum-post-figure">
+            $data = $DB->get_record_sql('SELECT timezone, country FROM {user} WHERE id = ?',
+                array($userid));
 
-        <img class="userpicture" src="{$p->imagesrc}" alt="">
+            $flagandtimezone = theme_legend_user_flag_and_timezone($data);
+        }
 
+        /*
+         * Start CSS class for role
+         * Addition
+         * Adds colour to post entry dependant
+         * on user that made the post.
+        */
+        $roleclass = '';
+        if($userid = $p->userurl->params()['id']) {
+            $courseid = $p->userurl->params()['course'];
+            $context = context_course::instance($courseid);
+            $roles = get_user_roles($context, $userid);
+            foreach ($roles as $role) {
+                $roleclass .= $role->shortname.' ';
+            }
+            $roleclass = rtrim($roleclass);
+        }
+
+        /*
+         * CSS class for role
+         * Addition
+         * Adds colour to post entry dependant
+         * on user that made the post.
+        */
+        $loggedinuser = '';
+        if($userid = $p->userurl->params()['id']) {
+            if($loggedinuserid = $USER->id){
+                if($userid === $loggedinuserid) {
+                    $loggedinuser = 'loggedinuser';
+                }
+            }
+        }
+
+        if (isset($p->userid)) {
+            $useridp = $p->userid;
+        } else {
+            $useridp = '';
+        }
+
+        $tools = $p->tools;
+
+        $tools = '<ul class="hsuforum-thread-tools_list"><li>'.$p->tools.'</li></ul>';
+
+        return <<<HTML
+ <div class="hsuforum-post-parent">
+    <div class="hsuforum-post-figure {$useridp} depth$p->depth">
+        <a href="$p->userurl">
+            <img class="userpicture" src="{$p->imagesrc}" alt="profile picture">
+        </a>
+        $flagandtimezone
     </div>
+</div>
+<div class="hsuforum-post-wrapper hsuforum-post-target clearfix $roleclass $loggedinuser $unreadclass $unreadparentclass" id="p$p->id" data-postid="$p->id" data-discussionid="$p->discussionid" data-author="$author" data-ispost="true" $unreadparenthtml tabindex="-1">
+
     <div class="hsuforum-post-body">
-        <h6 role="heading" aria-level="6" class="hsuforum-post-byline" id="hsuforum-post-$p->id">
+        <h6 aria-level="6" class="hsuforum-post-byline" id="hsuforum-post-$p->id">
             $unread $byline $revealed
         </h6>
         <small class='hsuform-post-date'><a href="$p->permalink" class="disable-router"$newwindow>$datecreated</a></small>
 
         <div class="hsuforum-post-content">
             <div class="hsuforum-post-title">$p->subject</div>
-                $p->message
+            $p->message
         </div>
         <div role="region" class='hsuforum-tools' aria-label='$options'>
             <div class="hsuforum-postflagging">$p->postflags</div>
             $p->tools
-        </div>
-        $postreplies
+        </div>   
     </div>
+    <div class="replies-collapse-section d-inline-block">$postreplies<span id="hsuforum-new-parent-container-$p->id"></span></div>
 </div>
 HTML;
     }
@@ -1091,8 +1212,10 @@ HTML;
                 array('toggle:substantive', 'hsuforum'),
                 array('toggled:bookmark', 'hsuforum'),
                 array('toggled:subscribe', 'hsuforum'),
-                array('toggled:substantive', 'hsuforum')
-
+                array('toggled:substantive', 'hsuforum'),
+                array('topicfollowdesktop', 'hsuforum'),
+                array('topicfollowmobile', 'hsuforum'),
+                array('topicfollowing', 'hsuforum')
             )
         );
     }
@@ -1164,7 +1287,8 @@ HTML;
                 $url,
                 $isflagged,
                 $canedit,
-                array('class' => 'hsuforum_flag')
+                array('class' => 'hsuforum_flag'),
+                $discussion
             );
 
         }
@@ -1207,7 +1331,8 @@ HTML;
      * @param null $attributes
      * @return string
      */
-    public function toggle_element($type, $describedby, $url, $pressed = false, $link = true, $attributes = null) {
+    public function toggle_element($type, $describedby, $url, $pressed = false, $link = true, $attributes = null, $discussion = null) {
+
         if ($pressed) {
             $label = get_string('toggled:'.$type, 'hsuforum');
         } else {
@@ -1220,25 +1345,32 @@ HTML;
             $attributes['class'] = '';
         }
         $classes = array($attributes['class'], 'hsuforum-toggle hsuforum-toggle-'.$type);
+
         if ($pressed) {
             $classes[] = 'hsuforum-toggled';
         }
         $classes = array_filter($classes);
         // Re-add classes to attributes.
         $attributes['class'] = implode(' ', $classes);
-        $icon = '<svg viewBox="0 0 100 100" class="svg-icon '.$type.'">
-        <title>'.$label.'</title>
-        <use xlink:href="#'.$type.'"></use></svg>';
+
+        $topicrender = new topic_render();
+        $button = $topicrender->topic_subcription_button($pressed);
+        $followbutton = null;
+
         if ($link) {
             $attributes['role']       = 'button';
             $attributes['data-toggletype'] = $type;
             $attributes['aria-pressed'] = $pressed ? 'true' :  'false';
             $attributes['aria-describedby'] = $describedby;
             $attributes['title']       = $type;
-            return (html_writer::link($url, $icon, $attributes));
+            $followbutton = html_writer::link($url, $button, $attributes);
         } else {
-            return (html_writer::tag('span', $icon, $attributes));
+            $followbutton = html_writer::tag('span', $button, $attributes);
         }
+
+        $followbutton = $topicrender->topic_button_meta($followbutton, $discussion);
+
+        return $followbutton;
     }
 
     /**
@@ -1271,8 +1403,10 @@ HTML;
             $url,
             $subscribe->is_subscribed($discussion->id),
             true,
-            array('class' => 'hsuforum_discussion_subscribe')
+            array('class' => 'hsuforum_discussion_subscribe'),
+            $discussion
         );
+
         return $o;
     }
 
@@ -1287,12 +1421,12 @@ HTML;
         $url = new moodle_url('/mod/hsuforum/view.php');
 
         $sortselect = html_writer::select($sort->get_key_options_menu(), 'dsortkey', $sort->get_key(), false, array('class' => ''));
+        //https://jira.2u.com/browse/CTED-1785
         $sortform = "<form method='get' action='$url' class='hsuforum-discussion-sort'>
                     <legend class='accesshide'>".get_string('sortdiscussions', 'hsuforum')."</legend>
                     <input type='hidden' name='id' value='{$cm->id}'>
-                    <label for='dsortkey' class=''>Sort:</label>
                     $sortselect
-                    <input type='submit' value='".get_string('sortdiscussionsby', 'hsuforum')."'>
+                    <input class='rounded-pill btn btn-secondary sort-btn' type='submit' value='".get_string('sortdiscussionsby', 'hsuforum')."'>
                     </form>";
 
         return $sortform;
@@ -1805,7 +1939,7 @@ HTML;
             $files .= <<<HTML
                 <label>
                     <span class="accesshide">$t->attachmentlabel</span>
-                    <input type="file" name="attachment[]" multiple="multiple" />
+                    <input class="rounded pill btn" type="file" name="attachment[]" multiple="multiple" />
                 </label>
 HTML;
         }
@@ -1832,9 +1966,9 @@ HTML;
 
                 $t->extrahtml
                 $hidden
-                <button type="submit">$t->submitlabel</button>
-                <a href="#" class="hsuforum-cancel disable-router">$t->cancellabel</a>
-                <a href="$advancedurl" aria-pressed="false" class="hsuforum-use-advanced disable-router">$t->advancedlabel</a>
+                <button class="rounded-pill btn btn-primary" type="submit">$t->submitlabel</button>
+                <a href="#" class="hsuforum-cancel disable-router rounded-pill btn btn-secondary">$t->cancellabel</a>
+                <a href="$advancedurl" aria-pressed="false" class="hsuforum-use-advanced disable-router rounded-pill btn btn-secondary">$t->advancedlabel</a>
             </div>
         </fieldset>
     </form>
@@ -1904,10 +2038,9 @@ HTML;
             $replytitle = get_string('replybuttontitle', 'hsuforum', strip_tags($postuser->fullname));
             $commands['reply'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)),
-                '<i class="fa fa-reply"></i> <div class="hsuforumdropdownmenuitem">'.get_string('reply', 'hsuforum').'</div>',
-                array(
-                    'title' => $replytitle,
-                    'class' => 'hsuforum-reply-link btn btn-default',
+                '<i class="fa fa-reply fa-2"></i>',
+                array (
+                    'class' => 'hsuforum-reply-link',
                 )
             );
         }
@@ -1920,9 +2053,9 @@ HTML;
         if (($ownpost && $age < $CFG->maxeditingtime) || local::cached_has_capability('mod/hsuforum:editanypost', context_module::instance($cm->id))) {
             $commands['menu']['edit'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('edit' => $post->id)),
-                '<i class="fa fa-pencil"></i> '.get_string('edit', 'hsuforum'),
-                array(
-                    'class' => 'dropdown-item'
+                '<i class="fa fa-edit fa-2"></i> ',
+                array (
+                    'class' => 'hsuforum-edit-link'
                 )
             );
         }
@@ -1930,9 +2063,9 @@ HTML;
         if (($ownpost && $age < $CFG->maxeditingtime && local::cached_has_capability('mod/hsuforum:deleteownpost', context_module::instance($cm->id))) || local::cached_has_capability('mod/hsuforum:deleteanypost', context_module::instance($cm->id))) {
             $commands['menu']['delete'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('delete' => $post->id)),
-                '<i class="fa fa-trash"></i> '.get_string('delete', 'hsuforum'),
-                array(
-                    'class' => 'dropdown-item'
+                '<i class="fa fa-trash fa-2"></i>',
+                array (
+                    'class' => 'hsuforum-delete-link'
                 )
             );
         }
@@ -1943,10 +2076,9 @@ HTML;
                 && $forum->type != 'single') {
             $commands['menu']['split'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('prune' => $post->id)),
-                '<i class="fa fa-plus-square"></i> '.get_string('prune', 'hsuforum'),
-                array(
-                    'title' => get_string('pruneheading', 'hsuforum'),
-                    'class' => 'dropdown-item'
+                '<i class="fa fa-plus-square fa-2"></i>',
+                array (
+                    'class' => 'hsuforum-split-link'
                 )
             );
         }
@@ -2034,7 +2166,6 @@ HTML;
      *
      * @return string
      */
-     //fill="#FFFFFF"
     public function svg_sprite() {
         return '<svg style="display:none" x="0px" y="0px"
              viewBox="0 0 100 100" enable-background="new 0 0 100 100">
@@ -2190,5 +2321,26 @@ HTML;
         if (!(array_key_exists($post->parent, $postsarray))) {
             $postsarray[$post->parent] = $posts[$post->parent];
         }
+    }
+
+    /**
+     * @param $parentid
+     * @param $depth
+     */
+    private function check_parents_parent($parentid, $depth) {
+        global $DB;
+
+        $initparent = $parentid;
+        $actualparent = 0;
+
+        for ($x = 0; $x < $depth - 1; $x++ ) {
+            if (empty($actualparent)){
+                $actualparent = $DB->get_record('hsuforum_posts', array('id' => $initparent), 'parent');
+            } else {
+                $actualparent = $DB->get_record('hsuforum_posts', array('id' => $actualparent->parent), 'parent');
+            }
+        }
+
+        return $actualparent;
     }
 }

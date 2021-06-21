@@ -43,7 +43,7 @@ if ($ADMIN->fulltree) {
 
     // Number of discussions on a page
     $settings->add(new admin_setting_configtext('hsuforum/manydiscussions', get_string('manydiscussions', 'hsuforum'),
-                       get_string('configmanydiscussions', 'hsuforum'), 100, PARAM_INT));   
+                       get_string('configmanydiscussions', 'hsuforum'), 100, PARAM_INT));
 
     if (isset($CFG->maxbytes)) {
         $maxbytes = 0;
@@ -134,6 +134,19 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configcheckbox('hsuforum/hiderecentposts', get_string('hiderecentposts', 'hsuforum'),
                        get_string('confighiderecentposts', 'hsuforum'), 0));
+
+    $name = 'hsuforum/avatarnumberstorenders';
+    $title = get_string('avatarnumberstorenders', 'hsuforum');
+    $description = get_string('avatarnumberstorendersdescription', 'hsuforum');
+    $default = '';
+    $options = array(
+        ''  => 'default',
+        5  => '5',
+        10  => '10',
+        15  => '15',
+        20  => '20',
+    );
+    $settings->add(new admin_setting_configselect($name, $description, $default, 0, $options));
 
     // Logged in User
     $name = 'hsuforum/userloggedinheading';
@@ -287,6 +300,66 @@ if ($ADMIN->fulltree) {
     $default = '';
     $previewconfig = null;
     $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    // New Avatar HSU forum settings
+    $name = 'hsuforum/newavatarbadgeheading';
+    $heading = get_string('avatarnewbadgesettingsheader', 'hsuforum');
+    $information = '';
+    $setting = new admin_setting_heading($name, $heading, $information);
+    $settings->add($setting);
+
+    //bg color
+    $name = 'hsuforum/newavatarbadgebackgroundcolour';
+    $title = get_string('new_avatar_badge_backgroundcolour', 'hsuforum');
+    $default = '';
+    $previewconfig = null;
+    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    //border color
+    $name = 'hsuforum/newavatarbadgebordercolour';
+    $title = get_string('new_avatar_badge_bordercolour', 'hsuforum');
+    $default = '';
+    $previewconfig = null;
+    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    //text color
+    $name = 'hsuforum/newavatarbadgetextcolour';
+    $title = get_string('new_avatar_badge_textcolour', 'hsuforum');
+    $default = '';
+    $previewconfig = null;
+    $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    //border radius
+    $name = 'hsuforum/newavatarbadgeborderradius';
+    $title = get_string('new_avatar_badge_borderradius', 'hsuforum');
+    $description = get_string('new_avatar_badge_borderradius_desc', 'hsuforum');
+    $setting = new admin_setting_configtext($name, $title, $description, '');
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    //Hover background color
+    $name = 'hsuforum/newavatarbadgehoverbackgroundcolour';
+    $title = get_string('new_avatar_badge_hoverbackgroundcolor', 'hsuforum');
+    $default = '';
+    $previewconfig = null;
+    $setting = new admin_setting_configcolourpicker($name, $title, $default, $previewconfig);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $settings->add($setting);
+
+    //Hover text color
+    $name = 'hsuforum/newavatarbadgehovertextcolour';
+    $title = get_string('new_avatar_badge_hovertextcolor', 'hsuforum');
+    $default = '';
+    $previewconfig = null;
+    $setting = new admin_setting_configcolourpicker($name, $title, $default, $previewconfig);
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
 }

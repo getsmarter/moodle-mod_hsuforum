@@ -851,7 +851,7 @@ function hsuforum_cron() {
                 $a->forumname = $cleanforumname;
                 $a->subject = $data->get_subject();
                 $postsubject = html_to_text(get_string('postmailsubject', 'hsuforum', $a), 0);
-                
+
                 $postfullmessage = get_string('mobileappnotification', 'hsuforum');
                 $postfullmessage = str_replace("{student_full_name}", fullname($postuser), $postfullmessage);
                 $postfullmessage = str_replace("{course_short_name}", $a->courseshortname, $postfullmessage);
@@ -1964,7 +1964,7 @@ function hsuforum_get_post_full($postid) {
  * @return array of posts
  */
 function hsuforum_get_all_discussion_posts($discussionid, $conditions = array()) {
-    global $CFG, $DB, $USER; 
+    global $CFG, $DB, $USER;
 
     $tr_sel  = "";
     $tr_join = "";
@@ -3622,7 +3622,9 @@ function hsuforum_search_form($course, $forumid=null, $search='') {
     $output .= '<form action="'.$CFG->wwwroot.'/mod/hsuforum/search.php">';
     $output .= '<fieldset class="invisiblefieldset">';
     $output .= '<input id="search" name="search" type="search" placeholder="'.get_string('search', 'hsuforum').'" value="'.s($search, true).'"/>';
-    $output .= '<input id="searchforums" value="'.get_string('searchforums', 'hsuforum').'" type="submit" />';
+    $output .= '<button id="searchforums" type="submit">
+                    <i class="fa fa-search"></i>
+                </button>';
     $output .= '<input name="id" type="hidden" value="'.$course->id.'" />';
     if ($forumid != null) {
         $output .= '<input name="forumid" type="hidden" value="'.s($forumid).'" />';
@@ -3833,7 +3835,6 @@ function hsuforum_print_attachments($post, $cm, $type) {
                     $button->set_format_by_file($file);
                     $output .= $button->to_html(PORTFOLIO_ADD_ICON_LINK);
                 }
-                $output .= "<br />";
 
             } else if ($type == 'text') {
                 $output .= "$strattachment ".s($filename).":\n$path\n";
@@ -3841,7 +3842,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
             } else { //'returnimages'
                 if (in_array($mimetype, array('image/gif', 'image/jpeg', 'image/png'))) {
                     // Image attachments don't get printed as links
-                    $imagereturn .= "<br /><img src=\"$path\" alt=\"\" />";
+                    $imagereturn .= "<img src=\"$path\" alt=\"\" />";
                     if ($canexport) {
                         $button->set_callback_options('hsuforum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), 'mod_hsuforum');
                         $button->set_format_by_file($file);
@@ -3855,7 +3856,6 @@ function hsuforum_print_attachments($post, $cm, $type) {
                         $button->set_format_by_file($file);
                         $output .= $button->to_html(PORTFOLIO_ADD_ICON_LINK);
                     }
-                    $output .= '<br />';
                 }
             }
 
@@ -3866,7 +3866,6 @@ function hsuforum_print_attachments($post, $cm, $type) {
                     'cmid' => $cm->id,
                     'course' => $cm->course,
                     'hsuforum' => $cm->instance));
-                $output .= '<br />';
             }
         }
     }
@@ -4151,7 +4150,7 @@ function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload
     }
 
     // Handle draftid's that has been passed via the post (typically mobile).
-    if ($post->draftid) { 
+    if ($post->draftid) {
         $draftid = $post->draftid;
         $filearea = 'attachment';
     }
@@ -5516,7 +5515,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
 
     if ($discussions) {
-        echo "<h3 class='hsuforum-discussion-count' data-count='$numdiscussions'>".get_string('xdiscussions', 'hsuforum', $numdiscussions)."</h3>";
+        echo "<h3 class='hsuforum-discussion-count rounded discussion-meta' data-count='$numdiscussions'>".get_string('xdiscussions', 'hsuforum', $numdiscussions)."</h3>";
     }
 
     // lots of echo instead of building up and printing - bad
@@ -5526,7 +5525,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         '<form class="hsuforum-add-discussion" id="newdiscussionform" method="get" action="'.$CFG->wwwroot.'/mod/hsuforum/post.php">
         <div>
         <input type="hidden" name="forum" value="'.$forum->id.'" />
-        <input type="submit" value="'.get_string('addanewtopic', 'hsuforum').'" />
+        <input class="rounded-pill btn btn-primary" type="submit" value="'.get_string('addanewtopic', 'hsuforum').'" />
         </div>
         </form>';
     }
@@ -5550,18 +5549,18 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         echo "<div id='hsuforum-filter-options'>";
             echo "<div class='filter-option-wrapper row'>";
                 echo "<div class='filter-option'>";
-                
+
                     if ($groupselect && strpos($groupselect, '<form') !== false) {
                         echo'<label for="selectgroup" >Filter:</label>';
                     }
                     echo $groupselect;
-                
+
                 echo "</div>";
 
                 echo "<div class='filter-option'>";
-                
+
                     echo $sortselect;
-                
+
                 echo "</div>";
 
             echo "</div>";
@@ -8209,6 +8208,96 @@ function hsuforum_simpler_time($seconds) {
 }
 
 /**
+ * Format a date/time (seconds) as weeks, days, hours etc as needed
+ *
+ * Given an amount of time in seconds, returns string
+ * formatted nicely as years, days, hours etc as needed
+ *
+ * @package core
+ * @category time
+ * @uses MINSECS
+ * @uses HOURSECS
+ * @uses DAYSECS
+ * @uses YEARSECS
+ * @param int $totalsecs Time in seconds
+ * @param stdClass $str Should be a time object
+ * @return string A nicely formatted date/time string
+ */
+function hsuforum_format_time($totalsecs, $str = null) {
+
+    $totalsecs = abs($totalsecs);
+
+    if (!$str) {
+        // Create the str structure the slow way.
+        $str = new stdClass();
+        $str->day   = get_string('day', 'mod_hsuforum');
+        $str->days  = get_string('days', 'mod_hsuforum');
+        $str->hour  = get_string('hour', 'mod_hsuforum');
+        $str->hours = get_string('hours', 'mod_hsuforum');
+        $str->min   = get_string('minute', 'mod_hsuforum');
+        $str->mins  = get_string('minutes', 'mod_hsuforum');
+        $str->sec   = get_string('second', 'mod_hsuforum');
+        $str->secs  = get_string('seconds', 'mod_hsuforum');
+        $str->year  = get_string('year', 'mod_hsuforum');
+        $str->years = get_string('years', 'mod_hsuforum');
+    }
+
+    $years     = floor($totalsecs/YEARSECS);
+    $remainder = $totalsecs - ($years*YEARSECS);
+    $days      = floor($remainder/DAYSECS);
+    $remainder = $totalsecs - ($days*DAYSECS);
+    $hours     = floor($remainder/HOURSECS);
+    $remainder = $remainder - ($hours*HOURSECS);
+    $mins      = floor($remainder/MINSECS);
+    $secs      = $remainder - ($mins*MINSECS);
+
+    $ss = ($secs == 1)  ? $str->sec  : $str->secs;
+    $sm = ($mins == 1)  ? $str->min  : $str->mins;
+    $sh = ($hours == 1) ? $str->hour : $str->hours;
+    $sd = ($days == 1)  ? $str->day  : $str->days;
+    $sy = ($years == 1)  ? $str->year  : $str->years;
+
+    $oyears = '';
+    $odays = '';
+    $ohours = '';
+    $omins = '';
+    $osecs = '';
+
+    if ($years) {
+        $oyears  = $years . $sy;
+    }
+    if ($days) {
+        $odays  = $days . $sd;
+    }
+    if ($hours) {
+        $ohours = $hours . $sh;
+    }
+    if ($mins) {
+        $omins  = $mins . $sm;
+    }
+    if ($secs) {
+        $osecs  = $secs . $ss;
+    }
+
+    if ($years) {
+        return trim($oyears . $odays);
+    }
+    if ($days) {
+        return trim($odays . $ohours);
+    }
+    if ($hours) {
+        return trim($ohours . $omins);
+    }
+    if ($mins) {
+        return trim($omins . $osecs);
+    }
+    if ($secs) {
+        return $osecs;
+    }
+    return get_string('now', 'mod_hsuforum');
+}
+
+/**
  * Return friendly relative time (e.g. "1 min ago", "1 year ago") in a <time> tag
  *
  * @param int $timeinpast
@@ -8236,9 +8325,9 @@ function hsuforum_relative_time($timeinpast, $attributes = null) {
         $defaultatts['title'] = '';
     } else {
         $secondsago = hsuforum_simpler_time($secondsago);
-        $displaytime = format_time($secondsago);
+        $displaytime = hsuforum_format_time($secondsago);
         if ($secondsago != 0) {
-            $displaytime = get_string('ago', 'message', $displaytime);
+            $displaytime = get_string('ago', 'mod_hsuforum', $displaytime);
         }
     }
 

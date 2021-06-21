@@ -3,7 +3,7 @@
  * into view if not on the viewport
  */
  define(['jquery'], function($) {
- 
+
     return {
         init: function() {
             $('.posts-collapse-container').on('hide.bs.collapse', function() {
@@ -21,6 +21,8 @@
                             let parentId = $(this).parent().attr('id');
                             // Only scroll once collapse event is done
                             $('#'+id).on('hidden.bs.collapse', function() {
+                             //relpace id from the div as its added by moodle by default
+                                id = id.replace("id", "");
                                 let yAxis = $('#p'+id).offset().top - 80;
                                 // Smoothing out the animation
                                 $([document.documentElement, document.body]).animate({
@@ -29,6 +31,24 @@
                             })
                         }
                     }
+                }
+            });
+
+            $('.expandalldiscussions').on('click', function () {
+                if ($('.expandalldiscussions').hasClass('expanded')) {
+                    $('.expandalldiscussions')[0].innerHTML = 'Expand All'
+                    const collapsable = $('.posts-collapse-container.collapse');
+                    for (let x = 0; x < collapsable.length; x++) {
+                        $('#' + collapsable[x].id).collapse('toggle')
+                    }
+                    $('.expandalldiscussions').removeClass('expanded')
+                } else {
+                    $('.expandalldiscussions')[0].innerHTML = 'Collapse All'
+                    const collapsable = $('.posts-collapse-container.collapse');
+                    for (let x = 0; x < collapsable.length; x++) {
+                        $('#' + collapsable[x].id).collapse('toggle')
+                    }
+                    $('.expandalldiscussions').addClass('expanded')
                 }
             });
         }

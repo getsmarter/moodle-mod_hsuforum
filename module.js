@@ -11,27 +11,18 @@ M.mod_hsuforum = M.mod_hsuforum || {};
  * @author Guy Thomas
  */
 M.mod_hsuforum.onToggleResponse = function(link) {
-    var active,
-        status,
-        title,
-        svgTitle;
-
     link.toggleClass('hsuforum-toggled');
 
     if (link.getAttribute('aria-pressed') == 'true') {
         link.setAttribute('aria-pressed', false);
-        active = false;
+        // Need to check for mobile here.
+        link._node.children[0].children[0].innerHTML = M.str.hsuforum.topicfollowdesktop;
     } else {
         link.setAttribute('aria-pressed', true);
-        active = true;
+        link._node.children[0].children[0].innerHTML = M.str.hsuforum.topicfollowing;
     }
-
-    // Set new link title;
-    status = active ? 'toggled' : 'toggle';
-    title = M.util.get_string(status+':'+link.getData('toggletype'),'hsuforum');
-    svgTitle = link.one('svg title');
-    svgTitle.set('text', title);
 }
+
 
 M.mod_hsuforum.toggleStatesApplied = false;
 

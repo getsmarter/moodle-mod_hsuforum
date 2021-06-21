@@ -31,6 +31,13 @@
 
     require_once('../../config.php');
     require_once(__DIR__.'/lib/discussion/sort.php');
+    $PAGE->requires->jquery();
+    $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_button_animate', 'init',
+        [
+            'following' => get_string('topicfollowing', 'hsuforum'),
+            'unfollow'  => get_string('topicunfollow', 'hsuforum')
+        ]
+    );
 
     // Get the discussion id, and deal with broken requests by browsers...
     // that don't understand the AJAX links. I'm looking at you IE.
@@ -378,5 +385,6 @@ echo "<script>
 
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_focus', 'init');
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_loader', 'init');
+$PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_parent_reply_display', 'init');
 
 echo $OUTPUT->footer();

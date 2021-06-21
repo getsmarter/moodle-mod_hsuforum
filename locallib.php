@@ -196,7 +196,7 @@ class hsuforum_portfolio_caller extends portfolio_module_caller_base {
                 if ($writingleap) {
                     $ids[] = $this->prepare_post_leap2a($leapwriter, $post, $posthtml);
                 } else {
-                    $content .= $posthtml . '<br /><br />';
+                    $content .= $posthtml;
                 }
             }
             $this->copy_files($this->multifiles);
@@ -328,9 +328,9 @@ class hsuforum_portfolio_caller extends portfolio_module_caller_base {
 
         if (is_array($this->keyedfiles) && array_key_exists($post->id, $this->keyedfiles) && is_array($this->keyedfiles[$post->id]) && count($this->keyedfiles[$post->id]) > 0) {
             $output .= '<div class="attachments">';
-            $output .= '<br /><b>' .  get_string('attachments', 'hsuforum') . '</b>:<br /><br />';
+            $output .= '<b>' .  get_string('attachments', 'hsuforum') . '</b>:';
             foreach ($this->keyedfiles[$post->id] as $file) {
-                $output .= $format->file_output($file)  . '<br/ >';
+                $output .= $format->file_output($file);
             }
             $output .= "</div>";
         }
