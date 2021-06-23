@@ -444,7 +444,7 @@ function hsuforum_print_big_search_form($course) {
     echo '<input class="form-control" type="text" size="35" name="user" id="user" value="'.s($user, true).'" />';
     echo '</div>';
 
-    echo '<input type="submit" value="'.get_string('searchforums', 'hsuforum').'"/>';
+    echo '<input type="submit" class="rounded-pill btn btn-primary" value="'.get_string('searchforums', 'hsuforum').'"/>';
 
     echo '</form>';
 
