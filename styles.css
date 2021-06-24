@@ -359,6 +359,24 @@
     display: inline-block;
 }
 
+#page-mod-hsuforum-view #discussionsview .hsuforum-thread-meta .hsuforum-unreadcount:hover {
+    font-weight: 600;
+    text-decoration: underline !important;
+    color: [[setting:newavatarbadgehovertextcolour]] !important;
+    border-bottom: none !important;
+}
+
+.hsuforum-unreadcount {
+    font-size: 82%;
+    background-color: [[setting:newavatarbadgebackgroundcolour]] !important;
+    color: [[setting:newavatarbadgetextcolour]] !important;
+    line-height: normal;
+    padding: 3px 10px;
+    margin-top: -7px;
+    margin-left: 0;
+    border: 1px solid [[setting:newavatarbadgebordercolour]];
+}
+
 .post-word-count {
     font-size: small;
     text-align: right;
