@@ -324,8 +324,8 @@
 /* unread posts flag */
 
 .hsuforum-newunreadcount {
-    background-color: [[setting:newavatarbadgebackgroundcolour]];
-    color: [[setting:newavatarbadgetextcolour]];
+    background-color: [[setting:newavatarbadgebackgroundcolour]] !important;
+    color: [[setting:newavatarbadgetextcolour]] !important;
     height: 34px;
     margin-top: 5px;
     font-size: 82%;
@@ -333,13 +333,13 @@
     line-height: 1;
     text-align: center;
     border-radius: [[setting:newavatarbadgeborderradius]];
-    border-color: [[setting:newavatarbadgebordercolour]];
     display: inline-block;
     padding: .8em .4em;
+    border: 1px solid [[setting:newavatarbadgebordercolour]];
 }
 
 #page-mod-hsuforum-view #discussionsview a.hsuforum-newunreadcount.disable-router:hover {
-    background-color: [[setting:newavatarbadgehoverbackgroundcolour]];
+    background-color: [[setting:newavatarbadgehoverbackgroundcolour]] !important;
     color: [[setting:newavatarbadgehovertextcolour]] !important;
 }
 
