@@ -912,11 +912,11 @@ HTML;
         $unreadclass = '';
         $unreadparenthtml = '';
         $unreadparentclass = '';
-        $actualparentid = 0;
+        $actualparentid = (object)[];
         if ($p->unread) {
             // Need to get the overarching parentid.
             // Depending on depth we need to go as deep as depth.
-            $actualparentid = $p->parentid;
+            $actualparentid->parent = $p->parentid;
             if ($p->depth > 1) {
                 $actualparentid = self::check_parents_parent($p->parentid, $p->depth);
             }
@@ -2331,16 +2331,16 @@ HTML;
         global $DB;
 
         $initparent = $parentid;
-        $actualparent = 0;
+        $actualparent = (object)[];
 
-        for ($x = 0; $x < $depth - 1; $x++ ) {
+        for ($x = 0; $x < $depth; $x++ ) {
             if (empty($actualparent)){
                 $actualparent = $DB->get_record('hsuforum_posts', array('id' => $initparent), 'parent');
             } else {
                 $actualparent = $DB->get_record('hsuforum_posts', array('id' => $actualparent->parent), 'parent');
             }
         }
-
+        
         return $actualparent;
     }
 }
