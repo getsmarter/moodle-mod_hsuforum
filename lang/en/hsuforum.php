@@ -769,3 +769,12 @@ $string['year'] = 'y';
 $string['years'] = 'y';
 $string['ago'] = '{$a} ago';
 $string['now'] = 'now';
+
+$string['sharelabel'] = 'share';
+$string['splitlabel'] = 'split';
+$string['deletelabel'] = 'delete';
+$string['editlabel'] = 'edit';
+$string['replylabel'] = 'reply';
+$string['sharelabel'] = 'share';
+$string['likelabel'] = 'like';
+
