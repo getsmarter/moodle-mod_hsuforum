@@ -27,11 +27,10 @@
 $string['reply'] = 'Respuesta';
 $string['subscribeshort'] = 'Suscribir';
 $string['subscribed'] = 'Suscrita';
-$string['sharelabel'] = 'share';
-$string['splitlabel'] = 'split';
-$string['deletelabel'] = 'delete';
-$string['editlabel'] = 'edit';
-$string['replylabel'] = 'reply';
-$string['sharelabel'] = 'reply';
-$string['likelabel'] = 'reply';
+$string['sharelabel'] = 'Cuota';
+$string['splitlabel'] = 'Separar';
+$string['deletelabel'] = 'Eliminar';
+$string['editlabel'] = 'Editar';
+$string['replylabel'] = 'Respuesta';
+$string['likelabel'] = 'Como';
 

@@ -775,6 +775,5 @@ $string['splitlabel'] = 'split';
 $string['deletelabel'] = 'delete';
 $string['editlabel'] = 'edit';
 $string['replylabel'] = 'reply';
-$string['sharelabel'] = 'share';
 $string['likelabel'] = 'like';
 
