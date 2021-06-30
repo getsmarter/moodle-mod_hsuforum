@@ -502,7 +502,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         $toolsarray = $commands;
         $toolstring = '';
-        $toolsbuttons = ''; 
+        $toolsbuttons = '';
         $toolsmenu = '';
             foreach ($toolsarray as $tools) {
                 if (!is_array($tools)) {
@@ -2035,10 +2035,9 @@ HTML;
 
         if ($canreply and empty($post->privatereply)) {
             $postuser   = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
-            $replytitle = get_string('replybuttontitle', 'hsuforum', strip_tags($postuser->fullname));
             $commands['reply'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)),
-                '<i class="fa fa-reply fa-2"></i>',
+                '<i class="fa fa-reply fa-2"><span class="hsuforum-action-label" title="reply">' . get_string('replylabel', 'hsuforum') . '</span></i>',
                 array (
                     'class' => 'hsuforum-reply-link',
                 )
@@ -2053,7 +2052,7 @@ HTML;
         if (($ownpost && $age < $CFG->maxeditingtime) || local::cached_has_capability('mod/hsuforum:editanypost', context_module::instance($cm->id))) {
             $commands['menu']['edit'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('edit' => $post->id)),
-                '<i class="fa fa-edit fa-2"></i> ',
+                '<i class="fa fa-edit fa-2"><span class="hsuforum-action-label">' . get_string('editlabel', 'hsuforum') . '</span></i>',
                 array (
                     'class' => 'hsuforum-edit-link'
                 )
@@ -2063,7 +2062,7 @@ HTML;
         if (($ownpost && $age < $CFG->maxeditingtime && local::cached_has_capability('mod/hsuforum:deleteownpost', context_module::instance($cm->id))) || local::cached_has_capability('mod/hsuforum:deleteanypost', context_module::instance($cm->id))) {
             $commands['menu']['delete'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('delete' => $post->id)),
-                '<i class="fa fa-trash fa-2"></i>',
+                '<i class="fa fa-trash fa-2"><span class="hsuforum-action-label">' . get_string('deletelabel', 'hsuforum') . '</span></i>',
                 array (
                     'class' => 'hsuforum-delete-link'
                 )
@@ -2076,7 +2075,7 @@ HTML;
                 && $forum->type != 'single') {
             $commands['menu']['split'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('prune' => $post->id)),
-                '<i class="fa fa-plus-square fa-2"></i>',
+                '<i class="fa fa-plus-square fa-2"><span class="hsuforum-action-label">' . get_string('splitlabel', 'hsuforum') . '</span></i>',
                 array (
                     'class' => 'hsuforum-split-link'
                 )
@@ -2340,7 +2339,7 @@ HTML;
                 $actualparent = $DB->get_record('hsuforum_posts', array('id' => $actualparent->parent), 'parent');
             }
         }
-        
+
         return $actualparent;
     }
 }
