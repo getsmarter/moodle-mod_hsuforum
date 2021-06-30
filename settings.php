@@ -349,8 +349,7 @@ if ($ADMIN->fulltree) {
     $name = 'hsuforum/newavatarbadgehoverbackgroundcolour';
     $title = get_string('new_avatar_badge_hoverbackgroundcolor', 'hsuforum');
     $default = '#CD1268';
-    $previewconfig = null;
-    $setting = new admin_setting_configcolourpicker($name, $title, $default, $previewconfig);
+    $setting = new admin_setting_configcolourpicker($name, $title, '', $default);
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
 
@@ -358,8 +357,7 @@ if ($ADMIN->fulltree) {
     $name = 'hsuforum/newavatarbadgehovertextcolour';
     $title = get_string('new_avatar_badge_hovertextcolor', 'hsuforum');
     $default = '#fff';
-    $previewconfig = null;
-    $setting = new admin_setting_configcolourpicker($name, $title, $default, $previewconfig);
+    $setting = new admin_setting_configcolourpicker($name, $title,'', $default);
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
 }
