@@ -313,7 +313,7 @@ if ($ADMIN->fulltree) {
     //bg color
     $name = 'hsuforum/newavatarbadgebackgroundcolour';
     $title = get_string('new_avatar_badge_backgroundcolour', 'hsuforum');
-    $default = '';
+    $default = '#E51470';
     $previewconfig = null;
     $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
     $setting->set_updatedcallback('theme_reset_all_caches');
@@ -322,7 +322,7 @@ if ($ADMIN->fulltree) {
     //border color
     $name = 'hsuforum/newavatarbadgebordercolour';
     $title = get_string('new_avatar_badge_bordercolour', 'hsuforum');
-    $default = '';
+    $default = '#E51470';
     $previewconfig = null;
     $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
     $setting->set_updatedcallback('theme_reset_all_caches');
@@ -331,7 +331,7 @@ if ($ADMIN->fulltree) {
     //text color
     $name = 'hsuforum/newavatarbadgetextcolour';
     $title = get_string('new_avatar_badge_textcolour', 'hsuforum');
-    $default = '';
+    $default = '#fff';
     $previewconfig = null;
     $setting = new admin_setting_configcolourpicker($name, $title, $description, $default, $previewconfig);
     $setting->set_updatedcallback('theme_reset_all_caches');
@@ -341,25 +341,23 @@ if ($ADMIN->fulltree) {
     $name = 'hsuforum/newavatarbadgeborderradius';
     $title = get_string('new_avatar_badge_borderradius', 'hsuforum');
     $description = get_string('new_avatar_badge_borderradius_desc', 'hsuforum');
-    $setting = new admin_setting_configtext($name, $title, $description, '');
+    $setting = new admin_setting_configtext($name, $title, $description, '.188rem');
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
 
     //Hover background color
     $name = 'hsuforum/newavatarbadgehoverbackgroundcolour';
     $title = get_string('new_avatar_badge_hoverbackgroundcolor', 'hsuforum');
-    $default = '';
-    $previewconfig = null;
-    $setting = new admin_setting_configcolourpicker($name, $title, $default, $previewconfig);
+    $default = '#CD1268';
+    $setting = new admin_setting_configcolourpicker($name, $title, '', $default);
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
 
     //Hover text color
     $name = 'hsuforum/newavatarbadgehovertextcolour';
     $title = get_string('new_avatar_badge_hovertextcolor', 'hsuforum');
-    $default = '';
-    $previewconfig = null;
-    $setting = new admin_setting_configcolourpicker($name, $title, $default, $previewconfig);
+    $default = '#fff';
+    $setting = new admin_setting_configcolourpicker($name, $title,'', $default);
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
 }
