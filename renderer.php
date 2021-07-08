@@ -404,7 +404,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $filterandsort = "<form method='get' action='' class='hsuforum-post-filterandsort form-inline'>
                     <legend class='accesshide'>".get_string('sortdiscussions', 'hsuforum')."</legend>
                     <input type='hidden' name='d' value='{$data->id}'>
-                    <div class='form-group col-md-12 col-lg-4'>
+                    <div class='form-group col-md-12 col-lg-auto'>
                         <label for='id_filter' class=''>Filter:</label>
                         <select class='custom-select' name='filter' id='id_filter'>
                             <option value='0'>".get_string('filterdefault','hsuforum')."</option>
@@ -412,7 +412,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                             <option ".($filter == 3 ? 'selected' : '')." value='3'>".get_string('filtertutorreplies','hsuforum')."</option>
                         </select>
                     </div>
-                    <div class='form-group col-md-12 col-lg-8'>
+                    <div class='form-group col-md-12 col-lg-auto'>
                         <label for='".($filter > 0 || $sort > 0 ? 'id_sort' : 'id_sort_no_filter')."' class=''> <span id='id_plus'>+</span> Sort:</label>
                         <select class='custom-select' name='sort' id='id_sort'>
                             <option value='0'>".get_string('sortdefault','hsuforum')."</option>
@@ -601,13 +601,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $unreadclass = '';
         $attrs = '';
 
+        $config = get_config('hsuforum');
+        $avatarstorender = $config->avatarnumberstorenders ?: count($d->replyavatars);
+
         if ($d->unread != '-' && !empty($d->lastreplyid)) {
             $new  = get_string('unread', 'hsuforum');
-            $unread = "<div class='hsuforum-thread-participants'>".implode(' ',$d->replyavatars)."<a class='hsuforum-newunreadcount disable-router' href='$d->viewurl&postid=$d->lastreplyid'>$new</a></div>";
+            $unread = "<div class='hsuforum-thread-participants'>".implode(' ', array_slice($d->replyavatars, 0, $avatarstorender))."<a class='hsuforum-newunreadcount disable-router' href='$d->viewurl&postid=$d->lastreplyid'>$new</a></div>";
             $attrs   = 'data-isunread="true"';
             $unreadclass = 'hsuforum-post-unread';
         } else {
-            $unread = "<div class='hsuforum-thread-participants'>".implode(' ',$d->replyavatars)."</div>";
+            $unread = "<div class='hsuforum-thread-participants'>".implode(' ', array_slice($d->replyavatars, 0, $avatarstorender))."</div>";
         }
 
         $author = s(strip_tags($d->fullname));
