@@ -76,6 +76,7 @@ class topic_render {
      * @return string
      */
     public function contributors_html($discussion) {
+        return '';
         $participants = '';
         $avatarlist = '';
         $avatars = implode(' ', $discussion->replyavatars);
