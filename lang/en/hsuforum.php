@@ -704,7 +704,7 @@ $string['mobileappnotification']= '{student_full_name} posted in {course_short_n
 
 // logged in user tags
 $string['settingheadingloggedinuser'] = 'Logged in user';
-$string['loggedinusertext'] = 'loggedinusertext';
+$string['loggedinusertext'] = 'Logged in user text';
 $string['settingslabeltagtextcolor'] = 'Tag text color';
 $string['settingslabeltagbackgroundcolour'] = 'Tag background colour';
 
