@@ -16,10 +16,14 @@ M.mod_hsuforum.onToggleResponse = function(link) {
     if (link.getAttribute('aria-pressed') == 'true') {
         link.setAttribute('aria-pressed', false);
         // Need to check for mobile here.
-        link._node.children[0].children[0].innerHTML = M.str.hsuforum.topicfollowdesktop;
+        if (!link.hasClass('hsuforum-toggle-bookmark') && !link.hasClass('hsuforum-toggle-substantive')) {
+            link._node.children[0].children[0].innerHTML = M.str.hsuforum.topicfollowdesktop;
+        }
     } else {
         link.setAttribute('aria-pressed', true);
-        link._node.children[0].children[0].innerHTML = M.str.hsuforum.topicfollowing;
+        if (!link.hasClass('hsuforum-toggle-bookmark') && !link.hasClass('hsuforum-toggle-substantive')) {
+            link._node.children[0].children[0].innerHTML = M.str.hsuforum.topicfollowing;
+        }
     }
 }
 

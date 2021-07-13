@@ -12,7 +12,11 @@ defined('MOODLE_INTERNAL') || die();
 
 class topic_render {
     // Should always follow default button class of css theme.
-    const BUTTONCLASS = 'btn btn-primary';
+    const BUTTONCLASSES = [
+        'subscribe' => 'btn btn-primary',
+        'bookmark' => '',
+        'substantive' => ''
+    ];
 
     /**
      * topic_subcription_button
@@ -21,21 +25,30 @@ class topic_render {
      * is subscribed to the current forum topic.
      * @return string
      */
-    public function topic_subcription_button($currentlysubbed = false) {
+    public function topic_subcription_button($currentlysubbed = false, $type) {
         global $OUTPUT;
 
         $following = $followingmobile = $pinned = $latestposttime = '';
+        $renderasbutton = false;
 
-        if(!empty($currentlysubbed)) {
-            $following = get_string('topicfollowing','hsuforum');
+        if ($type == 'bookmark') {
+            $following = 'bookmark';
+        } else if ($type == 'substantive') {
+            $following = 'star';
         } else {
-            $following = get_string('topicfollowdesktop','hsuforum');
+            $renderasbutton = true;
+            if(!empty($currentlysubbed)) {
+                $following = get_string('topicfollowing','hsuforum');
+            } else {
+                $following = get_string('topicfollowdesktop','hsuforum');
+            }
         }
 
         return $OUTPUT->render_from_template('mod_hsuforum/hsuforum_topic_buttons',
             [
-                'buttonclass' => SELF::BUTTONCLASS,
-                'following' => $following
+                'buttonclass' => SELF::BUTTONCLASSES[$type],
+                'following' => $following,
+                'renderasbutton' => $renderasbutton
             ]
         );
     }
