@@ -635,7 +635,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             .'</div>';
 
         if ($d->fullthread) {
-            $tools = '<div role="region" class="hsuforum-tools hsuforum-thread-tools" aria-label="'.$options.'">'.$d->tools.'</div>';
+            $tools = '<div role="region" class="hsuforum-tools hsuforum-thread-tools" aria-label="'.$options.'">'.$d->tools.$d->postflags.'</div>';
             $blogmeta = '';
             $blogreplies = '';
 
@@ -726,7 +726,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         </div>
 HTML;
         // Adding topic subscription button to block.
-        $threadheader .= '<div class="hsuforum-thread-flags">'."{$d->subscribe} $d->postflags</div>";
+        $threadheader .= '<div class="hsuforum-thread-flags">'."{$d->subscribe}</div>";
 
         return <<<HTML
 <article id="p{$d->postid}" class="hsuforum-thread hsuforum-post-target clearfix" role="article"
@@ -1357,7 +1357,7 @@ HTML;
         $attributes['class'] = implode(' ', $classes);
 
         $topicrender = new topic_render();
-        $button = $topicrender->topic_subcription_button($pressed);
+        $button = $topicrender->topic_subcription_button($pressed, $type);
         $followbutton = null;
 
         if ($link) {

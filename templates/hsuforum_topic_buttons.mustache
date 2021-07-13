@@ -1,6 +1,12 @@
-<div class="d-block d-lg-block d-xl-block subscriber-wrapper">
-    <button type="button" class="trigger-subscribe rounded-pill {{buttonclass}}">
-        {{following}}
-    </button>
-</div>
+{{#renderasbutton}}
+    <div class="d-block d-lg-block d-xl-block subscriber-wrapper">
+        <button type="button" class="trigger-subscribe rounded-pill {{buttonclass}}">
+            {{following}}
+        </button>
+    </div>
+{{/renderasbutton}}
+{{^renderasbutton}}
+    <i class="fa fa-{{following}} fa-2" aria-hidden="true"></i>
+{{/renderasbutton}}
+
 
