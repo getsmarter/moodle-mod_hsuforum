@@ -534,6 +534,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->parentfullname = '';
         $data->parentuserurl  = '';
         $data->tools          = $toolsbuttons.$toolsmenu;
+        $data->rating         = !empty($this->post_rating($post)) ? $this->post_rating($post) : '';
         $data->postflags      = implode(' ',$this->post_get_flags($post, $cm, $discussion->id, false));
         $data->depth          = $depth;
         $data->revealed       = false;
@@ -1029,9 +1030,10 @@ HTML;
             $p->message
         </div>
         <div role="region" class='hsuforum-tools' aria-label='$options'>
-            <div class="hsuforum-postflagging">$p->postflags</div>
+            $p->postflags
             $p->tools
-        </div>   
+        </div>
+        $p->rating 
     </div>
     <div class="replies-collapse-section d-inline-block">$postreplies<span id="hsuforum-new-parent-container-$p->id"></span></div>
 </div>
@@ -2100,11 +2102,6 @@ HTML;
             if (!empty($porfoliohtml)) {
                 $commands['portfolio'] = $porfoliohtml;
             }
-        }
-
-        $rating = $this->post_rating($post);
-        if (!empty($rating)) {
-            $commands['rating'] = $rating;
         }
 
         return $commands;
