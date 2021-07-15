@@ -1259,15 +1259,17 @@ HTML;
         foreach ($flaglib->get_flags() as $flag) {
 
             // Skip bookmark flagging if switched off at forum level or if global kill switch set.
+            // Also skip if no cap set
             if ($flag == 'bookmark') {
-                if ($forum->showbookmark === '0') {
+                if ($forum->showbookmark === '0' || !has_capability("local/getsmarter:{$flag}_post", $PAGE->context)) {
                     continue;
                 }
             }
 
             // Skip substantive flagging if switched off at forum level or if global kill switch set.
+            // Also skip if no cap set
             if ($flag == 'substantive') {
-                if ($forum->showsubstantive === '0') {
+                if ($forum->showsubstantive === '0' || !has_capability("local/getsmarter:{$flag}_post", $PAGE->context)) {
                     continue;
                 }
             }
@@ -1370,7 +1372,7 @@ HTML;
             $attributes['title']       = $type;
             $followbutton = html_writer::link($url, $button, $attributes);
         } else {
-            $followbutton = html_writer::tag('span', $button, $attributes);
+            $followbutton = html_writer::link($url, $button, $attributes);
         }
 
         $followbutton = $topicrender->topic_button_meta($followbutton, $discussion);
