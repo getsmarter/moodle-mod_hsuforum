@@ -39,8 +39,14 @@ class flag_controller extends controller_abstract {
      */
     public function require_capability($action) {
         global $PAGE;
+        $flag = optional_param('flag', null, PARAM_ALPHA);
 
-        require_capability('mod/hsuforum:editanypost', $PAGE->context);
+        if (!empty($flag)) {
+            require_capability("local/getsmarter:{$flag}_post", $PAGE->context);
+        } else {
+            // Fallback to default functionality here
+            require_capability('mod/hsuforum:editanypost', $PAGE->context);
+        }
     }
 
     /**
