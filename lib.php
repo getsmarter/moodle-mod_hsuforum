@@ -460,6 +460,28 @@ function hsuforum_cron_minimise_user_record(stdClass $user) {
 }
 
 /**
+ * Function to get a posts parents
+ */
+function hsu_forum_get_post_parents($postid) {
+    global $DB;
+
+    if (!empty($postid)) {
+        $currentparent = $postid;
+        $postparentarray = array();
+        while ($currentparent != 0) {
+            $currentpost =  $DB->get_record('hsuforum_posts', array('id' => $currentparent));
+            if (!empty($currentpost)) {
+                $postparentarray[$currentparent] = $currentpost->parent;
+
+                $currentparent = $currentpost->parent;
+            }
+        }
+    }
+
+    return $postparentarray;
+}
+
+/**
  * Function to be run periodically according to the scheduled task.
  *
  * Finds all posts that have yet to be mailed out, and mails them
@@ -899,7 +921,9 @@ function hsuforum_cron() {
                 $eventdata->contexturl = $contexturl->out();
                 $eventdata->contexturlname = $discussion->name;
 
-                $customdata = array('courseid' => $course->id, 'cmid' => $cm->id, 'discussionid' => $discussion->id, 'postid' => $postid);
+                $parentidsarray = hsu_forum_get_post_parents($post->id);
+
+                $customdata = array('courseid' => $course->id, 'cmid' => $cm->id, 'discussionid' => $discussion->id, 'postid' => $post->id, 'postparents' => $parentidsarray);
 
                 $eventdata->customdata = $customdata;
 
