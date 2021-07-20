@@ -321,62 +321,6 @@
     vertical-align: middle;
 }
 
-/* unread posts flag */
-
-.hsuforum-newunreadcount {
-    background-color: [[setting:newavatarbadgebackgroundcolour]] !important;
-    color: [[setting:newavatarbadgetextcolour]] !important;
-    height: 34px;
-    margin-top: 5px;
-    font-size: 82%;
-    font-weight: 600;
-    line-height: 1;
-    text-align: center;
-    border-radius: [[setting:newavatarbadgeborderradius]];
-    display: inline-block;
-    padding: .8em .4em;
-    border: 1px solid [[setting:newavatarbadgebordercolour]];
-}
-
-#page-mod-hsuforum-view #discussionsview a.hsuforum-newunreadcount.disable-router:hover {
-    background-color: [[setting:newavatarbadgehoverbackgroundcolour]] !important;
-    color: [[setting:newavatarbadgehovertextcolour]] !important;
-}
-
-.hsuforum-unreadcount {
-    background-color: [[setting:newavatarbadgebackgroundcolour]];
-    color: [[setting:newavatarbadgetextcolour]];
-    border-radius: [[setting:newavatarbadgeborderradius]];
-    border-color: [[setting:newavatarbadgebordercolour]];
-    font-size: 80%;
-    line-height: normal;
-    padding: 3px 10px;
-    margin-top: -7px;
-    margin-left: 0;
-}
-
-.hsuforum-post .hsuforum-unreadcount {
-    display: inline-block;
-}
-
-#page-mod-hsuforum-view #discussionsview .hsuforum-thread-meta .hsuforum-unreadcount:hover {
-    font-weight: 600;
-    text-decoration: underline !important;
-    color: [[setting:newavatarbadgehovertextcolour]] !important;
-    border-bottom: none !important;
-}
-
-.hsuforum-unreadcount {
-    font-size: 82%;
-    background-color: [[setting:newavatarbadgebackgroundcolour]] !important;
-    color: [[setting:newavatarbadgetextcolour]] !important;
-    line-height: normal;
-    padding: 3px 10px;
-    margin-top: -7px;
-    margin-left: 0;
-    border: 1px solid [[setting:newavatarbadgebordercolour]];
-}
-
 .post-word-count {
     font-size: small;
     text-align: right;
