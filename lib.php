@@ -462,19 +462,18 @@ function hsuforum_cron_minimise_user_record(stdClass $user) {
 /**
  * Function to get a posts parents
  */
-function hsu_forum_get_post_parents($postid) {
+function hsu_forum_get_post_parents($postid, $discussionid) {
     global $DB;
 
-    if (!empty($postid)) {
+    $posts = $DB->get_records_menu('hsuforum_posts', array('discussion' => $discussionid), '', 'id, parent');
+
+    if (!empty($posts)) {
         $currentparent = $postid;
         $postparentarray = array();
         while ($currentparent != 0) {
-            $currentpost =  $DB->get_record('hsuforum_posts', array('id' => $currentparent));
-            if (!empty($currentpost)) {
-                $postparentarray[$currentparent] = $currentpost->parent;
+            $postparentarray[$currentparent] = $posts[$currentparent];
 
-                $currentparent = $currentpost->parent;
-            }
+            $currentparent = $posts[$currentparent];
         }
     }
 
@@ -921,7 +920,7 @@ function hsuforum_cron() {
                 $eventdata->contexturl = $contexturl->out();
                 $eventdata->contexturlname = $discussion->name;
 
-                $parentidsarray = hsu_forum_get_post_parents($post->id);
+                $parentidsarray = hsu_forum_get_post_parents($post->id, $discussion->id);
 
                 $customdata = array('courseid' => $course->id, 'cmid' => $cm->id, 'discussionid' => $discussion->id, 'postid' => $post->id, 'postparents' => $parentidsarray);
 
