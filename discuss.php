@@ -387,4 +387,10 @@ $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_focus', 'init');
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_loader', 'init');
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_parent_reply_display', 'init');
 
+// Get the setting for which editor to use from the GS theme
+$editortouse = get_config('theme_getsmarter', 'hsuforum_editor');
+if (!empty($editortouse) && $editortouse == 'advanced') {
+    $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_editor_toggle', 'init', ['body']);
+}
+
 echo $OUTPUT->footer();
