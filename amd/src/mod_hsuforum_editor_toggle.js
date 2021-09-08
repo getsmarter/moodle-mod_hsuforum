@@ -17,6 +17,18 @@ define([], function() {
                                     var button = node.querySelector('.hsuforum-use-advanced');
                                     if (button) {
                                         button.click();
+
+                                        // Because it is not a true textarea but rather contenteditable attr
+                                        // we need to force a range in order to focus. This is done by inserting zero-width space
+                                        var el = document.getElementById("hiddenadvancededitoreditable");
+                                        var range = document.createRange();
+                                        var sel = window.getSelection();
+                                        el.append("\u200b");
+                                        range.setStart(el.childNodes[0], 1);
+                                        range.collapse(true);
+                                        sel.removeAllRanges();
+                                        sel.addRange(range);
+                                        el.focus();
                                         return;
                                     }
                                 }
