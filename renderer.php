@@ -556,8 +556,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $data->nestedreplycount = hsuforum_xreplies($this->post_walker_count($post->children, $post));
         }
 
-        // Mark post as read.
-        if ($data->unread) {
+        //check Reply cookie doesnt exists, thats a refresh marks all as read
+        if(!(isset($_COOKIE['Reply'])) && $data->unread ){
             hsuforum_mark_post_read($USER->id, $post, $forum->id);
         }
 
@@ -1021,7 +1021,7 @@ HTML;
 
     <div class="hsuforum-post-body">
         <h6 aria-level="6" class="hsuforum-post-byline" id="hsuforum-post-$p->id">
-            $unread $byline $revealed
+            $unread $byline $revealed 
         </h6>
         <small class='hsuform-post-date'><a href="$p->permalink" class="disable-router"$newwindow>$datecreated</a></small>
 
@@ -1973,7 +1973,7 @@ HTML;
 
                 $t->extrahtml
                 $hidden
-                <button class="rounded-pill btn btn-primary" type="submit">$t->submitlabel</button>
+                <button class="rounded-pill btn btn-primary submitreply" type="submit">$t->submitlabel</button>
                 <a href="#" class="hsuforum-cancel disable-router rounded-pill btn btn-secondary">$t->cancellabel</a>
                 <a href="$advancedurl" aria-pressed="false" class="hsuforum-use-advanced disable-router rounded-pill btn btn-secondary">$t->advancedlabel</a>
             </div>

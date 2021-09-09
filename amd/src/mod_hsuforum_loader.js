@@ -1,4 +1,4 @@
-define(['jquery'], function ($) {
+define(['jquery', 'core/ajax'], function ($, ajax) {
 
     /**
      * Wait for an element before resolving a promise
@@ -44,25 +44,42 @@ define(['jquery'], function ($) {
 
         if (posts) {
             $(posts).each(function(){
+
                 const postObserver = new MutationObserver(() => {
                     let form = $(this).find('form');
-
                     if (form) {
                         let formTextarea = $(form).find('.hsuforum-textarea');
                         $(form).on('submit', () => {
                             // Check for form errors
                             if ($(formTextarea).text() != 0) {
-                                document.body.dispatchEvent(spinnerStartEvent);
+                                var cookie = "Reply=yes";
+                                document.cookie = cookie;
+                                var postid = $('input:hidden[name=reply]').val(); //forms current hidden reply value, replyto
+                                ajax.call([{
+                                    headers: "max-age=1000",
+                                    methodname: 'mod_hsuforum_mark_single_post_read',
+                                    args: {postid: postid},
+                                    done: setTimeout(function () {
+                                        //marked new posts as read frm commenter, fix and move to func and call here
+                                        var url = $(location).attr('href');
+                                        var hidenew = url.substr(url.lastIndexOf("&postid=") + 8);
+                                        $("#hsuforum-post-" + hidenew).find("span.hsuforum-unreadcount").hide();
+                                    }, 3000),
+                                }]);
                             }
                         });
                     }
 
                 });
                 postObserver.observe(this, {subtree: true, childList: true});
-            });
+             });
         }
 
     }
+    // remove cookie on reload
+    $(window).on('load', function(){
+        document.cookie = "Reply= ; expires = Thu, 01 Jan 1970 00:00:00 GMT"
+    });
 
     /**
      * Handler function to start the spinner
@@ -116,7 +133,7 @@ define(['jquery'], function ($) {
                         $('html,body').animate({scrollTop: $(postid).offset().top - 60}, 1000);
                     }
                     window.hascompleted = true;
-                }                
+                }
             }).catch(() => {
                 $('.container :input').prop('disabled', false);
                 $('.article').show();

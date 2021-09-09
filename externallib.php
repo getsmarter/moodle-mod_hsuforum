@@ -1226,7 +1226,7 @@ class mod_hsuforum_external extends external_api {
                 $like->userid = $USER->id;
                 $like->action = "like";
                 $like->created = time();
-    
+
                 $DB->insert_record('hsuforum_actions', $like);
             } else {
                 $DB->delete_records('hsuforum_actions', array('postid' => $params['postid'], 'userid' => $USER->id));
@@ -1315,6 +1315,72 @@ class mod_hsuforum_external extends external_api {
         return new external_single_structure(
             array(
                 'subscriptionid' => new external_value(PARAM_INT, 'subscription id'),
+            )
+        );
+    }
+
+    //mark single post as read
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     * @since Moodle 3.0
+     */
+    public static function mark_single_post_read_parameters() {
+        return new external_function_parameters(
+            array(
+                'postid' => new external_value(PARAM_INT, 'Post ID'),
+            )
+        );
+    }
+
+    /**
+     * Marks a single post as read, post that the user is replying to
+     *
+     * @param int $postid the post id we are going to reply to
+     *
+     * @return array the forum discussion details
+     * @since Moodle 2.5
+     */
+    public static function mark_single_post_read($postid) {
+        global $DB, $CFG, $USER;
+        require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
+        require_once($CFG->dirroot . "/mod/hsuforum/mobilelib.php");
+
+        $params = self::validate_parameters(self::mark_single_post_read_parameters(),
+            array(
+                'postid' => $postid
+            ));
+        $config = get_config('hsuforum');
+        $now = time();
+        $cutoffdate = $now - ($config->oldpostdays * 24 * 3600);
+
+        if (!$DB->record_exists('hsuforum_read', array('userid' => $USER->id, 'postid' => $postid))) {
+            $sql = "INSERT INTO {hsuforum_read} (userid, postid, discussionid, forumid, firstread, lastread)
+
+                SELECT ?, p.id, p.discussion, d.forum, ?, ?
+                  FROM {hsuforum_posts} p
+                       JOIN {hsuforum_discussions} d ON d.id = p.discussion
+                 WHERE p.id = ? AND p.modified >= ?";
+            $DB->execute($sql, array($USER->id, $now, $now, $postid, $cutoffdate));
+            $newpost = $DB->record_exists('hsuforum_posts', array('parent' => $postid));
+
+        }
+
+        $result = array();
+        $result['postid'] = $postid;
+        return $result;
+    }
+    /**
+     * Describes the get_forum_discussions return value.
+     *
+     * @return external_single_structure
+     * @since Moodle 2.5
+     */
+    public static function mark_single_post_read_returns() {
+        return new external_single_structure(
+            array(
+                'postid' => new external_value(PARAM_INT, 'new post id')
             )
         );
     }
