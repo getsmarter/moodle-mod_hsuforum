@@ -33,16 +33,6 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
      * We need to watch for content changes in the post body for injected forms (reply/edit) to dispatch spinner events.
      * Stopping the spinner is tied into the scrolling action which is in local/hsuforum_actions/amd/src/hsuforum_actions.js
      */
-    // Hello.
-//
-// This is JSHint, a tool that helps to detect errors and potential
-// problems in your JavaScript code.
-//
-// To start, simply enter some JavaScript anywhere on this page. Your
-// report will appear on the right side.
-//
-// Additionally, you can toggle specific options in the Configure
-// menu.
 
     registerPostsObserver = function() {
         const posts = $('.hsuforum-post-wrapper');
@@ -56,13 +46,14 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
         var cookie = "Reply=yes";
         if (posts) {
             $(posts).each(function(){
-                var postObserver = new MutationObserver(() => {
+                const postObserver = new MutationObserver(() => {
                     let form = $(this).find('form');
                     if (form) {
                         let formTextarea = $(form).find('.hsuforum-textarea');
                         $(form).on('submit', () => {
                             // Check for form errors
                             if ($(formTextarea).text() != 0) {
+                                document.body.dispatchEvent(spinnerStartEvent);
                                 var postid = $('input:hidden[name=reply]').val(); //forms current hidden reply value, replyto
                                 var markasread = ajax.call([{
                                     headers: "max-age=1000",
@@ -88,7 +79,7 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
                         });
                     }
                 });
-            postObserver.observe(this, {subtree: true, childList: true});
+                postObserver.observe(this, {subtree: true, childList: true});
             });
         }
 
