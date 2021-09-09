@@ -1355,16 +1355,18 @@ class mod_hsuforum_external extends external_api {
         $now = time();
         $cutoffdate = $now - ($config->oldpostdays * 24 * 3600);
 
-        if (!$DB->record_exists('hsuforum_read', array('userid' => $USER->id, 'postid' => $postid))) {
-            $sql = "INSERT INTO {hsuforum_read} (userid, postid, discussionid, forumid, firstread, lastread)
+        try {
+            if (!$DB->record_exists('hsuforum_read', array('userid' => $USER->id, 'postid' => $postid))) {
+                $sql = "INSERT INTO {hsuforum_read} (userid, postid, discussionid, forumid, firstread, lastread)
 
                 SELECT ?, p.id, p.discussion, d.forum, ?, ?
                   FROM {hsuforum_posts} p
                        JOIN {hsuforum_discussions} d ON d.id = p.discussion
                  WHERE p.id = ? AND p.modified >= ?";
-            $DB->execute($sql, array($USER->id, $now, $now, $postid, $cutoffdate));
-            $newpost = $DB->record_exists('hsuforum_posts', array('parent' => $postid));
-
+                $DB->execute($sql, array($USER->id, $now, $now, $postid, $cutoffdate));
+            }
+        } catch (Exception $e) {
+            throw new coding_exception($e->getMessage());
         }
 
         $result = array();

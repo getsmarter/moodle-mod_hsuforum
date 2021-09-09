@@ -557,8 +557,10 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         //check Reply cookie doesnt exists, thats a refresh marks all as read
-        if(!(isset($_COOKIE['Reply'])) && $data->unread ){
-            hsuforum_mark_post_read($USER->id, $post, $forum->id);
+        if(isset($_COOKIE['Reply'])) {
+            if ($data->unread) {
+                hsuforum_mark_post_read($USER->id, $post, $forum->id);
+            }
         }
 
         if (!empty($parent)) {
@@ -581,6 +583,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         return $this->post_template($data);
     }
+
 
     public function discussion_template($d, $forumtype) {
         $replies = '';
@@ -1021,7 +1024,7 @@ HTML;
 
     <div class="hsuforum-post-body">
         <h6 aria-level="6" class="hsuforum-post-byline" id="hsuforum-post-$p->id">
-            $unread $byline $revealed 
+            $unread $byline $revealed
         </h6>
         <small class='hsuform-post-date'><a href="$p->permalink" class="disable-router"$newwindow>$datecreated</a></small>
 
@@ -2344,4 +2347,5 @@ HTML;
 
         return $actualparent;
     }
+
 }
