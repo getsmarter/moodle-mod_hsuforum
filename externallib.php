@@ -1226,7 +1226,6 @@ class mod_hsuforum_external extends external_api {
                 $like->userid = $USER->id;
                 $like->action = "like";
                 $like->created = time();
-
                 $DB->insert_record('hsuforum_actions', $like);
             } else {
                 $DB->delete_records('hsuforum_actions', array('postid' => $params['postid'], 'userid' => $USER->id));
@@ -1366,7 +1365,7 @@ class mod_hsuforum_external extends external_api {
                 $DB->execute($sql, array($USER->id, $now, $now, $postid, $cutoffdate));
             }
         } catch (Exception $e) {
-            throw new coding_exception($e->getMessage());
+            $e->getMessage();
         }
 
         $result = array();
