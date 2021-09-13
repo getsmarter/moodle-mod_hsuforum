@@ -662,7 +662,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $data = $DB->get_record_sql('SELECT timezone, country FROM {user} WHERE id = ?',
                 array($userid));
 
-            $flagandtimezone = theme_legend_user_flag_and_timezone($data);
+            $flagandtimezone = theme_getsmarter_user_flag_and_timezone($data);
         }
 
         $repliescount = $d->replies.' Replies';
