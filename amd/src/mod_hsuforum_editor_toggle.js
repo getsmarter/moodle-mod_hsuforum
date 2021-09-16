@@ -11,7 +11,7 @@ define([], function() {
                     try {
                         if (mutation.type === 'childList' && mutation.addedNodes.length) {
                             // Iterate over added nodes and check if the wrapper
-                            mutation.addedNodes.forEach(function(node, i) {
+                            mutation.addedNodes.forEach(function(node) {
                                 // If it is the wrapper, find button and click it
                                 if (node.classList !== undefined && node.classList.contains('hsuforum-reply-wrapper')) {
                                     var button = node.querySelector('.hsuforum-use-advanced');
@@ -23,7 +23,7 @@ define([], function() {
                                         var el = document.getElementById("hiddenadvancededitoreditable");
                                         var range = document.createRange();
                                         var sel = window.getSelection();
-                                        el.append("\u200b");
+                                        el.innerHTML = "&#65279;";
                                         range.setStart(el.childNodes[0], 1);
                                         range.collapse(true);
                                         sel.removeAllRanges();
@@ -55,5 +55,5 @@ define([], function() {
                 observer.observe(targetnode, config);
             };
         }
-    }
-})
+    };
+});
