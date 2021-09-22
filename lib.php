@@ -8526,7 +8526,7 @@ function hsuforum_mark_all_read($discussion){
 
             }
         } catch (Exception $e) {
-            error_log("Hsuforum hsuforum_mark_all_read: " .$e);
+            error_log("Hsuforum hsuforum_mark_all_read: " .$e->getMessage());
         }
     }
 
@@ -8565,7 +8565,7 @@ function hsuforum_mark_parent_post_read($userid, $postid){
                 return $DB->execute($sql, array($now, $userid, $userid));
             }
         } catch (Exception $e) {
-            error_log("Hsuforum hsuforum_mark_parent_post_read: " .$e);
+            error_log("Hsuforum hsuforum_mark_parent_post_read: " .$e->getMessage());
         }
     }
 
