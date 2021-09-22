@@ -795,6 +795,7 @@ HTML;
             if (empty($parent->postread)) {
                 $forum = hsuforum_get_cm_forum($cm);
                 hsuforum_mark_post_read($USER->id, $parent, $forum->id);
+
             }
         }
         $output  = "<h5 role='heading' aria-level='5'>".hsuforum_xreplies($count)."</h5>";
