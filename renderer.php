@@ -584,10 +584,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         return $this->post_template($data);
     }
 
-    public function marked(){
-        return '<script> alert("testing123")</script>';
-    }
-
     public function discussion_template($d, $forumtype) {
         $replies = '';
         $pinned = '';
