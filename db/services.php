@@ -112,27 +112,4 @@ $functions = array(
         'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
      ),
 
-    //mod_hsuforum_marks_single_post_read
-    'mod_hsuforum_mark_single_post_read' => array(
-        'classname' => 'mod_hsuforum_external',
-        'methodname' => 'mark_single_post_read',
-        'classpath' => 'mod/hsuforum/externallib.php',
-        'description' => 'Mark the single replied to post as read',
-        'type' => 'write',
-        'ajax' => true,
-        'capabilities' => 'mod/hsuforum:viewdiscussion, mod/hsuforum:viewqandawithoutposting',
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
-    ),
-
-    //mod_hsuforum_marks_single_post_read
-    'mod_hsuforum_mark_all_posts_read' => array(
-        'classname' => 'mod_hsuforum_external',
-        'methodname' => 'mark_all_posts_read',
-        'classpath' => 'mod/hsuforum/externallib.php',
-        'description' => 'Mark all posts as read',
-        'type' => 'write',
-        'ajax' => true,
-        'capabilities' => 'mod/hsuforum:viewdiscussion, mod/hsuforum:viewqandawithoutposting',
-        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
-    ),
 );

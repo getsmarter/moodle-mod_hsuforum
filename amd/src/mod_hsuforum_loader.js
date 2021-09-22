@@ -1,4 +1,4 @@
-define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notification) {
+define(['jquery'], function ($) {
 
     /**
      * Wait for an element before resolving a promise
