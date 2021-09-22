@@ -1,4 +1,4 @@
-define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notification) {
+define(['jquery'], function ($) {
 
     /**
      * Wait for an element before resolving a promise
@@ -10,7 +10,7 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
         const startTime = new Date().getTime();
 
         return new Promise((resolve, reject) => {
-            const timer = setInterval(() => {
+            const timer = setInterval(function() {
 
                 const now = new Date().getTime();
                 if(document.querySelector(querySelector)) {
@@ -45,12 +45,12 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
 
         if (posts) {
             $(posts).each(function(){
-                const postObserver = new MutationObserver(() => {
+                const postObserver = new MutationObserver(function() {
                     let form = $(this).find('form');
 
                     if (form) {
                         let formTextarea = $(form).find('.hsuforum-textarea');
-                        $(form).on('submit', () => {
+                        $(form).on('submit', function () {
                             // Check for form errors
                             if ($(formTextarea).text() != 0) {
                                 document.body.dispatchEvent(spinnerStartEvent);
@@ -96,11 +96,11 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
         window.spinnerStartEvent = spinnerStartEvent;
         window.spinnerStopEvent = spinnerStopEvent;
 
-        document.body.addEventListener("spinnerStartEvent", () => {
+        document.body.addEventListener("spinnerStartEvent", function() {
             startSpinnerHandler();
         });
 
-        document.body.addEventListener("spinnerStopEvent", () => {
+        document.body.addEventListener("spinnerStopEvent", function() {
             stopSpinnerHandler();
         });
     }
@@ -123,7 +123,7 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
                     }
                     window.hascompleted = true;
                 }
-            }).catch(() => {
+            }).catch(function() {
                 $('.container :input').prop('disabled', false);
                 $('.article').show();
                 $('#hsuforum-loading-container').hide();

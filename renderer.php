@@ -556,13 +556,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $data->nestedreplycount = hsuforum_xreplies($this->post_walker_count($post->children, $post));
         }
 
-        /*
-         * the line that marks all as read, keeping just incase an MDL Tracker is open for this
-            if ($data->unread) {
-                hsuforum_mark_post_read($USER->id, $post, $forum->id);
-            }
-        */
-
         if (!empty($parent)) {
             $parentuser = hsuforum_extract_postuser($parent, $forum, context_module::instance($cm->id));
             $data->parenturl = $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$parent->discussion.'#p'.$parent->id;
@@ -791,7 +784,6 @@ HTML;
             if (empty($parent->postread)) {
                 $forum = hsuforum_get_cm_forum($cm);
                 hsuforum_mark_post_read($USER->id, $parent, $forum->id);
-
             }
         }
         $output  = "<h5 role='heading' aria-level='5'>".hsuforum_xreplies($count)."</h5>";
@@ -1976,7 +1968,7 @@ HTML;
 
                 $t->extrahtml
                 $hidden
-                <button class="rounded-pill btn btn-primary submitreply" type="submit">$t->submitlabel</button>
+                <button class="rounded-pill btn btn-primary" type="submit">$t->submitlabel</button>
                 <a href="#" class="hsuforum-cancel disable-router rounded-pill btn btn-secondary">$t->cancellabel</a>
                 <a href="$advancedurl" aria-pressed="false" class="hsuforum-use-advanced disable-router rounded-pill btn btn-secondary">$t->advancedlabel</a>
             </div>
