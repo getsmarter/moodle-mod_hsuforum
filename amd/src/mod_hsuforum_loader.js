@@ -10,7 +10,7 @@ define(['jquery'], function ($) {
         const startTime = new Date().getTime();
 
         return new Promise((resolve, reject) => {
-            const timer = setInterval(function() {
+            const timer = setInterval(() => {
 
                 const now = new Date().getTime();
                 if(document.querySelector(querySelector)) {
@@ -45,12 +45,12 @@ define(['jquery'], function ($) {
 
         if (posts) {
             $(posts).each(function(){
-                const postObserver = new MutationObserver(function() {
+                const postObserver = new MutationObserver(() => {
                     let form = $(this).find('form');
 
                     if (form) {
                         let formTextarea = $(form).find('.hsuforum-textarea');
-                        $(form).on('submit', function () {
+                        $(form).on('submit', () => {
                             // Check for form errors
                             if ($(formTextarea).text() != 0) {
                                 document.body.dispatchEvent(spinnerStartEvent);
@@ -96,11 +96,11 @@ define(['jquery'], function ($) {
         window.spinnerStartEvent = spinnerStartEvent;
         window.spinnerStopEvent = spinnerStopEvent;
 
-        document.body.addEventListener("spinnerStartEvent", function() {
+        document.body.addEventListener("spinnerStartEvent", () => {
             startSpinnerHandler();
         });
 
-        document.body.addEventListener("spinnerStopEvent", function() {
+        document.body.addEventListener("spinnerStopEvent", () => {
             stopSpinnerHandler();
         });
     }
@@ -123,7 +123,7 @@ define(['jquery'], function ($) {
                     }
                     window.hascompleted = true;
                 }
-            }).catch(function() {
+            }).catch(() => {
                 $('.container :input').prop('disabled', false);
                 $('.article').show();
                 $('#hsuforum-loading-container').hide();
