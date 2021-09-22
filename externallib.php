@@ -1372,6 +1372,7 @@ class mod_hsuforum_external extends external_api {
         $result['postid'] = $postid;
         return $result;
     }
+
     /**
      * Describes the get_forum_discussions return value.
      *
@@ -1386,4 +1387,73 @@ class mod_hsuforum_external extends external_api {
         );
     }
 
+    //mark all post as read
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     * @since Moodle 3.0
+     */
+    public static function mark_all_posts_read_parameters() {
+        return new external_function_parameters(
+            array(
+                'postid' => new external_value(PARAM_INT, 'Discussion ID'),
+            )
+        );
+    }
+
+    /**
+     * Marks a all unread post as read
+     *
+     * @param int $discussionid the post id we are going to reply to
+     *
+     * @return array the forum discussion details
+     * @since Moodle 2.5
+     */
+    public static function mark_all_posts_read($postid) {
+        global $DB, $CFG, $USER;
+        require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
+        require_once($CFG->dirroot . "/mod/hsuforum/mobilelib.php");
+
+        $params = self::validate_parameters(self::mark_all_posts_read_parameters(),
+            array(
+                'postid' => $postid
+            ));
+        $config = get_config('hsuforum');
+        $now = time();
+        $userid = $USER->id;
+        $cutoffdate = $now - ($config->oldpostdays * 24 * 3600);
+
+        try {
+            if (!$DB->record_exists('hsuforum_read', array('userid' => $USER->id, 'postid' => $postid))) {
+                $sql = "INSERT INTO {hsuforum_read} (userid, postid, discussionid, forumid, firstread, lastread)
+
+                SELECT ?, p.id, p.discussion, d.forum, ?, ?
+                  FROM {hsuforum_posts} p
+                       JOIN {hsuforum_discussions} d ON d.id = p.discussion
+                 WHERE p.id = ? AND p.modified >= ?";
+                $DB->execute($sql, array($USER->id, $now, $now, $postid, $cutoffdate));
+            }
+        } catch (Exception $e) {
+            $e->getMessage();
+        }
+
+        $result = array();
+        $result['postid'] = $postid;
+        return $result;
+    }
+
+    /**
+     * Describes the get_forum_discussions return value.
+     *
+     * @return external_single_structure
+     * @since Moodle 2.5
+     */
+    public static function mark_all_posts_read_returns() {
+        return new external_single_structure(
+            array(
+                'postid' => new external_value(PARAM_INT, 'the discussion id')
+            )
+        );
+    }
 }

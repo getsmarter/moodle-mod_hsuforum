@@ -61,7 +61,7 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
                                     args: {postid: postid},
                                 }]);
                                 markasread[0].done(function (response) {
-                                    location.reload();
+                                    // location.reload();
                                     document.cookie = cookie;
                                         setTimeout(function () {
                                             //marked new posts as read frm commenter, fix and move to func and call here
@@ -82,14 +82,33 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
                 postObserver.observe(this, {subtree: true, childList: true});
             });
         }
-
     }
+    var load = function(){
+        var posts = $('body#page-mod-hsuforum-discuss .hsuforum-post-wrapper');
 
-    //remove cookie
-    function UnLoadWindow() {
-        document.cookie = "Reply= ; expires = Thu, 01 Jan 1970 00:00:00 GMT";
+        //$('body#page-mod-hsuforum-discuss article[data-discussionid]').load(function(){
+        //$(document).ready(function() {
+        window.addEventListener('load', function () {
+
+                if (posts) {
+                    $('.hsuforum-post-wrapper[data-postid]').each(function(){
+                        var markallasread = ajax.call([{
+                            async: false,
+                            methodname: 'mod_hsuforum_mark_all_posts_read',
+                            args: {postid: $(this).data('postid')},
+                        }]);
+                        markallasread[0].done(function (response) {
+                            console.log(response);
+                            $("span.hsuforum-unreadcount").hide();
+                        }).fail(function (ex) {
+                            console.log(ex);
+                            $("span.hsuforum-unreadcount").hide();
+                        });
+                    });
+                }
+            });
     }
-    window.onbeforeunload = UnLoadWindow;
+    load();
 
     //ratings on chanfge hide unread
     $('select.postratingmenu.ratinginput').change(function (){
@@ -160,6 +179,7 @@ define(['jquery', 'core/ajax', 'core/notification'], function ($, ajax, notifica
                 // Register post observers and custom spinner events.
                 registerPostsObserver();
                 registerSpinnerEvents();
+
         }
     };
 });

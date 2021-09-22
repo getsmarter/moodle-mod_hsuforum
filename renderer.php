@@ -556,12 +556,12 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $data->nestedreplycount = hsuforum_xreplies($this->post_walker_count($post->children, $post));
         }
 
-        //check Reply cookie doesnt exists, thats a refresh marks all as read
-        if(isset($_COOKIE['Reply'])) {
+        /*
+         * the line that marks all as read, keeping just incase an MDL Tracker is open for this
             if ($data->unread) {
                 hsuforum_mark_post_read($USER->id, $post, $forum->id);
             }
-        }
+        */
 
         if (!empty($parent)) {
             $parentuser = hsuforum_extract_postuser($parent, $forum, context_module::instance($cm->id));
@@ -584,6 +584,9 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         return $this->post_template($data);
     }
 
+    public function marked(){
+        return '<script> alert("testing123")</script>';
+    }
 
     public function discussion_template($d, $forumtype) {
         $replies = '';
@@ -665,7 +668,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $data = $DB->get_record_sql('SELECT timezone, country FROM {user} WHERE id = ?',
                 array($userid));
 
-            $flagandtimezone = theme_legend_user_flag_and_timezone($data);
+            $flagandtimezone = theme_getsmarter_user_flag_and_timezone($data);
         }
 
         $repliescount = $d->replies.' Replies';
@@ -966,7 +969,7 @@ HTML;
             $data = $DB->get_record_sql('SELECT timezone, country FROM {user} WHERE id = ?',
                 array($userid));
 
-            $flagandtimezone = theme_legend_user_flag_and_timezone($data);
+            $flagandtimezone = theme_getsmarter_user_flag_and_timezone($data);
         }
 
         /*
