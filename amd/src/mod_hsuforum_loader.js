@@ -33,6 +33,7 @@ define(['jquery'], function ($) {
      * We need to watch for content changes in the post body for injected forms (reply/edit) to dispatch spinner events.
      * Stopping the spinner is tied into the scrolling action which is in local/hsuforum_actions/amd/src/hsuforum_actions.js
      */
+
     registerPostsObserver = function() {
         const posts = $('.hsuforum-post-wrapper');
 
@@ -63,6 +64,11 @@ define(['jquery'], function ($) {
         }
 
     }
+
+    //ratings on chanfge hide unread
+    $('select.postratingmenu.ratinginput').change(function (){
+        $(this).closest('.hsuforum-post-wrapper').find('span.hsuforum-unreadcount').hide();
+    });
 
     /**
      * Handler function to start the spinner
@@ -116,7 +122,7 @@ define(['jquery'], function ($) {
                         $('html,body').animate({scrollTop: $(postid).offset().top - 60}, 1000);
                     }
                     window.hascompleted = true;
-                }                
+                }
             }).catch(() => {
                 $('.container :input').prop('disabled', false);
                 $('.article').show();
@@ -128,6 +134,7 @@ define(['jquery'], function ($) {
                 // Register post observers and custom spinner events.
                 registerPostsObserver();
                 registerSpinnerEvents();
+
         }
     };
 });

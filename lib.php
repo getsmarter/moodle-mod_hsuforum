@@ -6159,7 +6159,7 @@ function hsuforum_tp_add_read_record($userid, $postid) {
  */
 function hsuforum_mark_post_read($userid, $post, $forumid) {
     if (!hsuforum_tp_is_post_old($post)) {
-        return hsuforum_tp_add_read_record($userid, $post->id);
+        return array(hsuforum_mark_parent_post_read($userid, $post->id), hsuforum_tp_add_read_record($userid, $post->id));
     } else {
         return true;
     }
@@ -8483,6 +8483,12 @@ function hsuforum_view($forum, $course, $cm, $context) {
  * @since Moodle 2.9
  */
 function hsuforum_discussion_view($modcontext, $forum, $discussion) {
+
+    $pageWasRefreshed = isset($_SERVER['HTTP_CACHE_CONTROL']) && $_SERVER['HTTP_CACHE_CONTROL'] === 'max-age=0';
+    if($pageWasRefreshed ) {
+        hsuforum_mark_all_read($discussion);
+    }
+
     $params = array(
         'context' => $modcontext,
         'objectid' => $discussion->id,
@@ -8492,6 +8498,77 @@ function hsuforum_discussion_view($modcontext, $forum, $discussion) {
     $event->add_record_snapshot('hsuforum_discussions', $discussion);
     $event->add_record_snapshot('hsuforum', $forum);
     $event->trigger();
+}
+
+/**
+ * Trigger the mark all posts as read
+ *
+ * @param  stdClass $discussion the posts id
+ * @since Moodle 2.9
+ */
+function hsuforum_mark_all_read($discussion){
+    global $DB, $USER;
+
+    $config = get_config('hsuforum');
+    $now = time();
+    $cutoffdate = $now - ($config->oldpostdays * 24 * 3600);
+
+    if (!empty($config)) {
+        try {
+            if ($DB->record_exists('hsuforum_discussions', array('id' => $discussion->id))) {
+                $sql = "INSERT INTO {hsuforum_read} (userid, postid, discussionid, forumid, firstread, lastread)
+
+                SELECT ?, p.id, p.discussion, d.forum, ?, ?
+                  FROM {hsuforum_posts} p
+                       JOIN {hsuforum_discussions} d ON d.id = p.discussion
+                 WHERE p.discussion = ? AND p.modified >= ?";
+                $DB->execute($sql, array($USER->id, $now, $now, $discussion->id, $cutoffdate));
+
+            }
+        } catch (Exception $e) {
+            error_log("Hsuforum hsuforum_mark_all_read: " .$e->getMessage());
+        }
+    }
+
+}
+
+/**
+ * Trigger the mark parent post as read
+ *
+ * @param  stdClass $discussion the posts id
+ * @since Moodle 2.9
+ */
+function hsuforum_mark_parent_post_read($userid, $postid){
+    global $DB;
+
+    $config = get_config('hsuforum');
+
+    $now = time();
+    $cutoffdate = $now - ($config->oldpostdays * 24 * 3600);
+    $parentid = $DB->get_record('hsuforum_posts', array('userid' => $userid, 'id' => $postid));
+
+    if (!empty($config)) {
+        try {
+            if (!$DB->record_exists('hsuforum_read', array('userid' => $userid, 'postid' => $parentid->id))) {
+                $sql = "INSERT INTO {hsuforum_read} (userid, postid, discussionid, forumid, firstread, lastread)
+
+                SELECT ?, p.parent, p.discussion, d.forum, ?, ?
+                  FROM {hsuforum_posts} p
+                       JOIN {hsuforum_discussions} d ON d.id = p.discussion
+                 WHERE p.id = ? AND p.modified >= ?";
+                return $DB->execute($sql, array($userid, $now, $now, $parentid->id, $cutoffdate));
+
+            } else {
+                $sql = "UPDATE {hsuforum_read}
+                   SET lastread = ?
+                 WHERE userid = ? AND postid = ?";
+                return $DB->execute($sql, array($now, $userid, $userid));
+            }
+        } catch (Exception $e) {
+            error_log("Hsuforum hsuforum_mark_parent_post_read: " .$e->getMessage());
+        }
+    }
+
 }
 
 /**

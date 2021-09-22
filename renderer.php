@@ -556,11 +556,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $data->nestedreplycount = hsuforum_xreplies($this->post_walker_count($post->children, $post));
         }
 
-        // Mark post as read.
-        if ($data->unread) {
-            hsuforum_mark_post_read($USER->id, $post, $forum->id);
-        }
-
         if (!empty($parent)) {
             $parentuser = hsuforum_extract_postuser($parent, $forum, context_module::instance($cm->id));
             $data->parenturl = $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$parent->discussion.'#p'.$parent->id;
