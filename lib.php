@@ -8484,8 +8484,11 @@ function hsuforum_view($forum, $course, $cm, $context) {
  */
 function hsuforum_discussion_view($modcontext, $forum, $discussion) {
 
-    $pageWasRefreshed = isset($_SERVER['HTTP_CACHE_CONTROL']) && $_SERVER['HTTP_CACHE_CONTROL'] === 'max-age=0';
-    if($pageWasRefreshed ) {
+    if (!isset($_SESSION['pagewasrefreshed']))
+        $_SESSION['pagewasrefreshed'] = 0;
+    $_SESSION['pagewasrefreshed'] = $_SESSION['pagewasrefreshed'] + 1;
+
+    if(!empty($_SESSION['pagewasrefreshed'])) {
         hsuforum_mark_all_read($discussion);
     }
 
