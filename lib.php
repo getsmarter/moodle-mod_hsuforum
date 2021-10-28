@@ -8483,13 +8483,13 @@ function hsuforum_view($forum, $course, $cm, $context) {
  * @since Moodle 2.9
  */
 function hsuforum_discussion_view($modcontext, $forum, $discussion) {
-
-    if (!isset($_SESSION['pagewasrefreshed']))
-        $_SESSION['pagewasrefreshed'] = 0;
-    $_SESSION['pagewasrefreshed'] = $_SESSION['pagewasrefreshed'] + 1;
-
-    if(!empty($_SESSION['pagewasrefreshed'])) {
+    
+    if (isset($_SESSION['mod_hsuforum_page_refresh']) && $_SESSION['mod_hsuforum_page_refresh'] > 0) {
         hsuforum_mark_all_read($discussion);
+        $_SESSION['mod_hsuforum_page_refresh']++;
+    } 
+    else {
+        $_SESSION['mod_hsuforum_page_refresh'] = 0;
     }
 
     $params = array(
