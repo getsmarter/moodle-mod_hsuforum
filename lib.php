@@ -8489,7 +8489,7 @@ function hsuforum_discussion_view($modcontext, $forum, $discussion) {
         $_SESSION['mod_hsuforum_page_refresh']++;
     } 
     else {
-        $_SESSION['mod_hsuforum_page_refresh'] = 0;
+        $_SESSION['mod_hsuforum_page_refresh'] = 1;
     }
 
     $params = array(
