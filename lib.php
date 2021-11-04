@@ -8492,12 +8492,10 @@ function hsuforum_view($forum, $course, $cm, $context) {
  */
 function hsuforum_discussion_view($modcontext, $forum, $discussion) {
     
-    if (isset($_SESSION['mod_hsuforum_page_refresh']) && $_SESSION['mod_hsuforum_page_refresh'] > 0) {
+    $pageWasRefreshed = isset($_SERVER['HTTP_CACHE_CONTROL']) && $_SERVER['HTTP_CACHE_CONTROL'] === 'max-age=0';
+    
+    if($pageWasRefreshed ) {
         hsuforum_mark_all_read($discussion);
-        $_SESSION['mod_hsuforum_page_refresh']++;
-    } 
-    else {
-        $_SESSION['mod_hsuforum_page_refresh'] = 0;
     }
 
     $params = array(
