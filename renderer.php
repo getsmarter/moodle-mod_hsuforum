@@ -425,7 +425,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $filterandsort .= "<input type='submit' name='filterandsortreset' value='Reset'>";
         }
 
-        $filterandsort .= "</div></form><button class='rounded-pill btn btn-primary expandalldiscussions'>" . get_string('expandalldisccussions','hsuforum') . "</button>";
+        $filterandsort .= "</div></form><button class='rounded-pill btn btn-primary expandalldiscussions'>" . get_string('expandalldisccussions','hsuforum') . "</button><button id='markallasread' class='rounded-pill btn btn-primary markallasreadbutton'>" . get_string('markallasread','hsuforum') . "</button>";
 
         $data->filterandsort = $filterandsort;
 
