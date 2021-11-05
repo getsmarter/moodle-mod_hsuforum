@@ -5,7 +5,7 @@ define(['jquery'], function($) {
 
     return {
         init: function(discussionid, userid) {
-            $('#markallasread').on('click', function(){
+            $(document).on("click", "#markallasread", function() {
                 $.ajax({
                     url: "mark_all_posts_read.php",
                     method: "POST",
@@ -15,7 +15,7 @@ define(['jquery'], function($) {
                     },
                     dataType: "text",
                     success: function(data) {
-                        location.reload(true);
+                        window.location.reload();
                     }
                 });
             })
