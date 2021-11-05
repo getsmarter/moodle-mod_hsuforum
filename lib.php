@@ -8484,14 +8484,6 @@ function hsuforum_view($forum, $course, $cm, $context) {
  */
 function hsuforum_discussion_view($modcontext, $forum, $discussion) {
     
-    if (isset($_SESSION['mod_hsuforum_page_refresh']) && $_SESSION['mod_hsuforum_page_refresh'] > 0) {
-        hsuforum_mark_all_read($discussion);
-        $_SESSION['mod_hsuforum_page_refresh']++;
-    } 
-    else {
-        $_SESSION['mod_hsuforum_page_refresh'] = 1;
-    }
-
     $params = array(
         'context' => $modcontext,
         'objectid' => $discussion->id,
@@ -8532,7 +8524,6 @@ function hsuforum_mark_all_read($discussion){
             error_log("Hsuforum hsuforum_mark_all_read: " .$e->getMessage());
         }
     }
-
 }
 
 /**

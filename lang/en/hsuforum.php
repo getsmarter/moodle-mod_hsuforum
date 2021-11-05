@@ -777,3 +777,4 @@ $string['editlabel'] = 'edit';
 $string['replylabel'] = 'reply';
 $string['likelabel'] = 'like';
 
+$string['markallasread'] = 'Mark all as read';

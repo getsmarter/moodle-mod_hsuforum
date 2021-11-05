@@ -386,6 +386,7 @@ echo "<script>
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_focus', 'init');
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_loader', 'init');
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_parent_reply_display', 'init');
+$PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_mark_all_posts_read', 'init', array($discussion->id, $USER->id));
 
 // Get the setting for which editor to use from the GS theme
 $editortouse = get_config('theme_getsmarter', 'hsuforum_editor');
