@@ -15,7 +15,7 @@ define(['jquery'], function($) {
                     },
                     dataType: "text",
                     success: function(data) {
-                        location.reload();
+                        location.reload(true);
                     }
                 });
             })
