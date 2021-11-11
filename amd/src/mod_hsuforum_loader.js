@@ -73,7 +73,7 @@ define(['jquery'], function ($) {
 
     //remove link from @all tags
     removeAttagging = function() {
-        $("a:contains('@all')").contents().unwrap();
+        $("#page-mod-hsuforum-discuss a:contains('@all')").contents().unwrap();
     };
 
     /**
