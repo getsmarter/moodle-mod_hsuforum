@@ -45,7 +45,6 @@ define(['jquery'], function ($) {
 
         if (posts) {
             $(posts).each(function(){
-                removeAttagging();
                 const postObserver = new MutationObserver(() => {
                     let form = $(this).find('form');
 
@@ -62,6 +61,7 @@ define(['jquery'], function ($) {
                 });
                 postObserver.observe(this, {subtree: true, childList: true});
             });
+            removeAttagging();
         }
 
     };
