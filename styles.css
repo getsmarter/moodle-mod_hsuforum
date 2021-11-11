@@ -1253,7 +1253,11 @@ FUN WITH FORMS
     min-height: 400px !important;
 }
 
-.hsuforum-post-content .posting table, th, tr, td, caption {
+.hsuforum-post-content .posting table,
+.hsuforum-post-content .posting th,
+.hsuforum-post-content .posting tr,
+.hsuforum-post-content .posting td,
+.hsuforum-post-content .posting caption {
     border: 1px solid #000;
     padding: 0.2rem;
 }
