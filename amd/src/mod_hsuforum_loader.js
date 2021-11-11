@@ -61,14 +61,20 @@ define(['jquery'], function ($) {
                 });
                 postObserver.observe(this, {subtree: true, childList: true});
             });
+            removeAttagging();
         }
 
-    }
+    };
 
     //ratings on chanfge hide unread
     $('select.postratingmenu.ratinginput').change(function (){
         $(this).closest('.hsuforum-post-wrapper').find('span.hsuforum-unreadcount').hide();
     });
+
+    //remove link from @all tags
+    removeAttagging = function() {
+        $("a:contains('@all')").contents().unwrap();
+    };
 
     /**
      * Handler function to start the spinner
@@ -76,7 +82,7 @@ define(['jquery'], function ($) {
     startSpinnerHandler = function() {
         $('#hsuforum-overlay-box').show();
         $('#hsuforum-loading-container').show();
-    }
+    };
 
     /**
      * Handler function to stop the spinner
@@ -84,7 +90,7 @@ define(['jquery'], function ($) {
     stopSpinnerHandler = function() {
         $('#hsuforum-overlay-box').hide();
         $('#hsuforum-loading-container').hide();
-    }
+    };
 
     /**
      * Function to register custom spinner events and make globally available.
@@ -103,7 +109,7 @@ define(['jquery'], function ($) {
         document.body.addEventListener("spinnerStopEvent", () => {
             stopSpinnerHandler();
         });
-    }
+    };
 
     return {
         init: function () {
@@ -113,7 +119,7 @@ define(['jquery'], function ($) {
                 $('#hsuforum-loading-container').hide();
                 $('#hsuforum-overlay-box').hide();
                 window.hascompleted = false;
-                var postid = window.location.hash
+                var postid = window.location.hash;
                 if (!window.hascompleted) {
                     if (postid) {
                         if ($(postid).closest('li').data('depth') > 0) {
