@@ -1498,9 +1498,6 @@ HTML;
      */
     private function sanitizedAtTag($postcontent = '') {
         if (strpos( $postcontent, '@all')) {
-            $postcontent = strip_tags($postcontent, '<a></a><strong></strong><i></i><span></span>
-                <pre></pre><p></p><h3></h3><h4></h4><h5></h5><sub></sub><sup></sup><u></u><del></del><ol></ol><ul></ul>
-                <li></li><div></div>');
             return str_replace('@all', '<b>@all</b>', $postcontent);
         }
 
