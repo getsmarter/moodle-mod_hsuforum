@@ -1252,3 +1252,8 @@ FUN WITH FORMS
 #page-mod-hsuforum-view #region-main, #page-mod-hsuforum-view #region-main .card, #page-mod-hsuforum-view #hsuforum-overlay-box, #page-mod-hsuforum-discuss #region-main, #page-mod-hsuforum-discuss #region-main .card, #page-mod-hsuforum-discuss #hsuforum-overlay-box {
     min-height: 400px !important;
 }
+
+.hsuforum-post-content .posting table, th, tr, td, caption {
+    border: 1px solid #000;
+    padding: 0.2rem;
+}
