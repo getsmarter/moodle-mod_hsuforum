@@ -27,4 +27,3 @@ define(['jquery'], function ($) {
         }
     };
 });
-F``
