@@ -13,7 +13,7 @@ define(['jquery'], function ($) {
             $(document).ready(function (){
                 $(window).scroll(function (){
                     let isVisible = isElementInViewport($('#id_filter')[0]);
-                    // eslint-disable-next-line no-console
+
                    if(!isVisible) {
                        $('#markallasread').removeClass('rounded-pill');
                        $('#markallasread').addClass('markallasreadfloatbutton_fixed');
