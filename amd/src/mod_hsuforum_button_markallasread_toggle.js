@@ -1,7 +1,6 @@
 define(['jquery'], function ($) {
     function isElementInViewport (element) {
         var rect = element.getBoundingClientRect();
-
         return (
             rect.top >= 0 &&
             rect.left >= 0 &&
