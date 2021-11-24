@@ -778,3 +778,9 @@ $string['replylabel'] = 'reply';
 $string['likelabel'] = 'like';
 
 $string['markallasread'] = 'Mark all as read';
+$string['discusiontopicby'] = 'Topic By';
+$string['discusionreplies'] = 'Replies';
+$string['discusioncontributor'] = 'Contributor';
+$string['discusioncontributors'] = 'Contributors';
+$string['discusionview'] = 'View';
+$string['discusionviews'] = 'Views';
