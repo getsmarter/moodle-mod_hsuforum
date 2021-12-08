@@ -33,4 +33,9 @@ $string['deletelabel'] = 'Eliminar';
 $string['editlabel'] = 'Editar';
 $string['replylabel'] = 'Respuesta';
 $string['likelabel'] = 'Como';
-
+$string['discusiontopicby'] = 'Tema por';
+$string['discusionreplies'] = 'Respuestas';
+$string['discusioncontributor'] = 'Contribuyente';
+$string['discusioncontributors'] = 'Contribuyentes';
+$string['discusionview'] = 'Puntos de vista';
+$string['discusionviews'] = 'Puntos de vistas';
