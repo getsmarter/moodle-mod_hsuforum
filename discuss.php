@@ -256,16 +256,14 @@
                 'courseid' => $course->id,
                 'cmid' => $cm->id
             ]);
-
-            $enableforumreporting = get_config('local_forum_report', 'enableforumreporting');
-            if ($enableforumreporting) {
-                echo html_writer::link($url, get_string('discussionreportlink', 'local_forum_report'));
-            }
         }
     }
 
-
-
+    //discussion interaction link no need for the mod/hsuforum:pindiscussions capability
+    $enableforumreporting = get_config('local_forum_report', 'enableforumreporting');
+    if ($enableforumreporting) {
+        echo html_writer::link($url, get_string('discussionreportlink', 'local_forum_report'));
+    }
 
 /// Check to see if groups are being used in this forum
 /// If so, make sure the current person is allowed to see this discussion
