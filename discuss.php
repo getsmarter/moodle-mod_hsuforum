@@ -249,7 +249,19 @@
         }
         $button = new single_button(new moodle_url('discuss.php', array('pin' => $pinlink, 'd' => $discussion->id)), $pintext, 'post');
         echo html_writer::tag('div', $OUTPUT->render($button), array('class' => 'discussioncontrol pindiscussion'));
+
+        if (key_exists('forum_report',core_plugin_manager::instance()->get_plugins_of_type('local'))) {
+            $url = new moodle_url('/local/forum_report/nonresponders.php', [
+                'discussionid' => $discussion->id,
+                'courseid' => $course->id,
+                'cmid' => $cm->id
+            ]);
+
+            echo html_writer::link($url, get_string('discussionreportlink', 'local_forum_report'));
+        }
     }
+
+
 
 
 /// Check to see if groups are being used in this forum

@@ -7047,6 +7047,14 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
         $url = new moodle_url(rss_get_url($PAGE->cm->context->id, $userid, "mod_hsuforum", $forumobject->id));
         $forumnode->add($string, $url, settings_navigation::TYPE_SETTING, null, null, new pix_icon('i/rss', ''));
     }
+
+    // Add forum report node
+    $params = [
+        'courseid' => $PAGE->course->id,
+        'cmid' => $PAGE->cm->id
+    ];
+    $url = new moodle_url('/local/forum_report', $params);
+    $forumnode->add(get_string('pluginname', 'local_forum_report'), $url, settings_navigation::TYPE_SETTING, null, null, new pix_icon('t/preview', ''));
 }
 
 /**
