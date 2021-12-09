@@ -7049,12 +7049,17 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
     }
 
     // Add forum report node
+    $enableforumreporting = get_config('local_forum_report', 'enableforumreporting');
     $params = [
         'courseid' => $PAGE->course->id,
         'cmid' => $PAGE->cm->id
     ];
-    $url = new moodle_url('/local/forum_report', $params);
-    $forumnode->add(get_string('pluginname', 'local_forum_report'), $url, settings_navigation::TYPE_SETTING, null, null, new pix_icon('t/preview', ''));
+
+    if($enableforumreporting) {
+        $url = new moodle_url('/local/forum_report', $params);
+        $forumnode->add(get_string('pluginname', 'local_forum_report'), $url, settings_navigation::TYPE_SETTING, null, null, new pix_icon('t/preview', ''));
+    }
+
 }
 
 /**
@@ -8491,7 +8496,7 @@ function hsuforum_view($forum, $course, $cm, $context) {
  * @since Moodle 2.9
  */
 function hsuforum_discussion_view($modcontext, $forum, $discussion) {
-    
+
     $params = array(
         'context' => $modcontext,
         'objectid' => $discussion->id,
