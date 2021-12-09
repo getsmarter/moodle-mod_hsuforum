@@ -257,7 +257,10 @@
                 'cmid' => $cm->id
             ]);
 
-            echo html_writer::link($url, get_string('discussionreportlink', 'local_forum_report'));
+            $enableforumreporting = get_config('local_forum_report', 'enableforumreporting');
+            if ($enableforumreporting) {
+                echo html_writer::link($url, get_string('discussionreportlink', 'local_forum_report'));
+            }
         }
     }
 
