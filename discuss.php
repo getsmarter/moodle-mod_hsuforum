@@ -249,7 +249,11 @@
         }
         $button = new single_button(new moodle_url('discuss.php', array('pin' => $pinlink, 'd' => $discussion->id)), $pintext, 'post');
         echo html_writer::tag('div', $OUTPUT->render($button), array('class' => 'discussioncontrol pindiscussion'));
+    }
 
+    //discussion interaction link no need for the mod/hsuforum:pindiscussions capability
+    $enableforumreporting = get_config('local_forum_report', 'enableforumreporting');
+    if ($enableforumreporting && has_capability('local/forum_report:viewinteractionreports', $PAGE->cm->context)) {
         if (key_exists('forum_report',core_plugin_manager::instance()->get_plugins_of_type('local'))) {
             $url = new moodle_url('/local/forum_report/nonresponders.php', [
                 'discussionid' => $discussion->id,
@@ -257,11 +261,6 @@
                 'cmid' => $cm->id
             ]);
         }
-    }
-
-    //discussion interaction link no need for the mod/hsuforum:pindiscussions capability
-    $enableforumreporting = get_config('local_forum_report', 'enableforumreporting');
-    if ($enableforumreporting) {
         echo html_writer::link($url, get_string('discussionreportlink', 'local_forum_report'));
     }
 
