@@ -7055,7 +7055,7 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
         'cmid' => $PAGE->cm->id
     ];
 
-    if ($enableforumreporting && ((has_capability('local/forum_report:viewinteractionreports', $PAGE->cm->context)) || has_capability('local/forum_report:viewforumreports', $PAGE->cm->context))) {
+    if ($enableforumreporting && has_capability('local/forum_report:viewforumreports', $PAGE->cm->context)) {
         $url = new moodle_url('/local/forum_report', $params);
         $forumnode->add(get_string('pluginname', 'local_forum_report'), $url, settings_navigation::TYPE_SETTING, null, null, new pix_icon('t/preview', ''));
     }
