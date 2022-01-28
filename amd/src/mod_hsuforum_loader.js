@@ -74,8 +74,11 @@ define(['jquery'], function ($) {
     let replyid = $('article').attr("data-postid");
     $.urlParam = function(name){
         let results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
-        return results[1] || 0;
+        if(results){
+            return results[1] || 0;
+        }
     }
+    
     let postid = $.urlParam('d');
 
     $(".posting a").click(function(){
