@@ -61,20 +61,29 @@ define(['jquery'], function ($) {
                 });
                 postObserver.observe(this, {subtree: true, childList: true});
             });
-            removeAttagging();
         }
 
     };
 
-    //ratings on chanfge hide unread
+    //ratings on change hide unread
     $('select.postratingmenu.ratinginput').change(function (){
         $(this).closest('.hsuforum-post-wrapper').find('span.hsuforum-unreadcount').hide();
     });
 
-    //remove link from @all tags
-    removeAttagging = function() {
-        $("#page-mod-hsuforum-discuss a:contains('@all')").contents().unwrap();
-    };
+    //hacky but on @all redirect to new, provision for old posts or update url
+    let replyid = $('article').attr("data-postid");
+    $.urlParam = function(name){
+        let results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+        return results[1] || 0;
+    }
+    let postid = $.urlParam('d');
+
+    $(".posting a").click(function(){
+            if ($(this).text() === "@all") {
+                let courseid = $(this).attr("href").match(/course=([0-9]+)/)[1];
+                window.open('/blocks/hsuforum_users/forumusers.php?courseid='+courseid+'&discussion='+postid+'&reply='+replyid, '_blank');
+            }
+        });
 
     /**
      * Handler function to start the spinner
