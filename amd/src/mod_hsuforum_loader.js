@@ -78,7 +78,6 @@ define(['jquery'], function ($) {
             return results[1] || 0;
         }
     }
-    
     let postid = $.urlParam('d');
 
     $(".posting a").click(function(){
