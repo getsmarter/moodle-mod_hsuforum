@@ -76,7 +76,7 @@ define(['jquery'], function ($) {
         let results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
         return results[1] || 0;
     }
-    var postid = $.urlParam('d');
+    let postid = $.urlParam('d');
 
     $(".posting a").click(function(){
             if ($(this).text() === "@all") {
