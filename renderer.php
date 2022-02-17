@@ -2044,6 +2044,7 @@ HTML;
                 '<i class="fa fa-reply fa-2"><span class="hsuforum-action-label" title="reply">' . get_string('replylabel', 'hsuforum') . '</span></i>',
                 array (
                     'class' => 'hsuforum-reply-link',
+                    'aria-label' => get_string('replylabel', 'hsuforum')
                 )
             );
         }
