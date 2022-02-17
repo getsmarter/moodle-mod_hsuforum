@@ -27,6 +27,7 @@
 use mod_hsuforum\controller\edit_controller;
 use mod_hsuforum\controller\export_controller;
 use mod_hsuforum\controller\flag_controller;
+use mod_hsuforum\controller\forum_interaction_controller;
 use mod_hsuforum\controller\kernel;
 use mod_hsuforum\controller\posters_controller;
 use mod_hsuforum\controller\posts_controller;
@@ -48,6 +49,7 @@ require_once(__DIR__.'/classes/controller/posters_controller.php');
 require_once(__DIR__.'/classes/controller/flag_controller.php');
 require_once(__DIR__.'/classes/controller/posts_controller.php');
 require_once(__DIR__.'/classes/controller/edit_controller.php');
+require_once(__DIR__.'/classes/controller/forum_interaction_controller.php');
 
 global $PAGE, $DB;
 
@@ -78,6 +80,7 @@ $router->add_controller(new flag_controller());
 $router->add_controller(new posts_controller());
 $router->add_controller(new export_controller());
 $router->add_controller(new edit_controller());
+$router->add_controller(new forum_interaction_controller());
 
 $kernel = new kernel($router);
 $kernel->handle($action);

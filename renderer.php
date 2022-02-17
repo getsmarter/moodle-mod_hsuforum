@@ -659,8 +659,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
             $flagandtimezone = theme_getsmarter_user_flag_and_timezone($data);
         }
-
-        $repliescount = $d->replies.' Replies';
+        $repliesstring = get_string('discusionreplies', 'mod_hsuforum');
+        $repliescount = $d->replies.' '.$repliesstring;
         if ($d->replies == 1) {
             $repliescount = $d->replies.' Reply';
         }
@@ -676,10 +676,11 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         if ($c = $DB->get_record_sql($contribsql, $contribparams)) {
             $contribs = $c->contributes;
         }
-
-        $contribcount = $contribs.' Contributors';
+        $contributorsstring = get_string('discusioncontributors', 'mod_hsuforum');
+        $contributorstring = get_string('discusioncontributor', 'mod_hsuforum');
+        $contribcount = $contribs.' '.$contributorsstring;
         if ($contribs == 1) {
-            $contribcount = $contribs.' Contributor';
+            $contribcount = $contribs.' '.$contributorstring;
         }
 
         $contribcount .= ' <i style="font-size: 4px; color: #767676; vertical-align: middle;" class="fa fa-circle"></i>';
@@ -694,11 +695,13 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $views = $v->views;
         }
 
-        $viewcount = $views.' Views';
+        $viewstring = get_string('discusionview', 'mod_hsuforum');
+        $viewsstring = get_string('discusionviews', 'mod_hsuforum');
+        $viewcount = $views.' '.$viewsstring;
         if ($views == 1) {
-            $viewcount = $views.' View';
+            $viewcount = $views.' '.$viewstring;
         }
-
+        $topicby = get_string('discusiontopicby', 'mod_hsuforum');
         $threadheader = <<<HTML
         <div class="hsuforum-thread-header">
             <div class="hsuforum-thread-title">
@@ -707,7 +710,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 </h2>
                 <div>
                     <small>
-                        <span class="topic-by">Topic by</span> $byuser 
+                        <span class="topic-by">$topicby</span> $byuser 
                     </small>
                 </div>
                 <div class="thread-info-bar">
@@ -2041,7 +2044,7 @@ HTML;
                 '<i class="fa fa-reply fa-2"><span class="hsuforum-action-label" title="reply">' . get_string('replylabel', 'hsuforum') . '</span></i>',
                 array (
                     'class' => 'hsuforum-reply-link',
-                    'aria-label' => 'Reply',
+                    'aria-label' => get_string('replylabel', 'hsuforum'),
                     'role' => 'link'
                 )
             );
