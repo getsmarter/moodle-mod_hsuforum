@@ -2044,7 +2044,8 @@ HTML;
                 '<i class="fa fa-reply fa-2"><span class="hsuforum-action-label" title="reply">' . get_string('replylabel', 'hsuforum') . '</span></i>',
                 array (
                     'class' => 'hsuforum-reply-link',
-                    'aria-label' => get_string('replylabel', 'hsuforum')
+                    'aria-label' => get_string('replylabel', 'hsuforum'),
+                    'role' => 'link'
                 )
             );
         }
@@ -2059,7 +2060,9 @@ HTML;
                 new moodle_url('/mod/hsuforum/post.php', array('edit' => $post->id)),
                 '<i class="fa fa-edit fa-2"><span class="hsuforum-action-label">' . get_string('editlabel', 'hsuforum') . '</span></i>',
                 array (
-                    'class' => 'hsuforum-edit-link'
+                    'class' => 'hsuforum-edit-link',
+                    'aria-label' => 'Edit',
+                    'role' => 'link'
                 )
             );
         }
@@ -2069,7 +2072,9 @@ HTML;
                 new moodle_url('/mod/hsuforum/post.php', array('delete' => $post->id)),
                 '<i class="fa fa-trash fa-2"><span class="hsuforum-action-label">' . get_string('deletelabel', 'hsuforum') . '</span></i>',
                 array (
-                    'class' => 'hsuforum-delete-link'
+                    'class' => 'hsuforum-delete-link',
+                    'aria-label' => 'Delete',
+                    'role' => 'link'
                 )
             );
         }
@@ -2082,7 +2087,9 @@ HTML;
                 new moodle_url('/mod/hsuforum/post.php', array('prune' => $post->id)),
                 '<i class="fa fa-plus-square fa-2"><span class="hsuforum-action-label">' . get_string('splitlabel', 'hsuforum') . '</span></i>',
                 array (
-                    'class' => 'hsuforum-split-link'
+                    'class' => 'hsuforum-split-link',
+                    'aria-label' => 'Split',
+                    'role' => 'link'
                 )
             );
         }
