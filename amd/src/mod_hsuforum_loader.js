@@ -76,7 +76,7 @@ define(['jquery'], function ($) {
 
     $.urlParam = function(name){
         let results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
-        if (results > 1) {
+        if (results) {
             return results[1] || 0;
         }
     }
