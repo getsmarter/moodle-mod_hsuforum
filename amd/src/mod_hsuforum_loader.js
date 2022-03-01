@@ -65,7 +65,7 @@ define(['jquery'], function ($) {
 
     };
 
-    //ratings on chanfge hide unread
+    //ratings on change hide unread
     $('select.postratingmenu.ratinginput').change(function (){
         $(this).closest('.hsuforum-post-wrapper').find('span.hsuforum-unreadcount').hide();
     });
@@ -76,7 +76,7 @@ define(['jquery'], function ($) {
 
     $.urlParam = function(name){
         let results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
-        if (results > 1) {
+        if (results) {
             return results[1] || 0;
         }
     }
