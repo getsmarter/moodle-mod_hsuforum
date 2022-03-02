@@ -72,20 +72,21 @@ define(['jquery'], function ($) {
 
     //hacky but on @all redirect to new, provision for old posts or update url
     let replyid = $('article').attr("data-postid");
+    let postid = $('article').attr("data-discussionid");
+
     $.urlParam = function(name){
         let results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
-        if(results){
+        if (results) {
             return results[1] || 0;
         }
     }
-    let postid = $.urlParam('d');
 
     $(".posting a").click(function(){
-            if ($(this).text() === "@all") {
-                let courseid = $(this).attr("href").match(/course=([0-9]+)/)[1];
-                window.open('/blocks/hsuforum_users/forumusers.php?courseid='+courseid+'&discussion='+postid+'&reply='+replyid, '_blank');
-            }
-        });
+        if ($(this).text() === "@all") {
+            let courseid = $(this).attr("href").match(/course=([0-9]+)/)[1];
+            window.open('/blocks/hsuforum_users/forumusers.php?courseid='+courseid+'&discussion='+postid+'&reply='+replyid, '_blank');
+        }
+    });
 
     /**
      * Handler function to start the spinner
