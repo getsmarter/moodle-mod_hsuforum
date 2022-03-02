@@ -51,10 +51,6 @@
                     $('.expandalldiscussions').addClass('expanded');
                 }
             });
-
-            $('body').on('click', '.hsuforum-cancel', function() {
-                $('.hsuforum-add-discussion input').focus();
-            });
         }
     };
 });

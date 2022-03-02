@@ -7,8 +7,8 @@ define([], function() {
             const config = { attributes: false, childList: true, subtree: true };
 
             const observer = new MutationObserver(function(mutationlist, observer) {
-                for (const mutation of mutationlist) {
-                    try {
+                try {
+                    for (const mutation of mutationlist) {
                         if (mutation.type === 'childList' && mutation.addedNodes.length) {
                             // Iterate over added nodes and check if the wrapper
                             mutation.addedNodes.forEach(function(node) {
@@ -34,9 +34,9 @@ define([], function() {
                                 }
                             });
                         }
-                    } catch (e) {
-                        // Silently fail as it means that it isn't the correct element
                     }
+                } catch (e) {
+                    // Silently fail as it means that it isn't the correct element
                 }
             });
 
