@@ -396,6 +396,7 @@ echo "<script>
 </script>";
 
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_focus', 'init');
+$PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_accessibility', 'init');
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_loader', 'init');
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_parent_reply_display', 'init');
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_button_markallasread_toggle', 'init');
