@@ -60,14 +60,19 @@ Y.extend(IO, Y.Base,
                 data = Y.JSON.parse(response.responseText);
             } catch (e) {
                 Y.log(e, 'error', 'Io');
-                alert(e.name + ": " + e.message);
+
+                // Custom session expired error handling on a post submit action.
+                window.alert(M.util.get_string('hsuforumsessionerror', 'hsuforum'));
+                var spinnerStopEvent = new Event('spinnerStopEvent');
+                document.body.dispatchEvent(spinnerStopEvent);
+
                 return;
             }
             if (Lang.isValue(data.error)) {
                 Y.log('Error message: ' + data.error, 'error', 'Io');
                 Y.log('Debug info: ' + data.debuginfo, 'error', 'Io');
                 Y.log("Stack trace:\n" + data.stacktrace, 'error', 'Io');
-                alert(data.error);
+                window.alert(data.error);
             } else {
                 args.fn.call(args.context, data);
             }
