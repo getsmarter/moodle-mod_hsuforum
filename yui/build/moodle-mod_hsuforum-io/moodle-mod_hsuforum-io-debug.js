@@ -62,7 +62,12 @@ Y.extend(IO, Y.Base,
                 data = Y.JSON.parse(response.responseText);
             } catch (e) {
                 Y.log(e, 'error', 'Io');
+                console.log(args);
+                console.log(response);
+                window.response = response;
                 alert(e.name + ": " + e.message);
+                var errorevent = new Event('hsuforumerror');
+                document.body.dispatchEvent(errorevent);
                 return;
             }
             if (Lang.isValue(data.error)) {

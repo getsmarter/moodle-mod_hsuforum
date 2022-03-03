@@ -109,6 +109,10 @@ define(['jquery'], function ($) {
         document.body.addEventListener("spinnerStopEvent", () => {
             stopSpinnerHandler();
         });
+
+        document.body.addEventListener("hsuforumerror", () => {
+            console.log('POC works');
+        });
     };
 
     return {
