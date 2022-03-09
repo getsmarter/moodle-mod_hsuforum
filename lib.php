@@ -3649,7 +3649,7 @@ function hsuforum_search_form($course, $forumid=null, $search='') {
     $output .= '<form action="'.$CFG->wwwroot.'/mod/hsuforum/search.php">';
     $output .= '<fieldset class="invisiblefieldset">';
     $output .= '<input id="search" name="search" type="search" placeholder="'.get_string('search', 'hsuforum').'" value="'.s($search, true).'"/>';
-    $output .= '<button id="searchforums" type="submit">
+    $output .= '<button id="searchforums" type="submit" aria-label="Search forums">
                     <i class="fa fa-search"></i>
                 </button>';
     $output .= '<input name="id" type="hidden" value="'.$course->id.'" />';
