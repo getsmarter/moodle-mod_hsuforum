@@ -406,7 +406,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                     <input type='hidden' name='d' value='{$data->id}'>
                     <div class='form-group col-md-12 col-lg-auto'>
                         <label for='id_filter' class=''>Filter:</label>
-                        <select class='custom-select' name='filter' id='id_filter'>
+                        <select class='custom-select' name='filter' id='id_filter' aria-label='Filter by'>
                             <option value='0'>".get_string('filterdefault','hsuforum')."</option>
                             <option ".($filter == 2 ? 'selected' : '')." value='2'>".get_string('filtermyreplies','hsuforum')."</option>
                             <option ".($filter == 3 ? 'selected' : '')." value='3'>".get_string('filtertutorreplies','hsuforum')."</option>
@@ -414,7 +414,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                     </div>
                     <div class='form-group col-md-12 col-lg-auto'>
                         <label for='".($filter > 0 || $sort > 0 ? 'id_sort' : 'id_sort_no_filter')."' class=''> <span id='id_plus'>+</span> Sort:</label>
-                        <select class='custom-select' name='sort' id='id_sort'>
+                        <select class='custom-select' name='sort' id='id_sort' aria-label='Sort by'>
                             <option value='0'>".get_string('sortdefault','hsuforum')."</option>
                             <option ".($sort == 1 ? 'selected' : '')." value='1'>".get_string('sortnewestfirst','hsuforum')."</option>
                             <option ".($sort == 2 ? 'selected' : '')." value='2'>".get_string('sortmostreplies','hsuforum')."</option>
@@ -1972,7 +1972,7 @@ HTML;
                 $hidden
                 <button class="rounded-pill btn btn-primary" type="submit">$t->submitlabel</button>
                 <a href="#" class="hsuforum-cancel disable-router rounded-pill btn btn-secondary">$t->cancellabel</a>
-                <a href="$advancedurl" aria-pressed="false" class="hsuforum-use-advanced disable-router rounded-pill btn btn-secondary">$t->advancedlabel</a>
+                <a href="$advancedurl" role="button" aria-pressed="false" class="hsuforum-use-advanced disable-router rounded-pill btn btn-secondary">$t->advancedlabel</a>
             </div>
         </fieldset>
     </form>
