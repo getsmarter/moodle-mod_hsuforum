@@ -82,7 +82,9 @@ class discussion_service {
                 }
             }
         } else {
-            $groupstopostto[] = $options['groupid'];
+            foreach ($options['groupid'] as $groupid) {
+                $groupstopostto[] = $groupid;
+            }
         }
 
         /** @var \mod_hsuforum_renderer $renderer */

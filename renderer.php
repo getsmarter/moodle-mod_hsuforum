@@ -1762,7 +1762,7 @@ HTML;
 
             if ($canselectgroup) {
                 $groupselect = html_writer::tag('span', get_string('group') . ' ');
-                $groupselect .= html_writer::select($groupinfo, 'groupinfo', $data['groupid'], false);
+                $groupselect .= html_writer::select($groupinfo, 'groupinfo[]', $data['groupid'], false, array('multiple'=>true));
                 $extrahtml .= html_writer::tag('label', $groupselect);
             } else {
                 $actionurl->param('groupinfo', groups_get_activity_group($cm));
