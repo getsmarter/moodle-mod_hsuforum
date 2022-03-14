@@ -425,7 +425,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $filterandsort .= "<input type='submit' name='filterandsortreset' value='Reset'>";
         }
 
-        $filterandsort .= "</div></form><button class='rounded-pill btn btn-primary expandalldiscussions'>" . get_string('expandalldisccussions','hsuforum') . "</button>";
+        $filterandsort .= "</div></form><button class='rounded-pill btn btn-primary expandalldiscussions'>" . get_string('expandalldisccussions','hsuforum') . "</button><button id='markallasread' class='rounded-pill btn btn-primary markallasreadbutton'>" . get_string('markallasread','hsuforum') . "</button>";
 
         $data->filterandsort = $filterandsort;
 
@@ -659,8 +659,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
             $flagandtimezone = theme_getsmarter_user_flag_and_timezone($data);
         }
-
-        $repliescount = $d->replies.' Replies';
+        $repliesstring = get_string('discusionreplies', 'mod_hsuforum');
+        $repliescount = $d->replies.' '.$repliesstring;
         if ($d->replies == 1) {
             $repliescount = $d->replies.' Reply';
         }
@@ -676,10 +676,11 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         if ($c = $DB->get_record_sql($contribsql, $contribparams)) {
             $contribs = $c->contributes;
         }
-
-        $contribcount = $contribs.' Contributors';
+        $contributorsstring = get_string('discusioncontributors', 'mod_hsuforum');
+        $contributorstring = get_string('discusioncontributor', 'mod_hsuforum');
+        $contribcount = $contribs.' '.$contributorsstring;
         if ($contribs == 1) {
-            $contribcount = $contribs.' Contributor';
+            $contribcount = $contribs.' '.$contributorstring;
         }
 
         $contribcount .= ' <i style="font-size: 4px; color: #767676; vertical-align: middle;" class="fa fa-circle"></i>';
@@ -694,11 +695,13 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $views = $v->views;
         }
 
-        $viewcount = $views.' Views';
+        $viewstring = get_string('discusionview', 'mod_hsuforum');
+        $viewsstring = get_string('discusionviews', 'mod_hsuforum');
+        $viewcount = $views.' '.$viewsstring;
         if ($views == 1) {
-            $viewcount = $views.' View';
+            $viewcount = $views.' '.$viewstring;
         }
-
+        $topicby = get_string('discusiontopicby', 'mod_hsuforum');
         $threadheader = <<<HTML
         <div class="hsuforum-thread-header">
             <div class="hsuforum-thread-title">
@@ -707,7 +710,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 </h2>
                 <div>
                     <small>
-                        <span class="topic-by">Topic by</span> $byuser 
+                        <span class="topic-by">$topicby</span> $byuser 
                     </small>
                 </div>
                 <div class="thread-info-bar">
@@ -1498,7 +1501,6 @@ HTML;
      */
     private function sanitizedAtTag($postcontent = '') {
         if (strpos( $postcontent, '@all')) {
-            $postcontent = strip_tags($postcontent);
             return str_replace('@all', '<b>@all</b>', $postcontent);
         }
 
@@ -1760,7 +1762,7 @@ HTML;
 
             if ($canselectgroup) {
                 $groupselect = html_writer::tag('span', get_string('group') . ' ');
-                $groupselect .= html_writer::select($groupinfo, 'groupinfo', $data['groupid'], false);
+                $groupselect .= html_writer::select($groupinfo, 'groupinfo[]', $data['groupid'], false, array('multiple'=>true));
                 $extrahtml .= html_writer::tag('label', $groupselect);
             } else {
                 $actionurl->param('groupinfo', groups_get_activity_group($cm));

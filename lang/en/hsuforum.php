@@ -777,3 +777,19 @@ $string['editlabel'] = 'edit';
 $string['replylabel'] = 'reply';
 $string['likelabel'] = 'like';
 
+// Forum interaction strings
+$string['foruminteractiondataheading'] = 'Forum interaction data:';
+$string['likeinteractionheading'] = 'Likes';
+$string['sharedinteractionheading'] = 'Shares';
+$string['postcountheader'] = 'Number of posts (new posts + replies)';
+$string['postcreatedhourheader'] = 'Time (Hourly interval)';
+$string['nodata'] = 'No data available';
+
+$string['markallasread'] = 'Mark all as read';
+$string['discusiontopicby'] = 'Topic By';
+$string['discusionreplies'] = 'Replies';
+$string['discusioncontributor'] = 'Contributor';
+$string['discusioncontributors'] = 'Contributors';
+$string['discusionview'] = 'View';
+$string['discusionviews'] = 'Views';
+

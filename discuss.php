@@ -251,6 +251,18 @@
         echo html_writer::tag('div', $OUTPUT->render($button), array('class' => 'discussioncontrol pindiscussion'));
     }
 
+    //discussion interaction link no need for the mod/hsuforum:pindiscussions capability
+    $enableforumreporting = get_config('local_forum_report', 'enableforumreporting');
+    if ($enableforumreporting && has_capability('local/forum_report:viewinteractionreports', $PAGE->cm->context)) {
+        if (key_exists('forum_report',core_plugin_manager::instance()->get_plugins_of_type('local'))) {
+            $url = new moodle_url('/local/forum_report/nonresponders.php', [
+                'discussionid' => $discussion->id,
+                'courseid' => $course->id,
+                'cmid' => $cm->id
+            ]);
+        }
+        echo html_writer::link($url, get_string('discussionreportlink', 'local_forum_report'));
+    }
 
 /// Check to see if groups are being used in this forum
 /// If so, make sure the current person is allowed to see this discussion
@@ -386,6 +398,9 @@ echo "<script>
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_focus', 'init');
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_loader', 'init');
 $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_parent_reply_display', 'init');
+$PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_button_markallasread_toggle', 'init');
+$PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_clear_contenteditable','init');
+$PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_mark_all_posts_read', 'init', array($discussion->id, $USER->id));
 
 // Get the setting for which editor to use from the GS theme
 $editortouse = get_config('theme_getsmarter', 'hsuforum_editor');
