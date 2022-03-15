@@ -161,7 +161,7 @@ class edit_controller extends controller_abstract {
             $course  = $PAGE->course;
 
             if (empty($groupid)) {
-                $groupid = -1;
+                $groupid = array('-1');
             }
             $options = array(
                 'subject'       => $subject,
