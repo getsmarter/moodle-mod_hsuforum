@@ -64,7 +64,7 @@
     $editortouse = get_config('theme_getsmarter', 'hsuforum_editor');
     if (!empty($editortouse) && $editortouse == 'advanced') {
         $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_editor_toggle', 'init', ['body']);
-        $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_save_draft', 'init', [$USER->id]);
+        $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_save_draft', 'init', [$forum->id, null, $USER->id]);
     }
 
     $course = $DB->get_record('course', array('id' => $forum->course));

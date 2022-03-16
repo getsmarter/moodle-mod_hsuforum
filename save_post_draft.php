@@ -7,31 +7,39 @@ require_login();
 
 global $DB;
 
-$discussionid = required_param('discussionid', PARAM_TEXT);
-$postid = required_param('postid', PARAM_TEXT);
+$forumid = required_param('forumid', PARAM_INT);
+// It is coercing the potential empty value into an empty string, so Elvis it to force null if genuinely empty
+$discussionid = optional_param('discussionid', null, PARAM_RAW) ?: null;
+$postid = optional_param('postid', null, PARAM_RAW) ?: null;
+$userid = required_param('userid', PARAM_INT);
 $text = required_param('text', PARAM_TEXT);
-$userid = required_param('userid', PARAM_TEXT);
-
 
 try {
-	$postexists = $DB->get_record('hsuforum_custom_drafts', array('postid' => $postid, 'discussionid' => $discussionid, 'userid' => $userid));
+    $postexists = $DB->get_record('hsuforum_custom_drafts', [
+        'forumid' => $forumid,
+        'postid' => $postid,
+        'discussionid' => $discussionid,
+        'userid' => $userid,
+    ]);
 
-	if (!empty($postexists)) {
-		$postexists->text = $text;
-		$postexists->timemodified = time();
+    if (!empty($postexists)) {
+        $postexists->text = $text;
+        $postexists->timemodified = time();
 
-		echo $DB->update_record('hsuforum_custom_drafts', $postexists);
-	} else {
-		$post = new stdClass();
-		$post->discussionid = $discussionid;
-		$post->postid = $postid;
-		$post->text = $text;
-		$post->userid = $userid;
-		$post->timemodified = time();
+        echo $DB->update_record('hsuforum_custom_drafts', $postexists);
+    } else {
+        $post = new stdClass();
+        $post->forumid = $forumid;
+        $post->discussionid = $discussionid;
+        $post->postid = $postid;
+        $post->text = $text;
+        $post->userid = $userid;
+        $post->timemodified = time();
 
-		echo $DB->insert_record('hsuforum_custom_drafts', $post);
-	}
+        echo $DB->insert_record('hsuforum_custom_drafts', $post);
+    }
 } catch (Exception $e) {
-	
+    error_log("Hsuforum save_post_draft.php: {$e->getMessage()}");
 }
+
 die;
