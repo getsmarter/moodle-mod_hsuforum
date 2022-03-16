@@ -8497,7 +8497,7 @@ function hsuforum_view($forum, $course, $cm, $context) {
 function hsuforum_discussion_view($modcontext, $forum, $discussion) {
     $pageWasRefreshed = isset($_SERVER['HTTP_CACHE_CONTROL']) && $_SERVER['HTTP_CACHE_CONTROL'] === 'max-age=0';
 
-    if($pageWasRefreshed ) {
+    if ($pageWasRefreshed) {
         hsuforum_mark_all_read($discussion);
     }
 
