@@ -205,4 +205,19 @@ if ($ADMIN->fulltree) {
     $setting = new admin_setting_configcolourpicker($name, $title,'', $default);
     $setting->set_updatedcallback('theme_reset_all_caches');
     $settings->add($setting);
+
+    // New Avatar HSU forum settings
+    $name = 'hsuforum/customdraftsheading';
+    $heading = get_string('customdraftsheader', 'hsuforum');
+    $information = '';
+    $setting = new admin_setting_heading($name, $heading, $information);
+    $settings->add($setting);
+
+    $name = 'hsuforum/daystopersistdrafts';
+    $title = get_string('customdraftdurationlabel', 'hsuforum');
+    $description = get_string('customdraftdurationdesc', 'hsuforum');
+    $default = 2;
+    // Quick way to get array with key/value pairs from 1-7
+    $options = array_slice(range(0, 7), 1, null, true);
+    $settings->add(new admin_setting_configselect($name, $title, $description, $default, $options));
 }

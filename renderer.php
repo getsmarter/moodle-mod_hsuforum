@@ -2113,7 +2113,11 @@ HTML;
      */
     public function render_advanced_editor(advanced_editor $advancededitor) {
         $data = $advancededitor->get_data();
+
         if (get_class($data->editor) == 'atto_texteditor'){
+            // As part of our custom draft solution, force autosave disable
+            $data->options['autosave'] = false;
+
             $data->editor->use_editor('hiddenadvancededitor', $data->options, $data->fpoptions);
             $draftitemidfld = '<input type="hidden" id="hiddenadvancededitordraftid" name="hiddenadvancededitor[itemid]" value="'.$data->draftitemid.'" />';
             return '<div id="hiddenadvancededitorcont">'.$draftitemidfld.'<textarea style="display:none" id="hiddenadvancededitor"></textarea></div>';

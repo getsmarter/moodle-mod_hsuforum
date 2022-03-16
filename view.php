@@ -34,6 +34,8 @@
     $page        = optional_param('page', 0, PARAM_INT);     // which page to show
     $search      = optional_param('search', '', PARAM_CLEAN);// search string
 
+    global $USER;
+
     $params = array();
 
     if (!$f && !$id) {
@@ -62,6 +64,7 @@
     $editortouse = get_config('theme_getsmarter', 'hsuforum_editor');
     if (!empty($editortouse) && $editortouse == 'advanced') {
         $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_editor_toggle', 'init', ['body']);
+        $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_save_draft', 'init', [$forum->id, null, $USER->id]);
     }
 
     $course = $DB->get_record('course', array('id' => $forum->course));
