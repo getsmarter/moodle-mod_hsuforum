@@ -743,7 +743,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
         $table = new xmldb_table('hsuforum_custom_drafts');
 
         if (!$dbman->table_exists($table)) {
-            $dbman->install_one_table_from_xmldb_file($CFG->dirroot.'/mod/hsuforum/db/hsuforum_custom_drafts.xml', 'hsuforum_custom_drafts');
+            $dbman->install_one_table_from_xmldb_file($CFG->dirroot.'/mod/hsuforum/db/install.xml', 'hsuforum_custom_drafts');
         }
 
         upgrade_mod_savepoint(true, 2022031600, 'hsuforum');
