@@ -19,10 +19,7 @@ define([], function() {
                     text: text,
                     userid: userid
                 },
-                dataType: "text",
-                success: function() {
-                    // Do nothing, write-only call
-                }
+                dataType: "text"
             });
         }
     }
@@ -34,7 +31,7 @@ define([], function() {
      * @param postid
      * @param userid
      */
-    function fetchAutoSave(forumid, discussionid, postid, userid) {
+    function fetchAutoSave(forumid, discussionid, postid, userid, draftrestorearea) {
         if ((forumid != '' || discussionid != '' || postid != '') && userid != '') {
             $.ajax({
                 url: "get_post_draft.php",
@@ -47,7 +44,7 @@ define([], function() {
                 },
                 dataType: "text",
                 success: function(data) {
-                    window.drafttext = data;
+                    draftrestorearea.html(data);
                 }
             });
         }
@@ -62,16 +59,24 @@ define([], function() {
 
                 // Bind click to the reply
                 $('.hsuforum-reply-link').on('click', function() {
-                    window.drafttext = '';
-
                     let parent = $(this).closest('.hsuforum-post-wrapper');
                     let postid = $(parent).attr('data-postid');
+                    let draftrestorearea = $(parent).find('#hiddenadvancededitoreditable');
 
-                    fetchAutoSave(forumid, discussionid, postid, userid);
+                    // Because content is dynamically injected, the draft restore area doesn't exist when we click the
+                    // button, create an interval counter and interval that will cancel interval when draftrestorearea
+                    // found or 5 iterations have passed
+                    let intervalcounter = 0;
+                    let interval = setInterval(function() {
+                        if (draftrestorearea.length) {
+                            fetchAutoSave(forumid, discussionid, postid, userid, draftrestorearea);
+                            clearInterval(interval);
+                        } else if (intervalcounter >= 5) {
+                            clearInterval(interval);
+                        }
 
-                    setTimeout(function() {
-                        $(parent).find('#hiddenadvancededitoreditable').html(window.drafttext);
-                    }, 1000);
+                        draftrestorearea = $(parent).find('#hiddenadvancededitoreditable');
+                    }, 200);
                 });
 
                 $('.hsuforum-footer-reply .hsuforum-use-advanced').not('.hideadvancededitor').on('click', function(e) {
@@ -83,29 +88,46 @@ define([], function() {
                         return false;
                     }
 
-                    window.drafttext = '';
                     let postid = null;
                     pageloadclick = true;
+                    let draftrestorearea = $('.hsuforum-footer-reply').find('#hiddenadvancededitoreditable');
 
-                    fetchAutoSave(forumid, discussionid, postid, userid);
+                    // Because content is dynamically injected, the draft restore area doesn't exist when we click the
+                    // button, create an interval counter and interval that will cancel interval when draftrestorearea
+                    // found or 5 iterations have passed
+                    let intervalcounter = 0;
+                    let interval = setInterval(function() {
+                        if (draftrestorearea.length) {
+                            fetchAutoSave(forumid, discussionid, postid, userid, draftrestorearea);
+                            clearInterval(interval);
+                        } else if (intervalcounter >= 5) {
+                            clearInterval(interval);
+                        }
 
-                    setTimeout(function() {
-                        $('.hsuforum-footer-reply').find('#hiddenadvancededitoreditable').html(window.drafttext);
-                    }, 1000);
+                        draftrestorearea = $('.hsuforum-footer-reply').find('#hiddenadvancededitoreditable');
+                    }, 200);
                 });
 
 
                 // Bind click to new discussion topic button
                 $('#newdiscussionform input[type="submit"]').on('click', function() {
-                    window.drafttext = '';
-
                     let postid = null;
+                    let draftrestorearea = $('.hsuforum-add-discussion-target').find('#hiddenadvancededitoreditable');
 
-                    fetchAutoSave(forumid, discussionid, postid, userid);
+                    // Because content is dynamically injected, the draft restore area doesn't exist when we click the
+                    // button, create an interval counter and interval that will cancel interval when draftrestorearea
+                    // found or 5 iterations have passed
+                    let intervalcounter = 0;
+                    let interval = setInterval(function() {
+                        if (draftrestorearea.length) {
+                            fetchAutoSave(forumid, discussionid, postid, userid, draftrestorearea);
+                            clearInterval(interval);
+                        } else if (intervalcounter >= 5) {
+                            clearInterval(interval);
+                        }
 
-                    setTimeout(function() {
-                        $('.hsuforum-add-discussion-target').find('#hiddenadvancededitoreditable').html(window.drafttext);
-                    }, 1000);
+                        draftrestorearea = $('.hsuforum-add-discussion-target').find('#hiddenadvancededitoreditable');
+                    }, 200);
                 });
 
                 // Bind to keyup to trigger autosave
