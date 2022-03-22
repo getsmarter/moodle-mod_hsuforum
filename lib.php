@@ -8495,7 +8495,6 @@ function hsuforum_view($forum, $course, $cm, $context) {
  * @since Moodle 2.9
  */
 function hsuforum_discussion_view($modcontext, $forum, $discussion) {
-
     $params = array(
         'context' => $modcontext,
         'objectid' => $discussion->id,
@@ -8679,4 +8678,37 @@ function mention_id_array($postmessage="") {
         }
     }
     return $id_array;
+}
+
+/**
+ * Function to delete all expired drafts based on the number of days set in the config
+ * @return void
+ */
+function delete_expired_custom_drafts() {
+    global $DB;
+
+    $daystopersistdrafts = false;
+
+    try {
+        $daystopersistdrafts = get_config('hsuforum', 'daystopersistdrafts');
+    } catch (\Exception $e) {
+        error_log("Hsuforum delete_expired_custom_drafts: failed to read config value");
+    }
+
+    if (!$daystopersistdrafts) {
+        error_log("Hsuforum delete_expired_custom_drafts: no setting found for days to persist drafts");
+        return;
+    }
+
+    $cutofftimestamp = strtotime("now -$daystopersistdrafts days");
+
+    $sql = <<<SQL
+        timemodified <= ?
+    SQL;
+
+    try {
+        $DB->delete_records_select('hsuforum_custom_drafts', $sql, [$cutofftimestamp]);
+    } catch (\Exception $e) {
+        error_log("Hsuforum delete_expired_custom_drafts: {$e->getMessage()}");
+    }
 }
