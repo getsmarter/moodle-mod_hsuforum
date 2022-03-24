@@ -181,7 +181,7 @@ class mod_hsuforum_observer {
             $selectsql = sprintf('%s = :text', $DB->sql_compare_text('text'));
             $DB->delete_records_select('hsuforum_custom_drafts', $selectsql, ['text' => $savedpostmessage->message]);
         } catch (\Exception $e) {
-            error_log('mod_hsuforum: observer: ' . $e->getMessage());
+            error_log('mod_hsuforum observer: clear_discussion_draft: ' . $e->getMessage());
         }
     }
 
@@ -192,7 +192,7 @@ class mod_hsuforum_observer {
             $selectsql = sprintf('%s = :text', $DB->sql_compare_text('text'));
             $DB->delete_records_select('hsuforum_custom_drafts', $selectsql, ['text' => $savedpostmessage->message]);
         } catch (\Exception $e) {
-            error_log('mod_hsuforum: observer: ' . $e->getMessage());
+            error_log('mod_hsuforum observer: clear_post_draft: ' . $e->getMessage());
         }
     }
 }
