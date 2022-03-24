@@ -166,4 +166,33 @@ class mod_hsuforum_observer {
         return (is_siteadmin()) ? 'admin' : get_user_role_out_of_context($userid);
     }
 
+    public static function clear_discussion_draft(\mod_hsuforum\event\discussion_created $event) {
+        global $DB;
+        try {
+            $savedpostmessage = $DB->get_record(
+                'hsuforum_posts',
+                [
+                    'discussion' => $event->objectid,
+                    'parent' => 0
+                ],
+                'message'
+            );
+
+            $selectsql = sprintf('%s = :text', $DB->sql_compare_text('text'));
+            $DB->delete_records_select('hsuforum_custom_drafts', $selectsql, ['text' => $savedpostmessage->message]);
+        } catch (\Exception $e) {
+            error_log('mod_hsuforum observer: clear_discussion_draft: ' . $e->getMessage());
+        }
+    }
+
+    public static function clear_post_draft(\mod_hsuforum\event\post_created $event) {
+        global $DB;
+        try {
+            $savedpostmessage = $DB->get_record('hsuforum_posts', ['id' => $event->objectid], 'message');
+            $selectsql = sprintf('%s = :text', $DB->sql_compare_text('text'));
+            $DB->delete_records_select('hsuforum_custom_drafts', $selectsql, ['text' => $savedpostmessage->message]);
+        } catch (\Exception $e) {
+            error_log('mod_hsuforum observer: clear_post_draft: ' . $e->getMessage());
+        }
+    }
 }
