@@ -1425,10 +1425,11 @@ HTML;
 
         $url = new moodle_url('/mod/hsuforum/view.php');
 
-        $sortselect = html_writer::select($sort->get_key_options_menu(), 'dsortkey', $sort->get_key(), false, array('class' => ''));
+        $sortselect = html_writer::select($sort->get_key_options_menu(), 'dsortkey', $sort->get_key(), false, array('class' => '', 'id' => 'id_sort'));
         //https://jira.2u.com/browse/CTED-1785
         $sortform = "<form method='get' action='$url' class='hsuforum-discussion-sort'>
                     <legend class='accesshide'>".get_string('sortdiscussions', 'hsuforum')."</legend>
+                    <label for='id_sort' class=''>Sort By:</label>
                     <input type='hidden' name='id' value='{$cm->id}'>
                     $sortselect
                     <input class='rounded-pill btn btn-secondary sort-btn' type='submit' value='".get_string('sortdiscussionsby', 'hsuforum')."'>
