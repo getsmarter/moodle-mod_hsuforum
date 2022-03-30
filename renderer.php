@@ -1425,10 +1425,11 @@ HTML;
 
         $url = new moodle_url('/mod/hsuforum/view.php');
 
-        $sortselect = html_writer::select($sort->get_key_options_menu(), 'dsortkey', $sort->get_key(), false, array('class' => ''));
+        $sortselect = html_writer::select($sort->get_key_options_menu(), 'dsortkey', $sort->get_key(), false, array('class' => '', 'id' => 'id_sort'));
         //https://jira.2u.com/browse/CTED-1785
         $sortform = "<form method='get' action='$url' class='hsuforum-discussion-sort'>
                     <legend class='accesshide'>".get_string('sortdiscussions', 'hsuforum')."</legend>
+                    <label for='id_sort' class=''>Sort By:</label>
                     <input type='hidden' name='id' value='{$cm->id}'>
                     $sortselect
                     <input class='rounded-pill btn btn-secondary sort-btn' type='submit' value='".get_string('sortdiscussionsby', 'hsuforum')."'>
@@ -2044,7 +2045,7 @@ HTML;
                 '<i class="fa fa-reply fa-2"><span class="hsuforum-action-label" title="reply">' . get_string('replylabel', 'hsuforum') . '</span></i>',
                 array (
                     'class' => 'hsuforum-reply-link',
-                    'aria-label' => get_string('replylabel', 'hsuforum'),
+                    'aria-label' => get_string('replylabel', 'hsuforum'). "-" . $post->id,
                     'role' => 'link'
                 )
             );
@@ -2061,7 +2062,7 @@ HTML;
                 '<i class="fa fa-edit fa-2"><span class="hsuforum-action-label">' . get_string('editlabel', 'hsuforum') . '</span></i>',
                 array (
                     'class' => 'hsuforum-edit-link',
-                    'aria-label' => 'Edit',
+                    'aria-label' => get_string('editlabel', 'hsuforum'). "-" . $post->id,
                     'role' => 'link'
                 )
             );
@@ -2073,7 +2074,7 @@ HTML;
                 '<i class="fa fa-trash fa-2"><span class="hsuforum-action-label">' . get_string('deletelabel', 'hsuforum') . '</span></i>',
                 array (
                     'class' => 'hsuforum-delete-link',
-                    'aria-label' => 'Delete',
+                    'aria-label' => get_string('deletelabel', 'hsuforum'). "-" . $post->id,
                     'role' => 'link'
                 )
             );
@@ -2088,7 +2089,7 @@ HTML;
                 '<i class="fa fa-plus-square fa-2"><span class="hsuforum-action-label">' . get_string('splitlabel', 'hsuforum') . '</span></i>',
                 array (
                     'class' => 'hsuforum-split-link',
-                    'aria-label' => 'Split',
+                    'aria-label' => get_string('splitlabel', 'hsuforum'). "-" . $post->id,
                     'role' => 'link'
                 )
             );
