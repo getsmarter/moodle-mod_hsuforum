@@ -1,4 +1,4 @@
-define([], function() {
+define(['jquery'], function($) {
     /**
      * Makes AJAX call to write current text for forum/discussion/post to DB for restoration later on
      * @param forumid int
@@ -132,8 +132,21 @@ define([], function() {
 
                 // Bind to keyup to trigger autosave
                 $(document).on("keyup", ".editor_atto_content", function() {
-                    let parent = $(this).closest('.hsuforum-post-wrapper');
-                    let postid = $(parent).attr('data-postid') || null;
+                    // If there is a the footer reply as a parent, it means that there is no post id
+                    let isfooter = $(this).closest('.hsuforum-footer-reply').length;
+                    let postid = null;
+
+                    // If it is not the footer, it means that there is a post id and we need to find the post id of that parent
+                    if (!isfooter) {
+                        let parent = $(this).closest('.hsuforum-post-wrapper');
+                        postid = $(parent).attr('data-postid') || null;
+
+                        if (postid === null) {
+                            parent = $(this).closest('.hsuforum-thread');
+                            postid = $(parent).attr('data-postid') || null;
+                        }
+                    }
+
                     let text = $(this).text();
 
                     if (timer) {
