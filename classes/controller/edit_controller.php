@@ -168,7 +168,7 @@ class edit_controller extends controller_abstract {
             $options = array(
                 'subject'       => $subject,
                 'name'          => $subject,
-                'groupids'       => $groupids,
+                'groupids'      => $groupids,
                 'message'       => $message,
                 'messageformat' => $messageformat,
                 'reveal'        => $reveal,
