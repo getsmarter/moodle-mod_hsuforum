@@ -82,7 +82,7 @@ class discussion_service {
                 }
             }
         } else {
-            foreach ($options['groupid'] as $groupid) {
+            foreach ($options['groupids'] as $groupid) {
                 $groupstopostto[] = $groupid;
             }
         }
@@ -91,7 +91,7 @@ class discussion_service {
         $renderer = $PAGE->get_renderer('mod_hsuforum');
 
         foreach ($groupstopostto as $groupid) {
-            $options['groupid'] = $groupid;
+            $options['groupids'] = $groupid;
 
             $discussion = $this->create_discussion_object($forum, $context, $options);
             $errors = $this->validate_discussion($cm, $forum, $context, $discussion, $uploader);
@@ -126,12 +126,13 @@ class discussion_service {
      * @return \stdClass
      */
     public function create_discussion_object($forum, $context, array $options = array()) {
+
         $discussion = (object) array(
             'name'          => '',
             'subject'       => '',
             'course'        => $forum->course,
             'forum'         => $forum->id,
-            'groupid'       => -1,
+            'groupid'       => $options['groupids'],
             'timestart'     => 0,
             'timeend'       => 0,
             'message'       => '',

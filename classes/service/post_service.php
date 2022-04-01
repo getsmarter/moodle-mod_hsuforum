@@ -148,7 +148,10 @@ class post_service {
 
         // If the user has access to all groups and they are changing the group, then update the post.
         if (empty($post->parent) && has_capability('mod/hsuforum:movediscussions', $context)) {
-            $this->db->set_field('hsuforum_discussions', 'groupid', $options['groupid'], array('id' => $discussion->id));
+            foreach ($options['groupids'] as $groupid) {
+                $this->db->set_field('hsuforum_discussions', 'groupid', $groupid, array('id' => $discussion->id));
+            }
+
         }
 
         // Handle templating if 'post to my groups' checkbox enabled.
@@ -158,12 +161,37 @@ class post_service {
                 if (hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $context)) {
                     $groupstopostto[] = $groupid;
                 } else {
-                    $groupstopostto[] = $options['groupid'];
+                    $groupstopostto[] = $options['groupids'];
                 }
             }
 
             foreach ($groupstopostto as $groupid) {
-                $options['groupid'] = $groupid;
+                $options['groupids'] = $groupid;
+
+                $copydiscussion = $this->discussionservice->create_discussion_object($forum, $context, $options);
+                $errors = $this->discussionservice->validate_discussion($cm, $forum, $context, $copydiscussion, $uploader);
+
+                if (!empty($errors)) {
+                    $renderer = $PAGE->get_renderer('mod_hsuforum');
+                    return new json_response((object) array(
+                        'errors' => true,
+                        'html'   => $renderer->validation_errors($errors),
+                    ));
+                }
+                $this->discussionservice->save_discussion($copydiscussion, $uploader);
+            }
+        } else {
+            //handle submit without posttoall checkbox
+            foreach ($options['groupids'] as $groupid) {
+                if (hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $context)) {
+                    $groupstopostto[] = $groupid;
+                } else {
+                    $groupstopostto[] = $options['groupids'];
+                }
+            }
+
+            foreach ($groupstopostto as $groupid) {
+                $options['groupids'] = $groupid;
 
                 $copydiscussion = $this->discussionservice->create_discussion_object($forum, $context, $options);
                 $errors = $this->discussionservice->validate_discussion($cm, $forum, $context, $copydiscussion, $uploader);

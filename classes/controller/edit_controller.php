@@ -193,7 +193,7 @@ class edit_controller extends controller_abstract {
 
             $postid        = required_param('edit', PARAM_TEXT);
             $subject       = required_param('subject', PARAM_TEXT);
-            $groupid       = optional_param('groupinfo', 0, PARAM_INT);
+            $groupids       = optional_param_array('groupinfo', array(), PARAM_INT);
             $itemid        = required_param('itemid', PARAM_INT);
             $files         = optional_param_array('deleteattachment', array(), PARAM_FILE);
             $privatereply  = optional_param('privatereply', 0, PARAM_BOOL);
@@ -212,9 +212,11 @@ class edit_controller extends controller_abstract {
             $post       = $DB->get_record('hsuforum_posts', array('id' => $postid), '*', MUST_EXIST);
             $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion, 'forum' => $forum->id), '*', MUST_EXIST);
 
-            if (empty($groupid)) {
-                $groupid = -1;
+
+            if (empty($groupids)) {
+                $groupids[] = -1;
             }
+
             // If private reply, then map it to the parent author user ID.
             if (!empty($privatereply)) {
                 $parent     = $DB->get_record('hsuforum_posts', array('id' => $post->parent), '*', MUST_EXIST);
@@ -224,7 +226,7 @@ class edit_controller extends controller_abstract {
               array(
                 'subject'       => $subject,
                 'name'          => $subject,
-                'groupid'       => $groupid,
+                'groupids'       => $groupids,
                 'itemid'        => $itemid,
                 'message'       => $message,
                 'messageformat' => $messageformat,
