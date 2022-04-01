@@ -216,10 +216,6 @@ class edit_controller extends controller_abstract {
                 $groupids[] = -1;
             }
 
-            foreach ($groupids as $gid) {
-                $groupids[] = $gid;
-            }
-
             // If private reply, then map it to the parent author user ID.
             if (!empty($privatereply)) {
                 $parent     = $DB->get_record('hsuforum_posts', array('id' => $post->parent), '*', MUST_EXIST);
@@ -230,7 +226,7 @@ class edit_controller extends controller_abstract {
                 array (
                 'subject'       => $subject,
                 'name'          => $subject,
-                'groupids'       => $groupids,
+                'groupids'      => $groupids,
                 'itemid'        => $itemid,
                 'message'       => $message,
                 'messageformat' => $messageformat,
