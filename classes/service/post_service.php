@@ -114,8 +114,10 @@ class post_service {
      * @param array $options These override default post values, EG: set the post message with this
      * @return json_response
      */
-    public function handle_update_post($course, $cm, $forum, $context, $discussion, $post, array $deletefiles = array(), $posttomygroups, array $options) {
+    public function handle_update_post($course, $cm, $forum, $context, $discussion, $post, array $deletefiles = array(),
+                                       $posttomygroups, array $options) {
 
+        global $DB;
         $this->require_can_edit_post($forum, $context, $discussion, $post);
 
         $uploader = new upload_file(
@@ -131,7 +133,7 @@ class post_service {
         $post->itemid = empty($options['itemid']) ? 0 : $options['itemid'];
 
         // If this post is actually the discussion, then update timestart and timeend.
-        If (intval($post->parent) === 0) {
+        if (intval($post->parent) === 0) {
             if (isset($options['timestart'])) {
                 $discussion->timestart = $options['timestart'];
             }
@@ -148,7 +150,9 @@ class post_service {
 
         // If the user has access to all groups and they are changing the group, then update the post.
         if (empty($post->parent) && has_capability('mod/hsuforum:movediscussions', $context)) {
-            $this->db->set_field('hsuforum_discussions', 'groupid', $options['groupid'], array('id' => $discussion->id));
+            foreach ($options['groupids'] as $groupid) {
+                $this->db->set_field('hsuforum_discussions', 'groupid', $groupid, array('id' => $discussion->id));
+            }
         }
 
         // Handle templating if 'post to my groups' checkbox enabled.
@@ -158,14 +162,15 @@ class post_service {
                 if (hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $context)) {
                     $groupstopostto[] = $groupid;
                 } else {
-                    $groupstopostto[] = $options['groupid'];
+                    $groupstopostto[] = $options['groupids'];
                 }
             }
 
             foreach ($groupstopostto as $groupid) {
-                $options['groupid'] = $groupid;
+                $options['groupids'] = $groupid;
 
                 $copydiscussion = $this->discussionservice->create_discussion_object($forum, $context, $options);
+
                 $errors = $this->discussionservice->validate_discussion($cm, $forum, $context, $copydiscussion, $uploader);
 
                 if (!empty($errors)) {
@@ -177,17 +182,59 @@ class post_service {
                 }
                 $this->discussionservice->save_discussion($copydiscussion, $uploader);
             }
+            $this->trigger_post_updated($context, $forum, $discussion, $post);
+
+            return new json_response((object) array(
+                'eventaction'  => 'postupdated',
+                'discussionid' => (int) $discussion->id,
+                'postid'       => (int) $post->id,
+                'livelog'      => get_string('postwasupdated', 'hsuforum'),
+                'html'         => $this->discussionservice->render_full_thread($discussion->id),
+            ));
+        } else {
+            // Handle submit without posttoall checkbox.
+            if (isset($_POST['groupinfo'])) {
+                foreach ($options['groupids'] as $groupid) {
+                    if (hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $context)) {
+                        $groupstopostto[] = $groupid;
+                    } else {
+                        $groupstopostto[] = $options['groupids'];
+                    }
+                }
+
+                foreach ($groupstopostto as $groupid) {
+                    $options['groupids'] = $groupid;
+
+                    if (!$DB->record_exists('hsuforum_discussions', array('course' => $forum->course,
+                        'forum' => $forum->id, 'groupid' => $groupid))) {
+                        // Check groupid, course, forumid exists.
+                        $copydiscussion = $this->discussionservice->create_discussion_object($forum, $context, $options);
+                        $errors = $this->discussionservice->validate_discussion($cm, $forum, $context, $copydiscussion, $uploader);
+
+                        if (!empty($errors)) {
+                            $renderer = $PAGE->get_renderer('mod_hsuforum');
+                            return new json_response((object)array(
+                                'errors' => true,
+                                'html' => $renderer->validation_errors($errors),
+                            ));
+                        }
+                        $this->discussionservice->save_discussion($copydiscussion, $uploader);
+                    }
+
+                }
+            }
+
+            $this->trigger_post_updated($context, $forum, $discussion, $post);
+
+            return new json_response((object) array(
+                'eventaction'  => 'postupdated',
+                'discussionid' => (int) $discussion->id,
+                'postid'       => (int) $post->id,
+                'livelog'      => get_string('postwasupdated', 'hsuforum'),
+                'html'         => $this->discussionservice->render_full_thread($discussion->id),
+            ));
         }
 
-        $this->trigger_post_updated($context, $forum, $discussion, $post);
-
-        return new json_response((object) array(
-            'eventaction'  => 'postupdated',
-            'discussionid' => (int) $discussion->id,
-            'postid'       => (int) $post->id,
-            'livelog'      => get_string('postwasupdated', 'hsuforum'),
-            'html'         => $this->discussionservice->render_full_thread($discussion->id),
-        ));
     }
 
     /**
@@ -287,7 +334,8 @@ class post_service {
         if (empty($post->id)) {
             $thresholdwarning = hsuforum_check_throttling($forum, $cm);
             if ($thresholdwarning !== false && $thresholdwarning->canpost === false) {
-                $errors[] = new \moodle_exception($thresholdwarning->errorcode, $thresholdwarning->module, $thresholdwarning->additional);
+                $errors[] = new \moodle_exception($thresholdwarning->errorcode, $thresholdwarning->module,
+                    $thresholdwarning->additional);
             }
         }
         if (hsuforum_str_empty($post->subject)) {
@@ -368,7 +416,7 @@ class post_service {
 
         require_once($CFG->libdir.'/completionlib.php');
 
-        // Update completion state
+        // Update completion state.
         $completion = new \completion_info($course);
         if ($completion->is_enabled($cm) &&
             ($forum->completionreplies || $forum->completionposts)
@@ -428,7 +476,7 @@ class post_service {
     public function create_error_response(array $errors) {
         global $PAGE;
 
-        /** @var \mod_hsuforum_renderer $renderer */
+        // Mod hsuforum renderer @var \mod_hsuforum_renderer $renderer.
         $renderer = $PAGE->get_renderer('mod_hsuforum');
 
         return new json_response((object) array(

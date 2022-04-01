@@ -106,8 +106,9 @@ class edit_controller extends controller_abstract {
             $context = $PAGE->context;
             $course  = $PAGE->course;
 
-            $parent     = $DB->get_record('hsuforum_posts', array('id' => $reply), '*', MUST_EXIST);
-            $discussion = $DB->get_record('hsuforum_discussions', array('id' => $parent->discussion, 'forum' => $forum->id), '*', MUST_EXIST);
+            $parent = $DB->get_record('hsuforum_posts', array('id' => $reply), '*', MUST_EXIST);
+            $discussion = $DB->get_record('hsuforum_discussions', array('id' => $parent->discussion,
+                'forum' => $forum->id), '*', MUST_EXIST);
 
             // If private reply, then map it to the parent author user ID.
             if (!empty($privatereply)) {
@@ -193,7 +194,7 @@ class edit_controller extends controller_abstract {
 
             $postid        = required_param('edit', PARAM_TEXT);
             $subject       = required_param('subject', PARAM_TEXT);
-            $groupid       = optional_param('groupinfo', 0, PARAM_INT);
+            $groupids       = optional_param_array('groupinfo', array(), PARAM_INT);
             $itemid        = required_param('itemid', PARAM_INT);
             $files         = optional_param_array('deleteattachment', array(), PARAM_FILE);
             $privatereply  = optional_param('privatereply', 0, PARAM_BOOL);
@@ -209,30 +210,34 @@ class edit_controller extends controller_abstract {
             $context = $PAGE->context;
             $course  = $PAGE->course;
 
-            $post       = $DB->get_record('hsuforum_posts', array('id' => $postid), '*', MUST_EXIST);
-            $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion, 'forum' => $forum->id), '*', MUST_EXIST);
+            $post = $DB->get_record('hsuforum_posts', array('id' => $postid), '*', MUST_EXIST);
+            $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion,
+                'forum' => $forum->id), '*', MUST_EXIST);
 
-            if (empty($groupid)) {
-                $groupid = -1;
+            if (empty($groupids)) {
+                $groupids[] = -1;
             }
+
             // If private reply, then map it to the parent author user ID.
             if (!empty($privatereply)) {
-                $parent     = $DB->get_record('hsuforum_posts', array('id' => $post->parent), '*', MUST_EXIST);
+                $parent = $DB->get_record('hsuforum_posts', array('id' => $post->parent), '*', MUST_EXIST);
                 $privatereply = $parent->userid;
             }
-            return $this->postservice->handle_update_post($course, $cm, $forum, $context, $discussion, $post, $files, $posttomygroups,
-              array(
-                'subject'       => $subject,
-                'name'          => $subject,
-                'groupid'       => $groupid,
-                'itemid'        => $itemid,
-                'message'       => $message,
-                'messageformat' => $messageformat,
-                'reveal'        => $reveal,
-                'privatereply'  => $privatereply,
-                'timestart'     => $timestart,
-                'timeend'       => $timeend
-            ));
+
+            return $this->postservice->handle_update_post($course, $cm, $forum, $context, $discussion, $post, $files,
+                $posttomygroups,
+                array (
+                    'subject'       => $subject,
+                    'name'          => $subject,
+                    'groupids'      => $groupids,
+                    'itemid'        => $itemid,
+                    'message'       => $message,
+                    'messageformat' => $messageformat,
+                    'reveal'        => $reveal,
+                    'privatereply'  => $privatereply,
+                    'timestart'     => $timestart,
+                    'timeend'       => $timeend
+                ));
         } catch (\Exception $e) {
             return new json_response($e);
         }
@@ -306,7 +311,8 @@ class edit_controller extends controller_abstract {
         } else {
             $message = get_string('deleteddiscussion', 'hsuforum');
         }
-        /** @var \core_renderer $renderer */
+
+        // Core renderer @var \core_renderer $renderer.
         $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
 
         return new json_response(array(
