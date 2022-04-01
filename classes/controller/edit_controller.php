@@ -212,18 +212,24 @@ class edit_controller extends controller_abstract {
             $post       = $DB->get_record('hsuforum_posts', array('id' => $postid), '*', MUST_EXIST);
             $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion, 'forum' => $forum->id), '*', MUST_EXIST);
 
+            foreach ($groupids as $gid) {
+                if (empty($groupids)) {
+                    $groupids[] = -1;
+                } else {
+                    $groupids[] = $gid;
+                }
 
-            if (empty($groupids)) {
-                $groupids[] = -1;
             }
+
 
             // If private reply, then map it to the parent author user ID.
             if (!empty($privatereply)) {
                 $parent     = $DB->get_record('hsuforum_posts', array('id' => $post->parent), '*', MUST_EXIST);
                 $privatereply = $parent->userid;
             }
+
             return $this->postservice->handle_update_post($course, $cm, $forum, $context, $discussion, $post, $files, $posttomygroups,
-              array(
+                array (
                 'subject'       => $subject,
                 'name'          => $subject,
                 'groupids'       => $groupids,
@@ -234,7 +240,7 @@ class edit_controller extends controller_abstract {
                 'privatereply'  => $privatereply,
                 'timestart'     => $timestart,
                 'timeend'       => $timeend
-            ));
+                ));
         } catch (\Exception $e) {
             return new json_response($e);
         }
