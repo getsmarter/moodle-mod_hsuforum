@@ -87,7 +87,7 @@ class discussion_service {
             }
         }
 
-        /** @var \mod_hsuforum_renderer $renderer */
+        // Mod hsuforum renderer @var \mod_hsuforum_renderer $renderer.
         $renderer = $PAGE->get_renderer('mod_hsuforum');
 
         foreach ($groupstopostto as $groupid) {
@@ -175,7 +175,8 @@ class discussion_service {
 
         $thresholdwarning = hsuforum_check_throttling($forum, $cm);
         if ($thresholdwarning !== false && $thresholdwarning->canpost === false) {
-            $errors[] = new \moodle_exception($thresholdwarning->errorcode, $thresholdwarning->module, $thresholdwarning->additional);
+            $errors[] = new \moodle_exception($thresholdwarning->errorcode, $thresholdwarning->module,
+                $thresholdwarning->additional);
         }
 
         $subject = trim($discussion->subject);
@@ -265,7 +266,8 @@ class discussion_service {
         $discussion = $DB->get_record('hsuforum_discussions', array('id' => $discussionid), '*', MUST_EXIST);
         $forum      = $PAGE->activityrecord;
         $course     = $COURSE;
-        $cm         = get_coursemodule_from_id('hsuforum', $PAGE->cm->id, $course->id, false, MUST_EXIST); // Cannot use cm_info because it is read only.
+        $cm         = get_coursemodule_from_id('hsuforum', $PAGE->cm->id, $course->id, false,
+            MUST_EXIST); // Cannot use cm_info because it is read only.
         $context    = $PAGE->context;
 
         if ($forum->type == 'news') {
