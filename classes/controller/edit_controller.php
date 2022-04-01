@@ -148,7 +148,7 @@ class edit_controller extends controller_abstract {
             require_sesskey();
 
             $subject       = required_param('subject', PARAM_TEXT);
-            $groupid       = optional_param('groupinfo', 0, PARAM_INT);
+            $groupids       = optional_param_array('groupinfo', array(), PARAM_INT);
             $message       = required_param('message', PARAM_RAW_TRIMMED);
             $reveal        = optional_param('reveal', 0, PARAM_BOOL);
             $messageformat = required_param('messageformat', PARAM_INT);
@@ -161,13 +161,14 @@ class edit_controller extends controller_abstract {
             $context = $PAGE->context;
             $course  = $PAGE->course;
 
-            if (empty($groupid)) {
-                $groupid = array('-1');
+            if (empty($groupids)) {
+                $groupids[] = -1;
             }
+
             $options = array(
                 'subject'       => $subject,
                 'name'          => $subject,
-                'groupid'       => $groupid,
+                'groupids'      => $groupids,
                 'message'       => $message,
                 'messageformat' => $messageformat,
                 'reveal'        => $reveal,
