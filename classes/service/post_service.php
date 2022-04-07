@@ -169,7 +169,7 @@ class post_service {
             foreach ($groupstopostto as $groupid) {
                 $options['groupids'] = $groupid;
 
-                $copydiscussion = $this->discussionservice->create_discussion_object($forum, $context, $options);
+                $copydiscussion = $this->discussionservice->create_discussion_object($forum, $context, $options, $groupstopostto);
 
                 $errors = $this->discussionservice->validate_discussion($cm, $forum, $context, $copydiscussion, $uploader);
 
@@ -208,7 +208,7 @@ class post_service {
                     if (!$DB->record_exists('hsuforum_discussions', array('course' => $forum->course,
                         'forum' => $forum->id, 'groupid' => $groupid))) {
                         // Check groupid, course, forumid exists.
-                        $copydiscussion = $this->discussionservice->create_discussion_object($forum, $context, $options);
+                        $copydiscussion = $this->discussionservice->create_discussion_object($forum, $context, $options, $groupstopostto);
                         $errors = $this->discussionservice->validate_discussion($cm, $forum, $context, $copydiscussion, $uploader);
 
                         if (!empty($errors)) {

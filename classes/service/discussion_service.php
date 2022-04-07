@@ -93,7 +93,7 @@ class discussion_service {
         foreach ($groupstopostto as $groupid) {
             $options['groupids'] = $groupid;
 
-            $discussion = $this->create_discussion_object($forum, $context, $options);
+            $discussion = $this->create_discussion_object($forum, $context, $options, $groupstopostto);
             $errors = $this->validate_discussion($cm, $forum, $context, $discussion, $uploader);
 
             if (!empty($errors)) {
