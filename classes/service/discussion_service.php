@@ -125,24 +125,34 @@ class discussion_service {
      * @param array $options These override default post values, EG: set the post message with this
      * @return \stdClass
      */
-    public function create_discussion_object($forum, $context, array $options = array()) {
+    public function create_discussion_object($forum, $context, $options, $groupstopostto) {
 
-        $discussion = (object) array(
-            'name'          => '',
-            'subject'       => '',
-            'course'        => $forum->course,
-            'forum'         => $forum->id,
-            'groupid'       => $options['groupids'],
-            'timestart'     => 0,
-            'timeend'       => 0,
-            'message'       => '',
-            'messageformat' => FORMAT_MOODLE,
-            'messagetrust'  => trusttext_trusted($context),
-            'mailnow'       => 0,
-            'reveal'        => 0,
-        );
+        foreach ($groupstopostto as $groupid) {
+            $discussions = array(
+                'name'          => '',
+                'subject'       => '',
+                'course'        => $forum->course,
+                'forum'         => $forum->id,
+                'groupid'       => $groupid,
+                'timestart'     => 0,
+                'timeend'       => 0,
+                'message'       => '',
+                'messageformat' => FORMAT_MOODLE,
+                'messagetrust'  => trusttext_trusted($context),
+                'mailnow'       => 0,
+                'reveal'        => 0,
+            );
+
+            $discussion[] = $discussions;
+
+        }
+
+        $discussion = json_decode(json_encode($discussion));
+
         foreach ($options as $name => $value) {
+
             if (property_exists($discussion, $name)) {
+
                 $discussion->$name = $value;
             }
         }

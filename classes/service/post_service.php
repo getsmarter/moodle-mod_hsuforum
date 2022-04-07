@@ -220,11 +220,9 @@ class post_service {
                         }
                         $this->discussionservice->save_discussion($copydiscussion, $uploader);
                     }
-
+                    $this->trigger_post_updated($context, $forum, $discussion, $post);
                 }
             }
-
-            $this->trigger_post_updated($context, $forum, $discussion, $post);
 
             return new json_response((object) array(
                 'eventaction'  => 'postupdated',
