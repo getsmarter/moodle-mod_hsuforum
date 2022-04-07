@@ -93,7 +93,7 @@ class discussion_service {
         foreach ($groupstopostto as $groupid) {
             $options['groupids'] = $groupid;
 
-            $discussion = $this->create_discussion_object($forum, $context, $options, $groupstopostto);
+            $discussion = $this->create_discussion_object($forum, $context, $options);
             $errors = $this->validate_discussion($cm, $forum, $context, $discussion, $uploader);
 
             if (!empty($errors)) {
@@ -125,34 +125,24 @@ class discussion_service {
      * @param array $options These override default post values, EG: set the post message with this
      * @return \stdClass
      */
-    public function create_discussion_object($forum, $context, $options, $groupstopostto) {
+    public function create_discussion_object($forum, $context, array $options = array()) {
 
-        foreach ($groupstopostto as $groupid) {
-            $discussions = array(
-                'name'          => '',
-                'subject'       => '',
-                'course'        => $forum->course,
-                'forum'         => $forum->id,
-                'groupid'       => $groupid,
-                'timestart'     => 0,
-                'timeend'       => 0,
-                'message'       => '',
-                'messageformat' => FORMAT_MOODLE,
-                'messagetrust'  => trusttext_trusted($context),
-                'mailnow'       => 0,
-                'reveal'        => 0,
-            );
-
-            $discussion[] = $discussions;
-
-        }
-
-        $discussion = json_decode(json_encode($discussion));
-
+        $discussion = (object) array(
+            'name'          => '',
+            'subject'       => '',
+            'course'        => $forum->course,
+            'forum'         => $forum->id,
+            'groupid'       => $options['groupids'],
+            'timestart'     => 0,
+            'timeend'       => 0,
+            'message'       => '',
+            'messageformat' => FORMAT_MOODLE,
+            'messagetrust'  => trusttext_trusted($context),
+            'mailnow'       => 0,
+            'reveal'        => 0,
+        );
         foreach ($options as $name => $value) {
-
             if (property_exists($discussion, $name)) {
-
                 $discussion->$name = $value;
             }
         }

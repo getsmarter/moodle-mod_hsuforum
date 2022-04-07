@@ -166,10 +166,10 @@ class post_service {
                 }
             }
 
-            foreach ($groupstopostto as $groupid) {
+
                 $options['groupids'] = $groupid;
 
-                $copydiscussion = $this->discussionservice->create_discussion_object($forum, $context, $options, $groupstopostto);
+                $copydiscussion = $this->discussionservice->create_discussion_object($forum, $context, $options);
 
                 $errors = $this->discussionservice->validate_discussion($cm, $forum, $context, $copydiscussion, $uploader);
 
@@ -181,7 +181,7 @@ class post_service {
                     ));
                 }
                 $this->discussionservice->save_discussion($copydiscussion, $uploader);
-            }
+
             $this->trigger_post_updated($context, $forum, $discussion, $post);
 
             return new json_response((object) array(
@@ -194,21 +194,15 @@ class post_service {
         } else {
             // Handle submit without posttoall checkbox.
             if (isset($_POST['groupinfo'])) {
-                foreach ($options['groupids'] as $groupid) {
-                    if (hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $context)) {
-                        $groupstopostto[] = $groupid;
-                    } else {
-                        $groupstopostto[] = $options['groupids'];
-                    }
-                }
 
+                $groupstopostto[] = $options['groupids'];
                 foreach ($groupstopostto as $groupid) {
                     $options['groupids'] = $groupid;
 
                     if (!$DB->record_exists('hsuforum_discussions', array('course' => $forum->course,
                         'forum' => $forum->id, 'groupid' => $groupid))) {
                         // Check groupid, course, forumid exists.
-                        $copydiscussion = $this->discussionservice->create_discussion_object($forum, $context, $options, $groupstopostto);
+                        $copydiscussion = $this->discussionservice->create_discussion_object($forum, $context, $options);
                         $errors = $this->discussionservice->validate_discussion($cm, $forum, $context, $copydiscussion, $uploader);
 
                         if (!empty($errors)) {
