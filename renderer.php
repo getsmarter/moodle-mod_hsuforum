@@ -1674,7 +1674,7 @@ HTML;
      * @return string
      */
     public function simple_edit_discussion($cm, $postid = 0, array $data = array()) {
-        global $DB, $USER, $OUTPUT;
+        global $DB, $USER, $OUTPUT, $PAGE;
 
         $context = context_module::instance($cm->id);
         $forum = hsuforum_get_cm_forum($cm);
@@ -1739,7 +1739,7 @@ HTML;
                                     && empty($post->parent)
                                     && has_capability('mod/hsuforum:canposttomygroups', $context);
 
-            if ($canposttoowngroups) {
+            if ($canposttoowngroups && $PAGE->pagetype === 'mod-hsuforum-view') {
                 $extrahtml .= html_writer::tag('label', html_writer::checkbox('posttomygroups', 1, false).
                     get_string('posttomygroups', 'hsuforum'));
             }
@@ -1761,12 +1761,19 @@ HTML;
             $canselectgroup = empty($post->parent) && ($canselectgroupfornew || $canselectgroupformove);
 
             if ($canselectgroup) {
-                $groupselect = html_writer::tag('span', get_string('group') . ' ');
-                $groupselect .= html_writer::select($groupinfo, 'groupinfo[]', $data['groupid'], false, array('multiple'=>true));
-                $extrahtml .= html_writer::tag('label', $groupselect);
-            } else {
+                if($PAGE->pagetype === 'mod-hsuforum-view') {
+                    $groupselect = html_writer::tag('span', get_string('group') . ' ');
+                    $groupselect .= html_writer::select($groupinfo, 'groupinfo[]', $data['groupid'], false, array('multiple'=>true));
+                    $extrahtml .= html_writer::tag('label', $groupselect);
+                } else {
+                    $groupselect = html_writer::tag('span', get_string('group') . ' ');
+                    $groupselect .= html_writer::select($groupinfo, 'groupinfo', $data['groupid'], false);
+                    $extrahtml .= html_writer::tag('label', $groupselect);
+                }
+            }  else {
                 $actionurl->param('groupinfo', groups_get_activity_group($cm));
             }
+
         }
         if ($forum->anonymous) {
             $extrahtml .= html_writer::tag('label', html_writer::checkbox('reveal', 1, !empty($data['reveal'])).

@@ -148,7 +148,7 @@ class edit_controller extends controller_abstract {
             require_sesskey();
 
             $subject       = required_param('subject', PARAM_TEXT);
-            $groupids       = optional_param_array('groupinfo', array(), PARAM_INT);
+            $groupid       = optional_param('groupinfo', 0, PARAM_INT);
             $message       = required_param('message', PARAM_RAW_TRIMMED);
             $reveal        = optional_param('reveal', 0, PARAM_BOOL);
             $messageformat = required_param('messageformat', PARAM_INT);
@@ -161,14 +161,14 @@ class edit_controller extends controller_abstract {
             $context = $PAGE->context;
             $course  = $PAGE->course;
 
-            if (empty($groupids)) {
-                $groupids[] = -1;
+            if (empty($groupid)) {
+                $groupid = -1;
             }
 
             $options = array(
                 'subject'       => $subject,
                 'name'          => $subject,
-                'groupids'      => $groupids,
+                'groupid'       => $groupid,
                 'message'       => $message,
                 'messageformat' => $messageformat,
                 'reveal'        => $reveal,
@@ -195,7 +195,7 @@ class edit_controller extends controller_abstract {
 
             $postid        = required_param('edit', PARAM_TEXT);
             $subject       = required_param('subject', PARAM_TEXT);
-            $groupids       = optional_param_array('groupinfo', array(), PARAM_INT);
+            $groupid       = optional_param('groupinfo', 0, PARAM_INT);
             $itemid        = required_param('itemid', PARAM_INT);
             $files         = optional_param_array('deleteattachment', array(), PARAM_FILE);
             $privatereply  = optional_param('privatereply', 0, PARAM_BOOL);
@@ -215,8 +215,8 @@ class edit_controller extends controller_abstract {
             $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion,
                 'forum' => $forum->id), '*', MUST_EXIST);
 
-            if (empty($groupids)) {
-                $groupids[] = -1;
+            if (empty($groupid)) {
+                $groupid = -1;
             }
 
             // If private reply, then map it to the parent author user ID.
@@ -224,21 +224,19 @@ class edit_controller extends controller_abstract {
                 $parent = $DB->get_record('hsuforum_posts', array('id' => $post->parent), '*', MUST_EXIST);
                 $privatereply = $parent->userid;
             }
-
-            return $this->postservice->handle_update_post($course, $cm, $forum, $context, $discussion, $post, $files,
-                $posttomygroups,
-                array (
-                    'subject'       => $subject,
-                    'name'          => $subject,
-                    'groupids'      => $groupids,
-                    'itemid'        => $itemid,
-                    'message'       => $message,
-                    'messageformat' => $messageformat,
-                    'reveal'        => $reveal,
-                    'privatereply'  => $privatereply,
-                    'timestart'     => $timestart,
-                    'timeend'       => $timeend
-                ));
+            return $this->postservice->handle_update_post($course, $cm, $forum, $context, $discussion, $post, $files, $posttomygroups,
+              array(
+                'subject'       => $subject,
+                'name'          => $subject,
+                'groupid'       => $groupid,
+                'itemid'        => $itemid,
+                'message'       => $message,
+                'messageformat' => $messageformat,
+                'reveal'        => $reveal,
+                'privatereply'  => $privatereply,
+                'timestart'     => $timestart,
+                'timeend'       => $timeend
+            ));
         } catch (\Exception $e) {
             return new json_response($e);
         }
