@@ -150,9 +150,7 @@ class post_service {
 
         // If the user has access to all groups and they are changing the group, then update the post.
         if (empty($post->parent) && has_capability('mod/hsuforum:movediscussions', $context)) {
-            foreach ($options['groupids'] as $groupid) {
-                $this->db->set_field('hsuforum_discussions', 'groupid', $groupid, array('id' => $discussion->id));
-            }
+            $this->db->set_field('hsuforum_discussions', 'groupid', $options['groupid'], array('id' => $discussion->id));
         }
 
         // Handle templating if 'post to my groups' checkbox enabled.
@@ -162,15 +160,14 @@ class post_service {
                 if (hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $context)) {
                     $groupstopostto[] = $groupid;
                 } else {
-                    $groupstopostto[] = $options['groupids'];
+                    $groupstopostto[] = $options['groupid'];
                 }
             }
 
             foreach ($groupstopostto as $groupid) {
-                $options['groupids'] = $groupid;
+                $options['groupid'] = $groupid;
 
                 $copydiscussion = $this->discussionservice->create_discussion_object($forum, $context, $options);
-
                 $errors = $this->discussionservice->validate_discussion($cm, $forum, $context, $copydiscussion, $uploader);
 
                 if (!empty($errors)) {
@@ -182,59 +179,17 @@ class post_service {
                 }
                 $this->discussionservice->save_discussion($copydiscussion, $uploader);
             }
-            $this->trigger_post_updated($context, $forum, $discussion, $post);
-
-            return new json_response((object) array(
-                'eventaction'  => 'postupdated',
-                'discussionid' => (int) $discussion->id,
-                'postid'       => (int) $post->id,
-                'livelog'      => get_string('postwasupdated', 'hsuforum'),
-                'html'         => $this->discussionservice->render_full_thread($discussion->id),
-            ));
-        } else {
-            // Handle submit without posttoall checkbox.
-            if (isset($_POST['groupinfo'])) {
-                foreach ($options['groupids'] as $groupid) {
-                    if (hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $context)) {
-                        $groupstopostto[] = $groupid;
-                    } else {
-                        $groupstopostto[] = $options['groupids'];
-                    }
-                }
-
-                foreach ($groupstopostto as $groupid) {
-                    $options['groupids'] = $groupid;
-
-                    if (!$DB->record_exists('hsuforum_discussions', array('course' => $forum->course,
-                        'forum' => $forum->id, 'groupid' => $groupid))) {
-                        // Check groupid, course, forumid exists.
-                        $copydiscussion = $this->discussionservice->create_discussion_object($forum, $context, $options);
-                        $errors = $this->discussionservice->validate_discussion($cm, $forum, $context, $copydiscussion, $uploader);
-
-                        if (!empty($errors)) {
-                            $renderer = $PAGE->get_renderer('mod_hsuforum');
-                            return new json_response((object)array(
-                                'errors' => true,
-                                'html' => $renderer->validation_errors($errors),
-                            ));
-                        }
-                        $this->discussionservice->save_discussion($copydiscussion, $uploader);
-                    }
-
-                }
-            }
-
-            $this->trigger_post_updated($context, $forum, $discussion, $post);
-
-            return new json_response((object) array(
-                'eventaction'  => 'postupdated',
-                'discussionid' => (int) $discussion->id,
-                'postid'       => (int) $post->id,
-                'livelog'      => get_string('postwasupdated', 'hsuforum'),
-                'html'         => $this->discussionservice->render_full_thread($discussion->id),
-            ));
         }
 
+        $this->trigger_post_updated($context, $forum, $discussion, $post);
+
+        return new json_response((object) array(
+            'eventaction'  => 'postupdated',
+            'discussionid' => (int) $discussion->id,
+            'postid'       => (int) $post->id,
+            'livelog'      => get_string('postwasupdated', 'hsuforum'),
+            'html'         => $this->discussionservice->render_full_thread($discussion->id),
+        ));
     }
 
     /**

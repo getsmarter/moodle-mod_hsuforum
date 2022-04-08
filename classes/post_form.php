@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -65,13 +64,13 @@ class mod_hsuforum_post_form extends moodleform {
      */
     public static function editor_options(context_module $context, $postid) {
         global $COURSE, $PAGE, $CFG;
-        // TODO: add max files and max size support
+        // TODO: add max files and max size support.
         $maxbytes = get_user_max_upload_file_size($PAGE->context, $CFG->maxbytes, $COURSE->maxbytes);
         return array(
             'maxfiles' => EDITOR_UNLIMITED_FILES,
             'maxbytes' => $maxbytes,
-            'trusttext'=> true,
-            'return_types'=> FILE_INTERNAL | FILE_EXTERNAL,
+            'trusttext' => true,
+            'return_types' => FILE_INTERNAL | FILE_EXTERNAL,
             'subdirs' => file_area_contains_subdirs($context, 'mod_hsuforum', 'post', $postid)
         );
     }
@@ -82,11 +81,11 @@ class mod_hsuforum_post_form extends moodleform {
      * @return void
      */
     function definition() {
-        global $OUTPUT, $USER, $DB;
+        global $OUTPUT, $USER, $DB, $PAGE;
 
         $config = get_config('hsuforum');
 
-        $mform =& $this->_form;
+        $mform = & $this->_form;
 
         $course = $this->_customdata['course'];
         $cm = $this->_customdata['cm'];
@@ -112,13 +111,15 @@ class mod_hsuforum_post_form extends moodleform {
         $mform->addRule('subject', get_string('required'), 'required', null, 'client');
         $mform->addRule('subject', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
-        $mform->addElement('editor', 'message', get_string('message', 'hsuforum'), null, self::editor_options($modcontext, (empty($post->id) ? null : $post->id)));
+        $mform->addElement('editor', 'message', get_string('message', 'hsuforum'), null,
+            self::editor_options($modcontext, (empty($post->id) ? null : $post->id)));
         $mform->setType('message', PARAM_RAW);
         $mform->addRule('message', get_string('required'), 'required', null, 'client');
 
         if (isset($forum->id) && hsuforum_is_forcesubscribed($forum)) {
 
-            $mform->addElement('static', 'subscribemessage', get_string('subscription', 'hsuforum'), get_string('everyoneissubscribed', 'hsuforum'));
+            $mform->addElement('static', 'subscribemessage', get_string('subscription', 'hsuforum'),
+                get_string('everyoneissubscribed', 'hsuforum'));
             $mform->addElement('hidden', 'subscribe');
             $mform->setType('subscribe', PARAM_INT);
             $mform->addHelpButton('subscribemessage', 'subscription', 'hsuforum');
@@ -132,15 +133,18 @@ class mod_hsuforum_post_form extends moodleform {
 
                 $mform->addElement('select', 'subscribe', get_string('subscription', 'hsuforum'), $options);
                 $mform->addHelpButton('subscribe', 'subscription', 'hsuforum');
-            } else if ($forum->forcesubscribe == HSUFORUM_DISALLOWSUBSCRIBE) {
-                $mform->addElement('static', 'subscribemessage', get_string('subscription', 'hsuforum'), get_string('disallowsubscribe', 'hsuforum'));
+        } else if ($forum->forcesubscribe == HSUFORUM_DISALLOWSUBSCRIBE) {
+                $mform->addElement('static', 'subscribemessage', get_string('subscription', 'hsuforum'),
+                    get_string('disallowsubscribe', 'hsuforum'));
                 $mform->addElement('hidden', 'subscribe');
                 $mform->setType('subscribe', PARAM_INT);
                 $mform->addHelpButton('subscribemessage', 'subscription', 'hsuforum');
-            }
-
-        if (!empty($forum->maxattachments) && $forum->maxbytes != 1 && has_capability('mod/hsuforum:createattachment', $modcontext))  {  //  1 = No attachments at all
-            $mform->addElement('filemanager', 'attachments', get_string('attachment', 'hsuforum'), null, self::attachment_options($forum));
+        }
+        //  1 = No attachments at all.
+        if (!empty($forum->maxattachments) && $forum->maxbytes != 1 && has_capability('mod/hsuforum:createattachment',
+                $modcontext)) {
+            $mform->addElement('filemanager', 'attachments', get_string('attachment', 'hsuforum'), null,
+                self::attachment_options($forum));
             $mform->addHelpButton('attachments', 'attachment', 'hsuforum');
         }
 
@@ -148,18 +152,21 @@ class mod_hsuforum_post_form extends moodleform {
             $mform->addElement('checkbox', 'pinned', get_string('discussionpinned', 'hsuforum'));
             $mform->addHelpButton('pinned', 'discussionpinned', 'hsuforum');
         }
-
-        if (empty($post->id) && has_capability('moodle/course:manageactivities', $coursecontext)) { // hack alert
+        // Hack alert.
+        if (empty($post->id) && has_capability('moodle/course:manageactivities', $coursecontext)) {
             $mform->addElement('checkbox', 'mailnow', get_string('mailnow', 'hsuforum'));
         }
-
-        if (!empty($config->enabletimedposts) && !$post->parent && has_capability('mod/hsuforum:viewhiddentimedposts', $coursecontext)) { // hack alert
+        // Hack alert.
+        if (!empty($config->enabletimedposts) && !$post->parent && has_capability('mod/hsuforum:viewhiddentimedposts',
+                $coursecontext)) {
             $mform->addElement('header', 'displayperiod', get_string('displayperiod', 'hsuforum'));
 
-            $mform->addElement('date_time_selector', 'timestart', get_string('displaystart', 'hsuforum'), array('optional' => true));
+            $mform->addElement('date_time_selector', 'timestart', get_string('displaystart', 'hsuforum'),
+                array('optional' => true));
             $mform->addHelpButton('timestart', 'displaystart', 'hsuforum');
 
-            $mform->addElement('date_time_selector', 'timeend', get_string('displayend', 'hsuforum'), array('optional' => true));
+            $mform->addElement('date_time_selector', 'timeend', get_string('displayend', 'hsuforum'),
+                array('optional' => true));
             $mform->addHelpButton('timeend', 'displayend', 'hsuforum');
 
         } else {
@@ -167,7 +174,7 @@ class mod_hsuforum_post_form extends moodleform {
             $mform->setType('timestart', PARAM_INT);
             $mform->addElement('hidden', 'timeend');
             $mform->setType('timeend', PARAM_INT);
-            $mform->setConstants(array('timestart'=> 0, 'timeend'=>0));
+            $mform->setConstants(array('timestart' => 0, 'timeend' => 0));
         }
 
         if ($groupmode = groups_get_activity_groupmode($cm, $course)) {
@@ -198,7 +205,7 @@ class mod_hsuforum_post_form extends moodleform {
 
             // 3) You also need the canposttoowngroups capability.
             $canposttoowngroups = $canposttoowngroups && has_capability('mod/hsuforum:canposttomygroups', $modcontext);
-            if ($canposttoowngroups) {
+            if ($canposttoowngroups && $PAGE->pagetype === 'mod-hsuforum-view') {
                 // This user is in multiple groups, and can post to all of their own groups.
                 // Note: This is not the same as accessallgroups. This option will copy a post to all groups that a
                 // user is a member of.
@@ -225,13 +232,14 @@ class mod_hsuforum_post_form extends moodleform {
             // 2) This is editing of an existing post and the user is allowed to movediscussions.
             // We allow this because the post may have been moved from another forum where groups are not available.
             // We show this even if no groups are available as groups *may* have been available but now are not.
-            $canselectgroupformove = $groupcount && !empty($post->edit) && has_capability('mod/hsuforum:movediscussions', $modcontext);
+            $canselectgroupformove = $groupcount && !empty($post->edit) && has_capability('mod/hsuforum:movediscussions',
+                    $modcontext);
 
             // Important: You can *only* change the group for a top level post. Never any reply.
             $canselectgroup = empty($post->parent) && ($canselectgroupfornew || $canselectgroupformove);
 
             if ($canselectgroup) {
-                $mform->addElement('select','groupinfo', get_string('group'), $groupinfo);
+                $mform->addElement('select', 'groupinfo', get_string('group'), $groupinfo);
                 $mform->setDefault('groupinfo', $post->groupid);
                 $mform->setType('groupinfo', PARAM_INT);
             } else {
@@ -244,24 +252,28 @@ class mod_hsuforum_post_form extends moodleform {
             }
         }
 
-        if (!empty($forum->anonymous) and $post->userid == $USER->id and has_capability('mod/hsuforum:revealpost', $modcontext)) {
+        if (!empty($forum->anonymous) and $post->userid == $USER->id and has_capability('mod/hsuforum:revealpost',
+                $modcontext)) {
             $mform->addElement('advcheckbox', 'reveal', get_string('reveal', 'hsuforum'));
             $mform->addHelpButton('reveal', 'reveal', 'hsuforum');
         }
-        if (!empty($forum->allowprivatereplies) and !empty($post->parent) and has_capability('mod/hsuforum:allowprivate', $modcontext)) {
+        if (!empty($forum->allowprivatereplies) and !empty($post->parent) and has_capability('mod/hsuforum:allowprivate',
+                $modcontext)) {
             if ($post->userid != $USER->id) {
                 $mform->addElement('hidden', 'privatereply', 0);
                 $mform->setType('privatereply', PARAM_INT);
             } else {
-                $parentauthorid = $DB->get_field('hsuforum_posts', 'userid', array('id' => $post->parent), MUST_EXIST);
-                $mform->addElement('advcheckbox', 'privatereply', get_string('privatereply', 'hsuforum'), null, null, array(0, $parentauthorid));
+                $parentauthorid = $DB->get_field('hsuforum_posts', 'userid', array('id' => $post->parent),
+                    MUST_EXIST);
+                $mform->addElement('advcheckbox', 'privatereply', get_string('privatereply', 'hsuforum'),
+                    null, null, array(0, $parentauthorid));
                 $mform->addHelpButton('privatereply', 'privatereply', 'hsuforum');
             }
         }
 
-        //-------------------------------------------------------------------------------
-        // buttons
-        if (isset($post->edit)) { // hack alert
+        // Buttons
+        // Hack alert.
+        if (isset($post->edit)) {
             $submit_string = get_string('savechanges');
         } else {
             $submit_string = get_string('posttoforum', 'hsuforum');
@@ -304,7 +316,7 @@ class mod_hsuforum_post_form extends moodleform {
      */
     function validation($data, $files) {
         $errors = parent::validation($data, $files);
-        if (($data['timeend']!=0) && ($data['timestart']!=0) && $data['timeend'] <= $data['timestart']) {
+        if (($data['timeend'] != 0) && ($data['timestart'] != 0) && $data['timeend'] <= $data['timestart']) {
             $errors['timeend'] = get_string('timestartenderror', 'hsuforum');
         }
         if (empty($data['message']['text'])) {
