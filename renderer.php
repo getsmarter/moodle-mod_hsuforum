@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -59,7 +58,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         $config = get_config('hsuforum');
         $mode    = optional_param('mode', 0, PARAM_INT); // Display mode (for single forum)
-        $page    = optional_param('page', 0, PARAM_INT); // which page to show
+        $page    = optional_param('page', 0, PARAM_INT); // Which page to show.
         $forumicon = "<img src='".$OUTPUT->image_url('icon', 'hsuforum')."' alt='' class='iconlarge activityicon'/> ";
         echo '<div id="hsuforum-header"><h2>'.$forumicon.format_string($forum->name).'</h2>';
         if (!empty($forum->intro)) {
@@ -74,7 +73,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $dsort->set_key(optional_param('dsortkey', $dsort->get_key(), PARAM_ALPHA));
         hsuforum_lib_discussion_sort::set_to_session($dsort);
 
-
         if (!empty($forum->blockafter) && !empty($forum->blockperiod)) {
             $a = new stdClass();
             $a->blockafter = $forum->blockafter;
@@ -83,12 +81,13 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         if ($forum->type == 'qanda' && !has_capability('moodle/course:manageactivities', $context)) {
-            echo $OUTPUT->notification(get_string('qandanotify','hsuforum'));
+            echo $OUTPUT->notification(get_string('qandanotify', 'hsuforum'));
         }
 
         switch ($forum->type) {
             case 'blog':
-                hsuforum_print_latest_discussions($course, $forum, -1, 'p.created DESC', -1, -1, $page, $config->manydiscussions, $cm);
+                hsuforum_print_latest_discussions($course, $forum, -1, 'p.created DESC', -1,
+                    -1, $page, $config->manydiscussions, $cm);
                 break;
             case 'eachuser':
                 if (hsuforum_user_can_post_discussion($forum, null, -1, $cm)) {
@@ -98,7 +97,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 }
                 // Fall through to following cases.
             default:
-                hsuforum_print_latest_discussions($course, $forum, -1, $dsort->get_sort_sql(), -1, -1, $page, $config->manydiscussions, $cm);
+                hsuforum_print_latest_discussions($course, $forum, -1, $dsort->get_sort_sql(), -1,
+                    -1, $page, $config->manydiscussions, $cm);
                 break;
         }
     }
@@ -142,8 +142,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
         $cm = $forums[$forum->id];
 
-        $id          = $cm->id;      // Forum instance id (id in course modules table)
-        $f           = $forum->id;        // Forum ID
+        $id = $cm->id; // Forum instance id (id in course modules table)
+        $f = $forum->id; // Forum ID.
 
         $config = get_config('hsuforum');
 
@@ -156,8 +156,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 print_error('coursemisconf');
             }
 
-            // move require_course_login here to use forced language for course
-            // fix for MDL-6926
+            // Move require_course_login here to use forced language for course.
+            // Fix for MDL-6926.
             require_course_login($course, true, $cm);
         } else {
             print_error('missingparameter');
@@ -168,15 +168,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         if (!empty($CFG->enablerssfeeds) && !empty($config->enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
             require_once("$CFG->libdir/rsslib.php");
 
-            $rsstitle = format_string($course->shortname, true, array('context' => \context_course::instance($course->id))) . ': ' . format_string($forum->name);
+            $rsstitle = format_string($course->shortname, true, array('context' => \context_course::instance($course->id)))
+                . ': ' . format_string($forum->name);
             rss_add_http_header($context, 'mod_hsuforum', $forum, $rsstitle);
         }
 
-        // Mark viewed if required
+        // Mark viewed if required.
         $completion = new \completion_info($course);
         $completion->set_module_viewed($cm);
 
-        /// Some capability checks.
+        // Some capability checks.
         if (empty($cm->visible) and !has_capability('moodle/course:viewhiddenactivities', $context)) {
             notice(get_string("activityiscurrentlyhidden"));
         }
@@ -227,11 +228,11 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $output .= $this->discussion($cm, $discussion, $post, false);
         }
 
-
         // TODO - this is confusing code
         return $this->notification_area().
             $this->output->container('', 'hsuforum-add-discussion-target').
-            html_writer::tag('section', $output, array('role' => 'region', 'aria-label' => get_string('discussions', 'hsuforum'), 'class' => 'hsuforum-threads-wrapper', 'tabindex' => '-1')).
+            html_writer::tag('section', $output, array('role' => 'region', 'aria-label' => get_string('discussions',
+                'hsuforum'), 'class' => 'hsuforum-threads-wrapper', 'tabindex' => '-1')).
             $this->article_assets($cm);
 
     }
@@ -323,7 +324,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         if ($data->replies > 0) {
-            // Get actual replies
+            // Get actual replies.
             $fields = user_picture::fields('u');
             $sql = "SELECT $fields, hp.max
                     FROM {user} u

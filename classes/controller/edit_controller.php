@@ -224,7 +224,8 @@ class edit_controller extends controller_abstract {
                 $parent = $DB->get_record('hsuforum_posts', array('id' => $post->parent), '*', MUST_EXIST);
                 $privatereply = $parent->userid;
             }
-            return $this->postservice->handle_update_post($course, $cm, $forum, $context, $discussion, $post, $files, $posttomygroups,
+            return $this->postservice->handle_update_post($course, $cm, $forum, $context, $discussion, $post, $files,
+                $posttomygroups,
               array(
                 'subject'       => $subject,
                 'name'          => $subject,
