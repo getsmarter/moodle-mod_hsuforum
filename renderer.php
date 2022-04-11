@@ -2042,7 +2042,8 @@ HTML;
             $postuser   = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
             $commands['reply'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)),
-                '<i class="fa fa-reply fa-2"><span class="hsuforum-action-label" title="reply" aria-label="' . get_string('replylabel', 'hsuforum'). "-" . $post->subject.'">
+                '<i class="fa fa-reply fa-2"><span class="hsuforum-action-label" title="reply" aria-label="'
+                . get_string('replylabel', 'hsuforum'). "-" . $post->subject.'">
                 ' . get_string('replylabel', 'hsuforum') . '</span></i>',
                 array (
                     'class' => 'hsuforum-reply-link',
