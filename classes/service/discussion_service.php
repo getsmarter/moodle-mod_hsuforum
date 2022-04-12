@@ -81,10 +81,12 @@ class discussion_service {
                     $groupstopostto[] = $groupid;
                 }
             }
-        } else {
+        } elseif (isset($_POST['groupinfo'])) {
             foreach ($options['groupid'] as $groupid) {
                 $groupstopostto[] = $groupid;
             }
+        } else {
+            $groupstopostto[] = $options['groupid'];
         }
 
         // Mod hsuforum renderer @var \mod_hsuforum_renderer $renderer.
