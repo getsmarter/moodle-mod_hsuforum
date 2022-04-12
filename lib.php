@@ -4177,7 +4177,7 @@ function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload
     }
 
     // Handle draftid's that has been passed via the post (typically mobile).
-    if ($post->draftid) {
+    if (isset($post->draftid)) {
         $draftid = $post->draftid;
         $filearea = 'attachment';
     }
