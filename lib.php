@@ -7293,7 +7293,7 @@ class hsuforum_existing_subscriber_selector extends hsuforum_subscriber_selector
  * @param cm_info $cm Course-module object
  */
 function hsuforum_cm_info_view(cm_info $cm) {
-    if (!$cm->get_user_visible()) {
+    if (!$cm->uservisible) {
         return;
     }
 
@@ -7307,7 +7307,7 @@ function hsuforum_cm_info_view(cm_info $cm) {
     }
 
     if ($unread = hsuforum_count_forum_unread_posts($cm, $cm->get_course())) {
-        $out .= '<a class="unread" href="' . $cm->get_url() . '">';
+        $out .= '<a class="unread" href="' . $cm->url . '">';
         if ($unread == 1) {
             $out .= get_string('unreadpostsone', 'hsuforum');
         } else {
@@ -7316,7 +7316,10 @@ function hsuforum_cm_info_view(cm_info $cm) {
         $out .= '</a>';
     }
 
-    $cm->set_content($cm->get_formatted_content() . $out); // append the unreadpost section to existing content
+    if(property_exists($cm, 'content') && strlen($cm->content) > 0) {
+        $out = $cm->content . $out;
+    }
+    $cm->set_content($out); // append the unreadpost section to existing content
 }
 
 /**
