@@ -161,7 +161,7 @@ class edit_controller extends controller_abstract {
             $context = $PAGE->context;
             $course  = $PAGE->course;
 
-            if (empty($groupid)) {
+            if ($groupid == 0) {
                 $groupid = -1;
             }
 
