@@ -70,7 +70,6 @@ class discussion_service {
     public function handle_add_discussion($course, $cm, $forum, $context, array $options, $posttomygroups = false) {
         global $PAGE, $OUTPUT;
 
-
         $uploader = new upload_file(
             new attachments($forum, $context), \mod_hsuforum_post_form::attachment_options($forum)
         );
@@ -84,7 +83,7 @@ class discussion_service {
             }
         } else {
             $groupids = $options['groupid'];
-            //if ias array
+            // Check if $groupids is an array.
             if (is_array($groupids)) {
                 foreach ($groupids as $groupid) {
                     $groupstopostto[] = $groupid;

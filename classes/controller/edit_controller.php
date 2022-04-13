@@ -161,7 +161,7 @@ class edit_controller extends controller_abstract {
             $context = $PAGE->context;
             $course  = $PAGE->course;
 
-            if ($groupid === 0) {
+            if ($groupid == 0) {
                 $groupid = -1;
             }
 
@@ -175,7 +175,6 @@ class edit_controller extends controller_abstract {
                 'timestart'     => $timestart,
                 'timeend'       => $timeend,
             );
-
 
             return $this->discussionservice->handle_add_discussion($course, $cm, $forum, $context, $options, $posttomygroups);
         } catch (\Exception $e) {
