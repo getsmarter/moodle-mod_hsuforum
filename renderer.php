@@ -1740,7 +1740,7 @@ HTML;
                                     && empty($post->parent)
                                     && has_capability('mod/hsuforum:canposttomygroups', $context);
 
-            if ($canposttoowngroups && $PAGE->pagetype === 'mod-hsuforum-view') {
+            if ($canposttoowngroups) {
                 $extrahtml .= html_writer::tag('label', html_writer::checkbox('posttomygroups', 1, false).
                     get_string('posttomygroups', 'hsuforum'));
             }
