@@ -70,6 +70,7 @@ class discussion_service {
     public function handle_add_discussion($course, $cm, $forum, $context, array $options, $posttomygroups = false) {
         global $PAGE, $OUTPUT;
 
+
         $uploader = new upload_file(
             new attachments($forum, $context), \mod_hsuforum_post_form::attachment_options($forum)
         );
@@ -81,18 +82,22 @@ class discussion_service {
                     $groupstopostto[] = $groupid;
                 }
             }
-        } elseif (isset($_POST['groupinfo'])) {
-            foreach ($options['groupid'] as $groupid) {
-                $groupstopostto[] = $groupid;
-            }
         } else {
-            $groupstopostto[] = $options['groupid'];
+            $groupids = $options['groupid'];
+            //if ias array
+            if (is_array($groupids)) {
+                foreach ($groupids as $groupid) {
+                    $groupstopostto[] = $groupid;
+                }
+            } else {
+                $groupstopostto[] = $options['groupid'];
+            }
         }
 
         // Mod hsuforum renderer @var \mod_hsuforum_renderer $renderer.
         $renderer = $PAGE->get_renderer('mod_hsuforum');
-
         foreach ($groupstopostto as $groupid) {
+
             $options['groupid'] = $groupid;
 
             $discussion = $this->create_discussion_object($forum, $context, $options);
