@@ -175,6 +175,7 @@ class edit_controller extends controller_abstract {
                 'timestart'     => $timestart,
                 'timeend'       => $timeend,
             );
+
             return $this->discussionservice->handle_add_discussion($course, $cm, $forum, $context, $options, $posttomygroups);
         } catch (\Exception $e) {
             $retobj = (object) ['errors' => $e];

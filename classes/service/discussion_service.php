@@ -81,18 +81,22 @@ class discussion_service {
                     $groupstopostto[] = $groupid;
                 }
             }
-        } elseif (isset($_POST['groupinfo'])) {
-            foreach ($options['groupid'] as $groupid) {
-                $groupstopostto[] = $groupid;
-            }
         } else {
-            $groupstopostto[] = $options['groupid'];
+            $groupids = $options['groupid'];
+            // Check if $groupids is an array.
+            if (is_array($groupids)) {
+                foreach ($groupids as $groupid) {
+                    $groupstopostto[] = $groupid;
+                }
+            } else {
+                $groupstopostto[] = $options['groupid'];
+            }
         }
 
         // Mod hsuforum renderer @var \mod_hsuforum_renderer $renderer.
         $renderer = $PAGE->get_renderer('mod_hsuforum');
-
         foreach ($groupstopostto as $groupid) {
+
             $options['groupid'] = $groupid;
 
             $discussion = $this->create_discussion_object($forum, $context, $options);

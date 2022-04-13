@@ -205,7 +205,7 @@ class mod_hsuforum_post_form extends moodleform {
 
             // 3) You also need the canposttoowngroups capability.
             $canposttoowngroups = $canposttoowngroups && has_capability('mod/hsuforum:canposttomygroups', $modcontext);
-            if ($canposttoowngroups && $PAGE->pagetype === 'mod-hsuforum-view') {
+            if ($canposttoowngroups) {
                 // This user is in multiple groups, and can post to all of their own groups.
                 // Note: This is not the same as accessallgroups. This option will copy a post to all groups that a
                 // user is a member of.
