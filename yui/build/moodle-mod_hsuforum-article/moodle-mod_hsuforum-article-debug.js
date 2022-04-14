@@ -270,6 +270,7 @@ Y.extend(DOM, Y.Base,
             if (Y.one(SELECTORS.NO_DISCUSSIONS)) {
                 Y.one(SELECTORS.NO_DISCUSSIONS).remove();
             }
+            location.reload();
         },
 
         /**
