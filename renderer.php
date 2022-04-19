@@ -2047,7 +2047,7 @@ HTML;
                 ' . get_string('replylabel', 'hsuforum') . '</span></i>',
                 array (
                     'class' => 'hsuforum-reply-link',
-                    'aria-label' => get_string('replylabel', 'hsuforum'). " " . $post->message,
+                    'aria-label' => get_string('replylabel', 'hsuforum'). " " . strip_tags($post->message),
                     'role' => 'link'
                 )
             );
