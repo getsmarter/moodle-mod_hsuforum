@@ -2043,11 +2043,11 @@ HTML;
             $commands['reply'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)),
                 '<i class="fa fa-reply fa-2"><span class="hsuforum-action-label" title="reply" aria-label="'
-                . get_string('replylabel', 'hsuforum'). "-" . $post->subject.'">
+                . get_string('replytocommentlabel', 'hsuforum'). "-" . $post->subject.'">
                 ' . get_string('replylabel', 'hsuforum') . '</span></i>',
                 array (
                     'class' => 'hsuforum-reply-link',
-                    'aria-label' => get_string('replylabel', 'hsuforum'). " " . strip_tags($post->message),
+                    'aria-label' => get_string('replytocommentlabel', 'hsuforum'). " : " . strip_tags($post->message),
                     'role' => 'link'
                 )
             );

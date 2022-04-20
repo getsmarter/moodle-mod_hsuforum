@@ -777,6 +777,7 @@ $string['editlabel'] = 'edit';
 $string['replylabel'] = 'reply';
 $string['likelabel'] = 'like';
 
+$string['replytocommentlabel'] = 'reply to comment';
 // Forum interaction strings
 $string['foruminteractiondataheading'] = 'Forum interaction data:';
 $string['likeinteractionheading'] = 'Likes';
