@@ -4177,7 +4177,7 @@ function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload
     }
 
     // Handle draftid's that has been passed via the post (typically mobile).
-    if ($post->draftid) {
+    if (isset($post->draftid)) {
         $draftid = $post->draftid;
         $filearea = 'attachment';
     }
@@ -7316,7 +7316,10 @@ function hsuforum_cm_info_view(cm_info $cm) {
         $out .= '</a>';
     }
 
-    $cm->set_content($cm->content . $out); // append the unreadpost section to existing content
+    if(property_exists($cm, 'content') && strlen($cm->content) > 0) {
+        $out = $cm->content . $out;
+    }
+    $cm->set_content($out); // append the unreadpost section to existing content
 }
 
 /**
