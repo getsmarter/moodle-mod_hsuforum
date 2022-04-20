@@ -32,6 +32,7 @@ $string['splitlabel'] = 'Separar';
 $string['deletelabel'] = 'Eliminar';
 $string['editlabel'] = 'Editar';
 $string['replylabel'] = 'Respuesta';
+$string['replytocommentlabel'] = 'responder al comentario';
 $string['likelabel'] = 'Como';
 $string['discusiontopicby'] = 'Tema por';
 $string['discusionreplies'] = 'Respuestas';
