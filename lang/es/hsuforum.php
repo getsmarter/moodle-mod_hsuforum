@@ -40,3 +40,5 @@ $string['discusioncontributor'] = 'Contribuyente';
 $string['discusioncontributors'] = 'Contribuyentes';
 $string['discusionview'] = 'Puntos de vista';
 $string['discusionviews'] = 'Puntos de vistas';
+$string['Likecommentlabel'] = 'este comentario tiene';
+$string['Likescommentlabel'] = 'gustos';
