@@ -778,7 +778,7 @@ $string['replylabel'] = 'reply';
 $string['likelabel'] = 'like';
 
 $string['Likescommentlabel'] = 'likes';
-$string['Likecommentlabel'] = 'this comment has';
+$string['Likecommentlabel'] = 'like comment : ';
 $string['replytocommentlabel'] = 'reply to comment';
 // Forum interaction strings
 $string['foruminteractiondataheading'] = 'Forum interaction data:';
