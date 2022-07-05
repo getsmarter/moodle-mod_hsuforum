@@ -82,13 +82,21 @@ class discussion_service {
                 }
             }
         } else {
-            $groupstopostto[] = $options['groupid'];
+            $groupids = $options['groupid'];
+            // Check if $groupids is an array.
+            if (is_array($groupids)) {
+                foreach ($groupids as $groupid) {
+                    $groupstopostto[] = $groupid;
+                }
+            } else {
+                $groupstopostto[] = $options['groupid'];
+            }
         }
 
-        /** @var \mod_hsuforum_renderer $renderer */
+        // Mod hsuforum renderer @var \mod_hsuforum_renderer $renderer.
         $renderer = $PAGE->get_renderer('mod_hsuforum');
-
         foreach ($groupstopostto as $groupid) {
+
             $options['groupid'] = $groupid;
 
             $discussion = $this->create_discussion_object($forum, $context, $options);
@@ -124,6 +132,7 @@ class discussion_service {
      * @return \stdClass
      */
     public function create_discussion_object($forum, $context, array $options = array()) {
+
         $discussion = (object) array(
             'name'          => '',
             'subject'       => '',
@@ -172,7 +181,8 @@ class discussion_service {
 
         $thresholdwarning = hsuforum_check_throttling($forum, $cm);
         if ($thresholdwarning !== false && $thresholdwarning->canpost === false) {
-            $errors[] = new \moodle_exception($thresholdwarning->errorcode, $thresholdwarning->module, $thresholdwarning->additional);
+            $errors[] = new \moodle_exception($thresholdwarning->errorcode, $thresholdwarning->module,
+                $thresholdwarning->additional);
         }
 
         $subject = trim($discussion->subject);
@@ -262,7 +272,8 @@ class discussion_service {
         $discussion = $DB->get_record('hsuforum_discussions', array('id' => $discussionid), '*', MUST_EXIST);
         $forum      = $PAGE->activityrecord;
         $course     = $COURSE;
-        $cm         = get_coursemodule_from_id('hsuforum', $PAGE->cm->id, $course->id, false, MUST_EXIST); // Cannot use cm_info because it is read only.
+        $cm         = get_coursemodule_from_id('hsuforum', $PAGE->cm->id, $course->id, false,
+            MUST_EXIST); // Cannot use cm_info because it is read only.
         $context    = $PAGE->context;
 
         if ($forum->type == 'news') {

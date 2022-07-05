@@ -46,4 +46,12 @@ $observers = array(
         'eventname' => '\mod_hsuforum\event\assessable_uploaded',
         'callback'  => 'mod_hsuforum_observer::email_mention_hsu',
     ),
+    array (
+        'eventname' => '\mod_hsuforum\event\discussion_created',
+        'callback'  => 'mod_hsuforum_observer::clear_discussion_draft',
+    ),
+    array (
+        'eventname' => '\mod_hsuforum\event\post_created',
+        'callback'  => 'mod_hsuforum_observer::clear_post_draft',
+    )
 );

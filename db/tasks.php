@@ -34,5 +34,14 @@ $tasks = array(
         'day' => '*',
         'month' => '*',
         'dayofweek' => '*'
+    ),
+    array(
+        'classname' => 'mod_hsuforum\task\delete_expired_custom_drafts',
+        'blocking' => 0,
+        'minute' => '0',
+        'hour' => '8',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '1'
     )
 );

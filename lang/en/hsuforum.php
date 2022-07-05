@@ -796,3 +796,8 @@ $string['discusioncontributors'] = 'Contributors';
 $string['discusionview'] = 'View';
 $string['discusionviews'] = 'Views';
 
+// Custom draft strings
+$string['customdraftsheader'] = 'Custom draft settings';
+$string['customdraftdurationlabel'] = 'Days to keep drafts';
+$string['customdraftdurationdesc'] = 'Days to keep drafts';
+$string['deleteexpiredcustomdraftstaskname'] = 'Delete expired custom drafts';
