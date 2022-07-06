@@ -67,6 +67,8 @@
         $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_save_draft', 'init', [$forum->id, null, $USER->id]);
     }
 
+    $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_accessibility', 'init');
+
     $course = $DB->get_record('course', array('id' => $forum->course));
 
     if (empty($cm) && !$cm = get_coursemodule_from_instance("hsuforum", $forum->id, $course->id)) {
