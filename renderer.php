@@ -1219,7 +1219,8 @@ HTML;
                 array('toggled:substantive', 'hsuforum'),
                 array('topicfollowdesktop', 'hsuforum'),
                 array('topicfollowmobile', 'hsuforum'),
-                array('topicfollowing', 'hsuforum')
+                array('topicfollowing', 'hsuforum'),
+                array('hsuforumsessionerror', 'hsuforum'),
             )
         );
     }

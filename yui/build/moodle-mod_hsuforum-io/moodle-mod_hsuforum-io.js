@@ -61,11 +61,16 @@ Y.extend(IO, Y.Base,
             try {
                 data = Y.JSON.parse(response.responseText);
             } catch (e) {
-                alert(e.name + ": " + e.message);
+
+                // Custom session expired error handling on a post submit action.
+                window.alert(M.util.get_string('hsuforumsessionerror', 'hsuforum'));
+                var spinnerStopEvent = new Event('spinnerStopEvent');
+                document.body.dispatchEvent(spinnerStopEvent);
+
                 return;
             }
             if (Lang.isValue(data.error)) {
-                alert(data.error);
+                window.alert(data.error);
             } else {
                 args.fn.call(args.context, data);
             }

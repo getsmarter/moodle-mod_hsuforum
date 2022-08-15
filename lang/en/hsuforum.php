@@ -795,6 +795,7 @@ $string['discusioncontributor'] = 'Contributor';
 $string['discusioncontributors'] = 'Contributors';
 $string['discusionview'] = 'View';
 $string['discusionviews'] = 'Views';
+$string['hsuforumsessionerror'] = 'Your session has expired. Please copy/backup any drafts then refresh the page';
 
 // Custom draft strings
 $string['customdraftsheader'] = 'Custom draft settings';
