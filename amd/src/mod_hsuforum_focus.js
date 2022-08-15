@@ -28,7 +28,7 @@
                                 $([document.documentElement, document.body]).animate({
                                     scrollTop: yAxis
                                 }, 1000);
-                            })
+                            });
                         }
                     }
                 }
@@ -36,19 +36,19 @@
 
             $('.expandalldiscussions').on('click', function () {
                 if ($('.expandalldiscussions').hasClass('expanded')) {
-                    $('.expandalldiscussions')[0].innerHTML = 'Expand All'
+                    $('.expandalldiscussions')[0].innerHTML = 'Expand All';
                     const collapsable = $('.posts-collapse-container.collapse');
                     for (let x = 0; x < collapsable.length; x++) {
-                        $('#' + collapsable[x].id).collapse('toggle')
+                        $('#' + collapsable[x].id).collapse('toggle');
                     }
-                    $('.expandalldiscussions').removeClass('expanded')
+                    $('.expandalldiscussions').removeClass('expanded');
                 } else {
-                    $('.expandalldiscussions')[0].innerHTML = 'Collapse All'
+                    $('.expandalldiscussions')[0].innerHTML = 'Collapse All';
                     const collapsable = $('.posts-collapse-container.collapse');
                     for (let x = 0; x < collapsable.length; x++) {
-                        $('#' + collapsable[x].id).collapse('toggle')
+                        $('#' + collapsable[x].id).collapse('toggle');
                     }
-                    $('.expandalldiscussions').addClass('expanded')
+                    $('.expandalldiscussions').addClass('expanded');
                 }
             });
         }

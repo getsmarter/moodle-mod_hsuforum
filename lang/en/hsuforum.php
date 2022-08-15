@@ -37,7 +37,7 @@ $string['alreadyfirstpost'] = 'This is already the first post in the discussion'
 $string['anyfile'] = 'Any file';
 $string['areaattachment'] = 'Attachments';
 $string['areapost'] = 'Messages';
-$string['attachment'] = 'Attachment';
+$string['attachment'] = 'Choose files';
 $string['attachment_help'] = 'You can optionally attach one or more files to a forum post. If you attach an image, it will be displayed after the message.';
 $string['attachmentnopost'] = 'You cannot export attachments without a post id';
 $string['attachments'] = 'Attachments';
@@ -777,6 +777,9 @@ $string['editlabel'] = 'edit';
 $string['replylabel'] = 'reply';
 $string['likelabel'] = 'like';
 
+$string['Likescommentlabel'] = 'likes';
+$string['Likecommentlabel'] = 'like comment : ';
+$string['replytocommentlabel'] = 'reply to comment';
 // Forum interaction strings
 $string['foruminteractiondataheading'] = 'Forum interaction data:';
 $string['likeinteractionheading'] = 'Likes';
@@ -794,3 +797,8 @@ $string['discusionview'] = 'View';
 $string['discusionviews'] = 'Views';
 $string['hsuforumsessionerror'] = 'Your session has expired. Please copy/backup any drafts then refresh the page';
 
+// Custom draft strings
+$string['customdraftsheader'] = 'Custom draft settings';
+$string['customdraftdurationlabel'] = 'Days to keep drafts';
+$string['customdraftdurationdesc'] = 'Days to keep drafts';
+$string['deleteexpiredcustomdraftstaskname'] = 'Delete expired custom drafts';

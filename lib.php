@@ -3649,7 +3649,7 @@ function hsuforum_search_form($course, $forumid=null, $search='') {
     $output .= '<form action="'.$CFG->wwwroot.'/mod/hsuforum/search.php">';
     $output .= '<fieldset class="invisiblefieldset">';
     $output .= '<input id="search" name="search" type="search" placeholder="'.get_string('search', 'hsuforum').'" value="'.s($search, true).'"/>';
-    $output .= '<button id="searchforums" type="submit">
+    $output .= '<button id="searchforums" type="submit" aria-label="Search forums">
                     <i class="fa fa-search"></i>
                 </button>';
     $output .= '<input name="id" type="hidden" value="'.$course->id.'" />';
@@ -4177,7 +4177,7 @@ function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload
     }
 
     // Handle draftid's that has been passed via the post (typically mobile).
-    if ($post->draftid) {
+    if (isset($post->draftid)) {
         $draftid = $post->draftid;
         $filearea = 'attachment';
     }
@@ -7316,7 +7316,10 @@ function hsuforum_cm_info_view(cm_info $cm) {
         $out .= '</a>';
     }
 
-    $cm->set_content($cm->content . $out); // append the unreadpost section to existing content
+    if(property_exists($cm, 'content') && strlen($cm->content) > 0) {
+        $out = $cm->content . $out;
+    }
+    $cm->set_content($out); // append the unreadpost section to existing content
 }
 
 /**
@@ -8495,7 +8498,6 @@ function hsuforum_view($forum, $course, $cm, $context) {
  * @since Moodle 2.9
  */
 function hsuforum_discussion_view($modcontext, $forum, $discussion) {
-
     $params = array(
         'context' => $modcontext,
         'objectid' => $discussion->id,
@@ -8679,4 +8681,37 @@ function mention_id_array($postmessage="") {
         }
     }
     return $id_array;
+}
+
+/**
+ * Function to delete all expired drafts based on the number of days set in the config
+ * @return void
+ */
+function delete_expired_custom_drafts() {
+    global $DB;
+
+    $daystopersistdrafts = false;
+
+    try {
+        $daystopersistdrafts = get_config('hsuforum', 'daystopersistdrafts');
+    } catch (\Exception $e) {
+        error_log("Hsuforum delete_expired_custom_drafts: failed to read config value");
+    }
+
+    if (!$daystopersistdrafts) {
+        error_log("Hsuforum delete_expired_custom_drafts: no setting found for days to persist drafts");
+        return;
+    }
+
+    $cutofftimestamp = strtotime("now -$daystopersistdrafts days");
+
+    $sql = <<<SQL
+        timemodified <= ?
+    SQL;
+
+    try {
+        $DB->delete_records_select('hsuforum_custom_drafts', $sql, [$cutofftimestamp]);
+    } catch (\Exception $e) {
+        error_log("Hsuforum delete_expired_custom_drafts: {$e->getMessage()}");
+    }
 }

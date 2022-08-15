@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -59,7 +58,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         $config = get_config('hsuforum');
         $mode    = optional_param('mode', 0, PARAM_INT); // Display mode (for single forum)
-        $page    = optional_param('page', 0, PARAM_INT); // which page to show
+        $page    = optional_param('page', 0, PARAM_INT); // Which page to show.
         $forumicon = "<img src='".$OUTPUT->image_url('icon', 'hsuforum')."' alt='' class='iconlarge activityicon'/> ";
         echo '<div id="hsuforum-header"><h2>'.$forumicon.format_string($forum->name).'</h2>';
         if (!empty($forum->intro)) {
@@ -74,7 +73,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $dsort->set_key(optional_param('dsortkey', $dsort->get_key(), PARAM_ALPHA));
         hsuforum_lib_discussion_sort::set_to_session($dsort);
 
-
         if (!empty($forum->blockafter) && !empty($forum->blockperiod)) {
             $a = new stdClass();
             $a->blockafter = $forum->blockafter;
@@ -83,12 +81,13 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         if ($forum->type == 'qanda' && !has_capability('moodle/course:manageactivities', $context)) {
-            echo $OUTPUT->notification(get_string('qandanotify','hsuforum'));
+            echo $OUTPUT->notification(get_string('qandanotify', 'hsuforum'));
         }
 
         switch ($forum->type) {
             case 'blog':
-                hsuforum_print_latest_discussions($course, $forum, -1, 'p.created DESC', -1, -1, $page, $config->manydiscussions, $cm);
+                hsuforum_print_latest_discussions($course, $forum, -1, 'p.created DESC', -1,
+                    -1, $page, $config->manydiscussions, $cm);
                 break;
             case 'eachuser':
                 if (hsuforum_user_can_post_discussion($forum, null, -1, $cm)) {
@@ -98,7 +97,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 }
                 // Fall through to following cases.
             default:
-                hsuforum_print_latest_discussions($course, $forum, -1, $dsort->get_sort_sql(), -1, -1, $page, $config->manydiscussions, $cm);
+                hsuforum_print_latest_discussions($course, $forum, -1, $dsort->get_sort_sql(), -1,
+                    -1, $page, $config->manydiscussions, $cm);
                 break;
         }
     }
@@ -142,8 +142,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
         $cm = $forums[$forum->id];
 
-        $id          = $cm->id;      // Forum instance id (id in course modules table)
-        $f           = $forum->id;        // Forum ID
+        $id = $cm->id; // Forum instance id (id in course modules table)
+        $f = $forum->id; // Forum ID.
 
         $config = get_config('hsuforum');
 
@@ -156,8 +156,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 print_error('coursemisconf');
             }
 
-            // move require_course_login here to use forced language for course
-            // fix for MDL-6926
+            // Move require_course_login here to use forced language for course.
+            // Fix for MDL-6926.
             require_course_login($course, true, $cm);
         } else {
             print_error('missingparameter');
@@ -168,15 +168,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         if (!empty($CFG->enablerssfeeds) && !empty($config->enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
             require_once("$CFG->libdir/rsslib.php");
 
-            $rsstitle = format_string($course->shortname, true, array('context' => \context_course::instance($course->id))) . ': ' . format_string($forum->name);
+            $rsstitle = format_string($course->shortname, true, array('context' => \context_course::instance($course->id)))
+                . ': ' . format_string($forum->name);
             rss_add_http_header($context, 'mod_hsuforum', $forum, $rsstitle);
         }
 
-        // Mark viewed if required
+        // Mark viewed if required.
         $completion = new \completion_info($course);
         $completion->set_module_viewed($cm);
 
-        /// Some capability checks.
+        // Some capability checks.
         if (empty($cm->visible) and !has_capability('moodle/course:viewhiddenactivities', $context)) {
             notice(get_string("activityiscurrentlyhidden"));
         }
@@ -227,11 +228,11 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $output .= $this->discussion($cm, $discussion, $post, false);
         }
 
-
         // TODO - this is confusing code
         return $this->notification_area().
             $this->output->container('', 'hsuforum-add-discussion-target').
-            html_writer::tag('section', $output, array('role' => 'region', 'aria-label' => get_string('discussions', 'hsuforum'), 'class' => 'hsuforum-threads-wrapper', 'tabindex' => '-1')).
+            html_writer::tag('section', $output, array('role' => 'region', 'aria-label' => get_string('discussions',
+                'hsuforum'), 'class' => 'hsuforum-threads-wrapper', 'tabindex' => '-1')).
             $this->article_assets($cm);
 
     }
@@ -323,7 +324,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         if ($data->replies > 0) {
-            // Get actual replies
+            // Get actual replies.
             $fields = user_picture::fields('u');
             $sql = "SELECT $fields, hp.max
                     FROM {user} u
@@ -406,7 +407,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                     <input type='hidden' name='d' value='{$data->id}'>
                     <div class='form-group col-md-12 col-lg-auto'>
                         <label for='id_filter' class=''>Filter:</label>
-                        <select class='custom-select' name='filter' id='id_filter'>
+                        <select class='custom-select' name='filter' id='id_filter' aria-label='Filter by'>
                             <option value='0'>".get_string('filterdefault','hsuforum')."</option>
                             <option ".($filter == 2 ? 'selected' : '')." value='2'>".get_string('filtermyreplies','hsuforum')."</option>
                             <option ".($filter == 3 ? 'selected' : '')." value='3'>".get_string('filtertutorreplies','hsuforum')."</option>
@@ -414,7 +415,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                     </div>
                     <div class='form-group col-md-12 col-lg-auto'>
                         <label for='".($filter > 0 || $sort > 0 ? 'id_sort' : 'id_sort_no_filter')."' class=''> <span id='id_plus'>+</span> Sort:</label>
-                        <select class='custom-select' name='sort' id='id_sort'>
+                        <select class='custom-select' name='sort' id='id_sort' aria-label='Sort by'>
                             <option value='0'>".get_string('sortdefault','hsuforum')."</option>
                             <option ".($sort == 1 ? 'selected' : '')." value='1'>".get_string('sortnewestfirst','hsuforum')."</option>
                             <option ".($sort == 2 ? 'selected' : '')." value='2'>".get_string('sortmostreplies','hsuforum')."</option>
@@ -1426,10 +1427,11 @@ HTML;
 
         $url = new moodle_url('/mod/hsuforum/view.php');
 
-        $sortselect = html_writer::select($sort->get_key_options_menu(), 'dsortkey', $sort->get_key(), false, array('class' => ''));
+        $sortselect = html_writer::select($sort->get_key_options_menu(), 'dsortkey', $sort->get_key(), false, array('class' => '', 'id' => 'id_sort'));
         //https://jira.2u.com/browse/CTED-1785
         $sortform = "<form method='get' action='$url' class='hsuforum-discussion-sort'>
                     <legend class='accesshide'>".get_string('sortdiscussions', 'hsuforum')."</legend>
+                    <label for='id_sort' class=''>Sort By:</label>
                     <input type='hidden' name='id' value='{$cm->id}'>
                     $sortselect
                     <input class='rounded-pill btn btn-secondary sort-btn' type='submit' value='".get_string('sortdiscussionsby', 'hsuforum')."'>
@@ -1675,7 +1677,7 @@ HTML;
      * @return string
      */
     public function simple_edit_discussion($cm, $postid = 0, array $data = array()) {
-        global $DB, $USER, $OUTPUT;
+        global $DB, $USER, $OUTPUT, $PAGE;
 
         $context = context_module::instance($cm->id);
         $forum = hsuforum_get_cm_forum($cm);
@@ -1762,12 +1764,19 @@ HTML;
             $canselectgroup = empty($post->parent) && ($canselectgroupfornew || $canselectgroupformove);
 
             if ($canselectgroup) {
-                $groupselect = html_writer::tag('span', get_string('group') . ' ');
-                $groupselect .= html_writer::select($groupinfo, 'groupinfo', $data['groupid'], false);
-                $extrahtml .= html_writer::tag('label', $groupselect);
-            } else {
+                if($PAGE->pagetype === 'mod-hsuforum-view') {
+                    $groupselect = html_writer::tag('span', get_string('group') . ' ');
+                    $groupselect .= html_writer::select($groupinfo, 'groupinfo[]', $data['groupid'], false, array('multiple'=>true));
+                    $extrahtml .= html_writer::tag('label', $groupselect);
+                } else {
+                    $groupselect = html_writer::tag('span', get_string('group') . ' ');
+                    $groupselect .= html_writer::select($groupinfo, 'groupinfo', $data['groupid'], false);
+                    $extrahtml .= html_writer::tag('label', $groupselect);
+                }
+            }  else {
                 $actionurl->param('groupinfo', groups_get_activity_group($cm));
             }
+
         }
         if ($forum->anonymous) {
             $extrahtml .= html_writer::tag('label', html_writer::checkbox('reveal', 1, !empty($data['reveal'])).
@@ -1973,7 +1982,7 @@ HTML;
                 $hidden
                 <button class="rounded-pill btn btn-primary" type="submit">$t->submitlabel</button>
                 <a href="#" class="hsuforum-cancel disable-router rounded-pill btn btn-secondary">$t->cancellabel</a>
-                <a href="$advancedurl" aria-pressed="false" class="hsuforum-use-advanced disable-router rounded-pill btn btn-secondary">$t->advancedlabel</a>
+                <a href="$advancedurl" role="button" aria-pressed="false" class="hsuforum-use-advanced disable-router rounded-pill btn btn-secondary">$t->advancedlabel</a>
             </div>
         </fieldset>
     </form>
@@ -2042,9 +2051,13 @@ HTML;
             $postuser   = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
             $commands['reply'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)),
-                '<i class="fa fa-reply fa-2"><span class="hsuforum-action-label" title="reply">' . get_string('replylabel', 'hsuforum') . '</span></i>',
+                '<i class="fa fa-reply fa-2"><span class="hsuforum-action-label" title="reply" aria-label="'
+                . get_string('replytocommentlabel', 'hsuforum'). "-" . $post->subject.'">
+                ' . get_string('replylabel', 'hsuforum') . '</span></i>',
                 array (
                     'class' => 'hsuforum-reply-link',
+                    'aria-label' => get_string('replytocommentlabel', 'hsuforum'). " : " . strip_tags($post->message),
+                    'role' => 'link'
                 )
             );
         }
@@ -2059,7 +2072,9 @@ HTML;
                 new moodle_url('/mod/hsuforum/post.php', array('edit' => $post->id)),
                 '<i class="fa fa-edit fa-2"><span class="hsuforum-action-label">' . get_string('editlabel', 'hsuforum') . '</span></i>',
                 array (
-                    'class' => 'hsuforum-edit-link'
+                    'class' => 'hsuforum-edit-link',
+                    'aria-label' => get_string('editlabel', 'hsuforum'). "-" . $post->id,
+                    'role' => 'link'
                 )
             );
         }
@@ -2069,7 +2084,9 @@ HTML;
                 new moodle_url('/mod/hsuforum/post.php', array('delete' => $post->id)),
                 '<i class="fa fa-trash fa-2"><span class="hsuforum-action-label">' . get_string('deletelabel', 'hsuforum') . '</span></i>',
                 array (
-                    'class' => 'hsuforum-delete-link'
+                    'class' => 'hsuforum-delete-link',
+                    'aria-label' => get_string('deletelabel', 'hsuforum'). "-" . $post->id,
+                    'role' => 'link'
                 )
             );
         }
@@ -2082,7 +2099,9 @@ HTML;
                 new moodle_url('/mod/hsuforum/post.php', array('prune' => $post->id)),
                 '<i class="fa fa-plus-square fa-2"><span class="hsuforum-action-label">' . get_string('splitlabel', 'hsuforum') . '</span></i>',
                 array (
-                    'class' => 'hsuforum-split-link'
+                    'class' => 'hsuforum-split-link',
+                    'aria-label' => get_string('splitlabel', 'hsuforum'). "-" . $post->id,
+                    'role' => 'link'
                 )
             );
         }
@@ -2114,7 +2133,11 @@ HTML;
      */
     public function render_advanced_editor(advanced_editor $advancededitor) {
         $data = $advancededitor->get_data();
+
         if (get_class($data->editor) == 'atto_texteditor'){
+            // As part of our custom draft solution, force autosave disable
+            $data->options['autosave'] = false;
+
             $data->editor->use_editor('hiddenadvancededitor', $data->options, $data->fpoptions);
             $draftitemidfld = '<input type="hidden" id="hiddenadvancededitordraftid" name="hiddenadvancededitor[itemid]" value="'.$data->draftitemid.'" />';
             return '<div id="hiddenadvancededitorcont">'.$draftitemidfld.'<textarea style="display:none" id="hiddenadvancededitor"></textarea></div>';

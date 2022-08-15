@@ -106,8 +106,9 @@ class edit_controller extends controller_abstract {
             $context = $PAGE->context;
             $course  = $PAGE->course;
 
-            $parent     = $DB->get_record('hsuforum_posts', array('id' => $reply), '*', MUST_EXIST);
-            $discussion = $DB->get_record('hsuforum_discussions', array('id' => $parent->discussion, 'forum' => $forum->id), '*', MUST_EXIST);
+            $parent = $DB->get_record('hsuforum_posts', array('id' => $reply), '*', MUST_EXIST);
+            $discussion = $DB->get_record('hsuforum_discussions', array('id' => $parent->discussion,
+                'forum' => $forum->id), '*', MUST_EXIST);
 
             // If private reply, then map it to the parent author user ID.
             if (!empty($privatereply)) {
@@ -160,9 +161,10 @@ class edit_controller extends controller_abstract {
             $context = $PAGE->context;
             $course  = $PAGE->course;
 
-            if (empty($groupid)) {
+            if ($groupid == 0) {
                 $groupid = -1;
             }
+
             $options = array(
                 'subject'       => $subject,
                 'name'          => $subject,
@@ -173,6 +175,7 @@ class edit_controller extends controller_abstract {
                 'timestart'     => $timestart,
                 'timeend'       => $timeend,
             );
+
             return $this->discussionservice->handle_add_discussion($course, $cm, $forum, $context, $options, $posttomygroups);
         } catch (\Exception $e) {
             $retobj = (object) ['errors' => $e];
@@ -209,18 +212,21 @@ class edit_controller extends controller_abstract {
             $context = $PAGE->context;
             $course  = $PAGE->course;
 
-            $post       = $DB->get_record('hsuforum_posts', array('id' => $postid), '*', MUST_EXIST);
-            $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion, 'forum' => $forum->id), '*', MUST_EXIST);
+            $post = $DB->get_record('hsuforum_posts', array('id' => $postid), '*', MUST_EXIST);
+            $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion,
+                'forum' => $forum->id), '*', MUST_EXIST);
 
             if (empty($groupid)) {
                 $groupid = -1;
             }
+
             // If private reply, then map it to the parent author user ID.
             if (!empty($privatereply)) {
-                $parent     = $DB->get_record('hsuforum_posts', array('id' => $post->parent), '*', MUST_EXIST);
+                $parent = $DB->get_record('hsuforum_posts', array('id' => $post->parent), '*', MUST_EXIST);
                 $privatereply = $parent->userid;
             }
-            return $this->postservice->handle_update_post($course, $cm, $forum, $context, $discussion, $post, $files, $posttomygroups,
+            return $this->postservice->handle_update_post($course, $cm, $forum, $context, $discussion, $post, $files,
+                $posttomygroups,
               array(
                 'subject'       => $subject,
                 'name'          => $subject,
@@ -306,7 +312,8 @@ class edit_controller extends controller_abstract {
         } else {
             $message = get_string('deleteddiscussion', 'hsuforum');
         }
-        /** @var \core_renderer $renderer */
+
+        // Core renderer @var \core_renderer $renderer.
         $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
 
         return new json_response(array(
