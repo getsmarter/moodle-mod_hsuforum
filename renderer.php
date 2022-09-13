@@ -52,14 +52,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @author Mark Nielsen
      */
     public function view($course, $cm, $forum, context_module $context) {
-        global $USER, $DB, $OUTPUT;
+        global $OUTPUT, $PAGE;
+
+        $PAGE->activityheader->disable();
 
         require_once(__DIR__.'/lib/discussion/sort.php');
 
         $config = get_config('hsuforum');
-        $mode    = optional_param('mode', 0, PARAM_INT); // Display mode (for single forum)
         $page    = optional_param('page', 0, PARAM_INT); // Which page to show.
         $forumicon = "<img src='".$OUTPUT->image_url('icon', 'hsuforum')."' alt='' class='iconlarge activityicon'/> ";
+
         echo '<div id="hsuforum-header"><h2>'.$forumicon.format_string($forum->name).'</h2>';
         if (!empty($forum->intro)) {
             echo '<div class="hsuforum_introduction">'.format_module_intro('hsuforum', $forum, $cm->id).'</div>';
@@ -228,7 +230,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $output .= $this->discussion($cm, $discussion, $post, false);
         }
 
-        // TODO - this is confusing code
+        // TODO - this is confusing code.
         return $this->notification_area().
             $this->output->container('', 'hsuforum-add-discussion-target').
             html_writer::tag('section', $output, array('role' => 'region', 'aria-label' => get_string('discussions',
@@ -272,7 +274,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @return string
      */
     public function discussion($cm, $discussion, $post, $fullthread, array $posts = array(), $canreply = null) {
-        global $CFG, $DB, $PAGE, $USER;
+        global $DB, $PAGE, $USER;
 
         $forum = hsuforum_get_cm_forum($cm);
         $postuser = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
