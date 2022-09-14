@@ -47,7 +47,8 @@ define(['jquery'], function ($) {
             $(posts).each(function(){
                 const postObserver = new MutationObserver(() => {
                     let form = $(this).find('form');
-
+                    let postid = $(this).closest(".hsuforum-post-wrapper").data('postid');
+                    $(this).closest(".hsuforum-post-wrapper").find('input[name="reply"]').val(postid);
                     if (form) {
                         let formTextarea = $(form).find('.hsuforum-textarea');
                         $(form).on('submit', () => {

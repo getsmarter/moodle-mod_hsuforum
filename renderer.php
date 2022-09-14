@@ -52,14 +52,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @author Mark Nielsen
      */
     public function view($course, $cm, $forum, context_module $context) {
-        global $USER, $DB, $OUTPUT;
+        global $OUTPUT, $PAGE;
+
+        $PAGE->activityheader->disable();
 
         require_once(__DIR__.'/lib/discussion/sort.php');
 
         $config = get_config('hsuforum');
-        $mode    = optional_param('mode', 0, PARAM_INT); // Display mode (for single forum)
         $page    = optional_param('page', 0, PARAM_INT); // Which page to show.
         $forumicon = "<img src='".$OUTPUT->image_url('icon', 'hsuforum')."' alt='' class='iconlarge activityicon'/> ";
+
         echo '<div id="hsuforum-header"><h2>'.$forumicon.format_string($forum->name).'</h2>';
         if (!empty($forum->intro)) {
             echo '<div class="hsuforum_introduction">'.format_module_intro('hsuforum', $forum, $cm->id).'</div>';
@@ -228,7 +230,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $output .= $this->discussion($cm, $discussion, $post, false);
         }
 
-        // TODO - this is confusing code
+        // TODO - this is confusing code.
         return $this->notification_area().
             $this->output->container('', 'hsuforum-add-discussion-target').
             html_writer::tag('section', $output, array('role' => 'region', 'aria-label' => get_string('discussions',
@@ -272,7 +274,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @return string
      */
     public function discussion($cm, $discussion, $post, $fullthread, array $posts = array(), $canreply = null) {
-        global $CFG, $DB, $PAGE, $USER;
+        global $DB, $PAGE, $USER;
 
         $forum = hsuforum_get_cm_forum($cm);
         $postuser = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
@@ -407,7 +409,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                     <input type='hidden' name='d' value='{$data->id}'>
                     <div class='form-group col-md-12 col-lg-auto'>
                         <label for='id_filter' class=''>Filter:</label>
-                        <select class='custom-select' name='filter' id='id_filter'>
+                        <select class='custom-select' name='filter' id='id_filter' aria-label='Filter by'>
                             <option value='0'>".get_string('filterdefault','hsuforum')."</option>
                             <option ".($filter == 2 ? 'selected' : '')." value='2'>".get_string('filtermyreplies','hsuforum')."</option>
                             <option ".($filter == 3 ? 'selected' : '')." value='3'>".get_string('filtertutorreplies','hsuforum')."</option>
@@ -415,7 +417,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                     </div>
                     <div class='form-group col-md-12 col-lg-auto'>
                         <label for='".($filter > 0 || $sort > 0 ? 'id_sort' : 'id_sort_no_filter')."' class=''> <span id='id_plus'>+</span> Sort:</label>
-                        <select class='custom-select' name='sort' id='id_sort'>
+                        <select class='custom-select' name='sort' id='id_sort' aria-label='Sort by'>
                             <option value='0'>".get_string('sortdefault','hsuforum')."</option>
                             <option ".($sort == 1 ? 'selected' : '')." value='1'>".get_string('sortnewestfirst','hsuforum')."</option>
                             <option ".($sort == 2 ? 'selected' : '')." value='2'>".get_string('sortmostreplies','hsuforum')."</option>
@@ -1219,7 +1221,8 @@ HTML;
                 array('toggled:substantive', 'hsuforum'),
                 array('topicfollowdesktop', 'hsuforum'),
                 array('topicfollowmobile', 'hsuforum'),
-                array('topicfollowing', 'hsuforum')
+                array('topicfollowing', 'hsuforum'),
+                array('hsuforumsessionerror', 'hsuforum'),
             )
         );
     }
@@ -1426,10 +1429,11 @@ HTML;
 
         $url = new moodle_url('/mod/hsuforum/view.php');
 
-        $sortselect = html_writer::select($sort->get_key_options_menu(), 'dsortkey', $sort->get_key(), false, array('class' => ''));
+        $sortselect = html_writer::select($sort->get_key_options_menu(), 'dsortkey', $sort->get_key(), false, array('class' => '', 'id' => 'id_sort'));
         //https://jira.2u.com/browse/CTED-1785
         $sortform = "<form method='get' action='$url' class='hsuforum-discussion-sort'>
                     <legend class='accesshide'>".get_string('sortdiscussions', 'hsuforum')."</legend>
+                    <label for='id_sort' class=''>Sort By:</label>
                     <input type='hidden' name='id' value='{$cm->id}'>
                     $sortselect
                     <input class='rounded-pill btn btn-secondary sort-btn' type='submit' value='".get_string('sortdiscussionsby', 'hsuforum')."'>
@@ -1980,7 +1984,7 @@ HTML;
                 $hidden
                 <button class="rounded-pill btn btn-primary" type="submit">$t->submitlabel</button>
                 <a href="#" class="hsuforum-cancel disable-router rounded-pill btn btn-secondary">$t->cancellabel</a>
-                <a href="$advancedurl" aria-pressed="false" class="hsuforum-use-advanced disable-router rounded-pill btn btn-secondary">$t->advancedlabel</a>
+                <a href="$advancedurl" role="button" aria-pressed="false" class="hsuforum-use-advanced disable-router rounded-pill btn btn-secondary">$t->advancedlabel</a>
             </div>
         </fieldset>
     </form>
@@ -2049,9 +2053,13 @@ HTML;
             $postuser   = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
             $commands['reply'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)),
-                '<i class="fa fa-reply fa-2"><span class="hsuforum-action-label" title="reply">' . get_string('replylabel', 'hsuforum') . '</span></i>',
+                '<i class="fa fa-reply fa-2"><span class="hsuforum-action-label" title="reply" aria-label="'
+                . get_string('replytocommentlabel', 'hsuforum'). "-" . $post->subject.'">
+                ' . get_string('replylabel', 'hsuforum') . '</span></i>',
                 array (
                     'class' => 'hsuforum-reply-link',
+                    'aria-label' => get_string('replytocommentlabel', 'hsuforum'). " : " . strip_tags($post->message),
+                    'role' => 'link'
                 )
             );
         }
@@ -2066,7 +2074,9 @@ HTML;
                 new moodle_url('/mod/hsuforum/post.php', array('edit' => $post->id)),
                 '<i class="fa fa-edit fa-2"><span class="hsuforum-action-label">' . get_string('editlabel', 'hsuforum') . '</span></i>',
                 array (
-                    'class' => 'hsuforum-edit-link'
+                    'class' => 'hsuforum-edit-link',
+                    'aria-label' => get_string('editlabel', 'hsuforum'). "-" . $post->id,
+                    'role' => 'link'
                 )
             );
         }
@@ -2076,7 +2086,9 @@ HTML;
                 new moodle_url('/mod/hsuforum/post.php', array('delete' => $post->id)),
                 '<i class="fa fa-trash fa-2"><span class="hsuforum-action-label">' . get_string('deletelabel', 'hsuforum') . '</span></i>',
                 array (
-                    'class' => 'hsuforum-delete-link'
+                    'class' => 'hsuforum-delete-link',
+                    'aria-label' => get_string('deletelabel', 'hsuforum'). "-" . $post->id,
+                    'role' => 'link'
                 )
             );
         }
@@ -2089,7 +2101,9 @@ HTML;
                 new moodle_url('/mod/hsuforum/post.php', array('prune' => $post->id)),
                 '<i class="fa fa-plus-square fa-2"><span class="hsuforum-action-label">' . get_string('splitlabel', 'hsuforum') . '</span></i>',
                 array (
-                    'class' => 'hsuforum-split-link'
+                    'class' => 'hsuforum-split-link',
+                    'aria-label' => get_string('splitlabel', 'hsuforum'). "-" . $post->id,
+                    'role' => 'link'
                 )
             );
         }
