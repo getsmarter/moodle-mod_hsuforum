@@ -7316,10 +7316,7 @@ function hsuforum_cm_info_view(cm_info $cm) {
         $out .= '</a>';
     }
 
-    if(property_exists($cm, 'content') && strlen($cm->content) > 0) {
-        $out = $cm->content . $out;
-    }
-    $cm->set_content($out); // append the unreadpost section to existing content
+    $cm->set_after_link($out); // append the unreadpost section to existing content
 }
 
 /**
