@@ -30,7 +30,7 @@ class util {
      */
     public static function set_user_flag_and_timezone($data) {
         $countrycode = strtolower($data->country);
-        $time = userdate(time(), '%H:%M');
+        $time = userdate(time(), get_string('strftimetime24', 'core_langconfig'));
 
         $output = '<div class="userpicture-additional">';
         $output .= '<div class="userpicture-time">' . $time . '</div>';
