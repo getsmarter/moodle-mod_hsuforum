@@ -24,6 +24,7 @@
  * @author Mark Nielsen
  */
 
+use mod_hsuforum\util;
 use mod_hsuforum\local;
 use mod_hsuforum\renderables\discussion_dateform;
 use mod_hsuforum\renderables\advanced_editor;
@@ -660,7 +661,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $data = $DB->get_record_sql('SELECT timezone, country FROM {user} WHERE id = ?',
                 array($userid));
 
-            $flagandtimezone = theme_getsmarter_user_flag_and_timezone($data);
+            $flagandtimezone = util::set_user_flag_and_timezone($data);
         }
         $repliesstring = get_string('discusionreplies', 'mod_hsuforum');
         $repliescount = $d->replies.' '.$repliesstring;
@@ -964,7 +965,7 @@ HTML;
             $data = $DB->get_record_sql('SELECT timezone, country FROM {user} WHERE id = ?',
                 array($userid));
 
-            $flagandtimezone = theme_getsmarter_user_flag_and_timezone($data);
+            $flagandtimezone = util::set_user_flag_and_timezone($data);
         }
 
         /*
