@@ -16,7 +16,7 @@
 
 namespace mod_hsuforum;
 
-use DateTime;
+use core_date;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -31,18 +31,10 @@ class util {
      * @return string
      */
     public static function set_user_flag_and_timezone($data) {
+        global $USER;
         $countrycode = strtolower($data->country);
-        $timezone = $data->timezone;
 
-        $dateTime = new DateTime();
-
-        if (is_numeric($timezone)) {
-            $time = time();
-        } else {
-            $time = $dateTime->setTimeZone(new DateTimeZone($timezone));
-        }
-
-        $time = $dateTime->format('H:i');
+        $time = userdate(time(), '%H:%M', core_date::get_user_timezone($USER));
 
         $output = '<div class="userpicture-additional">';
         $output .= '<div class="userpicture-time">' . $time . '</div>';
