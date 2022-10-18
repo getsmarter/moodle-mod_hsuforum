@@ -343,8 +343,8 @@ M.mod_hsuforum.restoreEditor = function() {
             return;
         }
         var editor = editArea.ancestor('.editor_atto'),
-        advancedEditLink = M.mod_hsuforum.Article.currentEditLink,
-        contentEditable = false;
+            advancedEditLink = M.mod_hsuforum.Article.currentEditLink,
+            contentEditable = false;
 
         if (advancedEditLink) {
             contentEditable = advancedEditLink.previous('.hsuforum-textarea');

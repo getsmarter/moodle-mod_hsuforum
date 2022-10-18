@@ -408,7 +408,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $filterandsort = "<form method='get' action='' class='hsuforum-post-filterandsort form-inline'>
                     <legend class='accesshide'>".get_string('sortdiscussions', 'hsuforum')."</legend>
                     <input type='hidden' name='d' value='{$data->id}'>
-                    <div class='form-group col-md-12 col-lg-auto'>
+                    <div class='form-group'>
                         <label for='id_filter' class=''>Filter:</label>
                         <select class='custom-select' name='filter' id='id_filter' aria-label='Filter by'>
                             <option value='0'>".get_string('filterdefault','hsuforum')."</option>
@@ -416,7 +416,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                             <option ".($filter == 3 ? 'selected' : '')." value='3'>".get_string('filtertutorreplies','hsuforum')."</option>
                         </select>
                     </div>
-                    <div class='form-group col-md-12 col-lg-auto'>
+                    <div class='form-group'>
                         <label for='".($filter > 0 || $sort > 0 ? 'id_sort' : 'id_sort_no_filter')."' class=''> <span id='id_plus'>+</span> Sort:</label>
                         <select class='custom-select' name='sort' id='id_sort' aria-label='Sort by'>
                             <option value='0'>".get_string('sortdefault','hsuforum')."</option>
@@ -639,7 +639,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $blogmeta = '';
             $blogreplies = '';
 
-            $filterandsort = '<div role="region" class="hsuforum-filter-sort" aria-label="'.$options.'"><ul class="hsuforum-thread-filter_sort_list"><li>'.$d->filterandsort.'</li></ul></div>';
+            $filterandsort = '<div role="region" class="hsuforum-filter-sort" aria-label="'.$options.'"><ul class="hsuforum-thread-filter_sort_list col-md-10 col-sm-12"><li>'.$d->filterandsort.'</li></ul></div>';
         } else {
             $blogreplies = hsuforum_xreplies($d->replies);
             $tools = "<a class='disable-router hsuforum-replycount-link' href='$d->viewurl'>$blogreplies</a>";
