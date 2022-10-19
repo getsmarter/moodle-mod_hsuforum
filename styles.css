@@ -316,7 +316,7 @@
     width: 32px;
     max-width: 32px;
     height: auto;
-    margin: 0.3em 1.18%;
+    margin: .1rem .1rem;
     border-radius: 50%;
     vertical-align: middle;
 }
@@ -525,7 +525,7 @@ FUN WITH FORMS
     }
     .hsuforum-thread-meta {
         float: right;
-        width: 23.6%;
+        width: 100%;
         text-align: right;
     }
     .hsuforum-post-figure {
@@ -1260,4 +1260,25 @@ FUN WITH FORMS
 .hsuforum-post-content .posting caption {
     border: 1px solid #000;
     padding: 0.2rem;
+}
+
+@media only screen and (max-width: 1440px) {
+    form.hsuforum-post-filterandsort.form-inline {
+        flex-flow: row !important;
+    }
+
+    #page-mod-hsuforum-discuss #region-main .hsuforum-thread-filter_sort_list {
+        margin-left: 0;
+        margin-top: 0 !important;
+    }
+    #page-mod-hsuforum-discuss .hsuforum-post-filterandsort {
+        margin-bottom: 0.3rem;
+    }
+    #page-mod-hsuforum-discuss .hsuforum-post-filterandsort .form-group:first-of-type,
+    #page-mod-hsuforum-discuss .hsuforum-post-filterandsort .form-group:last-of-type {
+        padding: 0 !important;
+    }
+    #page-mod-hsuforum-discuss .hsuforum-thread-filter_sort_list .form-inline label:not(.sr-only):not(.accesshide)+select {
+        margin-right: 1rem !important;
+    }
 }
