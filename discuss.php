@@ -31,6 +31,8 @@
 
     require_once('../../config.php');
     require_once(__DIR__.'/lib/discussion/sort.php');
+    global $PAGE;
+
     $PAGE->requires->jquery();
     $PAGE->requires->js_call_amd('mod_hsuforum/mod_hsuforum_button_animate', 'init',
         [
@@ -72,7 +74,7 @@
     $cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id, false, MUST_EXIST);
 
     require_course_login($course, true, $cm);
-
+    $PAGE->activityheader->disable();
     // move this down fix for MDL-6926
     require_once($CFG->dirroot.'/mod/hsuforum/lib.php');
 
