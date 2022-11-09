@@ -326,8 +326,7 @@
 .hsuforum-newunreadcount {
     background-color: [[setting:newavatarbadgebackgroundcolour]] !important;
     color: [[setting:newavatarbadgetextcolour]] !important;
-    height: 34px;
-    margin-top: 5px;
+    height: 2.125rem;
     font-size: 82%;
     font-weight: 600;
     line-height: 1;
