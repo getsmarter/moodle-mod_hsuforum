@@ -97,7 +97,6 @@
 /// Print header.
     $PAGE->set_title($forum->name);
     $PAGE->add_body_class('forumtype-'.$forum->type);
-    $PAGE->set_heading($course->fullname);
 
     $renderer = $PAGE->get_renderer('mod_hsuforum');
 /// This has to be called before we start setting up page as it triggers view events.
