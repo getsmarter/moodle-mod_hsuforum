@@ -275,7 +275,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @return string
      */
     public function discussion($cm, $discussion, $post, $fullthread, array $posts = array(), $canreply = null) {
-        global $DB, $PAGE, $USER;
+        global $DB, $PAGE, $USER, $CFG;
 
         $forum = hsuforum_get_cm_forum($cm);
         $postuser = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
@@ -329,6 +329,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         if ($data->replies > 0) {
             // Get actual replies.
             $fields = user_picture::fields('u');
+
             $sql = "SELECT $fields, hp.max
                     FROM {user} u
                     JOIN (
@@ -368,8 +369,15 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $toolsmenu .= $toolsmenuoptions;
         }
 
+        if (strpos($postuser->user_picture->get_url($this->page)->out(), $CFG->wwwroot) !== false) {
+            $image = '<img class="userpicture img-circle" src="'.$postuser->user_picture->get_url($this->page)->out().'" alt="profile picture" />';
+        } else {
+            $initials = mb_substr($postuser->firstname, 0, 1) . mb_substr($postuser->lastname, 0, 1);
+            $image = '<span class="userinitials size-100">'.$initials.'</span>';
+        }
+
         $data->group      = $group;
-        $data->imagesrc   = $postuser->user_picture->get_url($this->page)->out();
+        $data->imagesrc   = $image;
         $data->userurl    = $this->get_post_user_url($cm, $postuser);
         $data->viewurl    = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id));
         $data->tools      = $toolsbuttons.$toolsmenu;
@@ -520,6 +528,13 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $postuser = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
         $postuser->user_picture->size = 100;
 
+        if (strpos($postuser->user_picture->get_url($this->page)->out(), $CFG->wwwroot) !== false) {
+            $image = '<img class="userpicture img-circle" src="'.$postuser->user_picture->get_url($this->page)->out().'" alt="profile picture" />';
+        } else {
+            $initials = mb_substr($postuser->firstname, 0, 1) . mb_substr($postuser->lastname, 0, 1);
+            $image = '<span class="userinitials size-100">'.$initials.'</span>';
+        }
+
         // $post->breadcrumb comes from search btw.
         $data                 = new stdClass;
         $data->id             = $post->id;
@@ -530,7 +545,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->created        = userdate($post->created, get_string('articledateformat', 'hsuforum'));
         $data->rawcreated     = $post->created;
         $data->privatereply   = $post->privatereply;
-        $data->imagesrc       = $postuser->user_picture->get_url($this->page)->out();
+        $data->imagesrc       = $image;
         $data->userurl        = $this->get_post_user_url($cm, $postuser);
         $data->unread         = empty($post->postread) ? true : false;
         $data->permalink      = new moodle_url('/mod/hsuforum/discuss.php#p'.$post->id, array('d' => $discussion->id, 'postid' => $post->id));
@@ -738,7 +753,7 @@ HTML;
         <div class="clearfix">
             <div class="hsuforum-thread-author clearfix">
                 <a href="$d->userurl">
-                    <img class="userpicture img-circle" src="{$d->imagesrc}" alt="profile picture" />
+                    $d->imagesrc
                 </a>
                 $flagandtimezone
                 <p class="hsuforum-thread-byline">
@@ -1014,7 +1029,7 @@ HTML;
  <div class="hsuforum-post-parent">
     <div class="hsuforum-post-figure {$useridp} depth$p->depth">
         <a href="$p->userurl">
-            <img class="userpicture" src="{$p->imagesrc}" alt="profile picture">
+            $p->imagesrc
         </a>
         $flagandtimezone
     </div>
@@ -2019,7 +2034,9 @@ HTML;
 
     protected function get_post_user_url($cm, $postuser) {
         if (!$postuser->user_picture->link) {
-            return null;
+            if ($postuser->includefullname) {
+                return '<td>'.fullname($postuser->user).'</td>';
+            }
         }
         return new moodle_url('/user/view.php', ['id' => $postuser->id, 'course' => $cm->course]);
     }
