@@ -1462,16 +1462,18 @@ M.mod_hsuforum.restoreEditor = function() {
             }
         }
 
-
-
+        // CTED-2779 | LMS Upgrade 2022 | Discussion Forum | Editor not saving styles
+        // Fix:
+        // The code below caused editor to be hidden when a toolbar submenu option was
+        // selected, example: click on a paragraph mode.
+        // --------------------------------------------------------------------------
         // Switch all editor links to hide mode.
-        M.mod_hsuforum.toggleAdvancedEditor(false, true);
-
-        // Put editor back in its correct place.
-        Y.one('#hiddenadvancededitorcont').show();
-        Y.one('#hiddenadvancededitorcont')._node.style.display='block';
-        editCont.appendChild(editor);
-        editCont.appendChild(Y.one('#hiddenadvancededitor'));
+        //M.mod_hsuforum.toggleAdvancedEditor(false, true);
+        // // Put editor back in its correct place.
+        // Y.one('#hiddenadvancededitorcont').show();
+        // Y.one('#hiddenadvancededitorcont')._node.style.display='block';
+        // editCont.appendChild(editor);
+        // editCont.appendChild(Y.one('#hiddenadvancededitor'));
     }
 };
 
@@ -1494,7 +1496,7 @@ M.mod_hsuforum.toggleAdvancedEditor = function(advancedEditLink, forcehide, keep
         }
     }
 
-    // @TODO - consider a better explantion of forcehide
+    // @TODO - consider a better explanation of forcehide
     // Force hide is required for doing things like hiding all editors except for the link that was just clicked.
     // So if you click reply against a topic and then open the editor and then click reply against another topic and
     // then open the editor you need the previous editor link to be reset.
