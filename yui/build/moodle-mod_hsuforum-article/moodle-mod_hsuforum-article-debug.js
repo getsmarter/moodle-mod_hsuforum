@@ -807,22 +807,25 @@ Y.extend(FORM, Y.Base,
         /**
          * Removes all dynamically opened forms.
          *
+         * Don't run this code: it hides the add new topic form on hsu forums
+         * when the editor menu option is clicked (like paragraph style).
+         *
          * @method removeAllForms
          */
         removeAllForms: function() {
-            Y.log('Removing all forms', 'info', 'Form');
+            //Y.log('Removing all forms', 'info', 'Form');
 
-            Y.all(SELECTORS.POSTS + ' ' + SELECTORS.FORM_REPLY_WRAPPER).each(function(node) {
-                // Don't removing forms for editing, for safety.
-                if (!node.ancestor(SELECTORS.DISCUSSION_EDIT) && !node.ancestor(SELECTORS.POST_EDIT)) {
-                    node.remove(true);
-                }
-            });
-
-            var node = Y.one(SELECTORS.ADD_DISCUSSION_TARGET);
-            if (node !== null) {
-                node.empty();
-            }
+            // Y.all(SELECTORS.POSTS + ' ' + SELECTORS.FORM_REPLY_WRAPPER).each(function(node) {
+            //     // Don't removing forms for editing, for safety.
+            //     if (!node.ancestor(SELECTORS.DISCUSSION_EDIT) && !node.ancestor(SELECTORS.POST_EDIT)) {
+            //         node.remove(true);
+            //     }
+            // });
+            //
+            // var node = Y.one(SELECTORS.ADD_DISCUSSION_TARGET);
+            // if (node !== null) {
+            //     node.empty();
+            // }
         },
 
         /**
