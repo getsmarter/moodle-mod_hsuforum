@@ -1461,19 +1461,6 @@ M.mod_hsuforum.restoreEditor = function() {
                 contentEditable.setContent(editArea.getContent());
             }
         }
-
-        // CTED-2779 | LMS Upgrade 2022 | Discussion Forum | Editor not saving styles
-        // Fix:
-        // The code below caused editor to be hidden when a toolbar submenu option was
-        // selected, example: click on a paragraph mode.
-        // --------------------------------------------------------------------------
-        // Switch all editor links to hide mode.
-        //M.mod_hsuforum.toggleAdvancedEditor(false, true);
-        // // Put editor back in its correct place.
-        // Y.one('#hiddenadvancededitorcont').show();
-        // Y.one('#hiddenadvancededitorcont')._node.style.display='block';
-        // editCont.appendChild(editor);
-        // editCont.appendChild(Y.one('#hiddenadvancededitor'));
     }
 };
 
