@@ -364,17 +364,6 @@ M.mod_hsuforum.restoreEditor = function() {
                 contentEditable.setContent(editArea.getContent());
             }
         }
-
-
-
-        // Switch all editor links to hide mode.
-        M.mod_hsuforum.toggleAdvancedEditor(false, true);
-
-        // Put editor back in its correct place.
-        Y.one('#hiddenadvancededitorcont').show();
-        Y.one('#hiddenadvancededitorcont')._node.style.display='block';
-        editCont.appendChild(editor);
-        editCont.appendChild(Y.one('#hiddenadvancededitor'));
     }
 };
 
