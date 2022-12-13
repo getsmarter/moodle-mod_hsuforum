@@ -375,6 +375,13 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
      * @param e
      */
     handleRoute: function(e) {
+        // Don't allow atto menu editor dropdown menu do any routing (else the editor gets toggled and form hidden).
+        if (e.currentTarget.getAttribute('role') == 'menuitem') {
+            if (e.currentTarget.get('href').indexOf('#') >-1){
+                return;
+            }
+        }
+
         // Allow the native behavior on middle/right-click, or when Ctrl or Command are pressed.
         if (e.button !== 1 || e.ctrlKey || e.metaKey
             || e.currentTarget.hasClass('disable-router')
@@ -807,13 +814,22 @@ Y.extend(FORM, Y.Base,
         /**
          * Removes all dynamically opened forms.
          *
-         * Removed code from this method because it caused issues:
-         * when the editor menu option is clicked (like paragraph style)
-         * the form gets removed.
-         *
          * @method removeAllForms
          */
         removeAllForms: function() {
+            Y.log('Removing all forms', 'info', 'Form');
+
+            Y.all(SELECTORS.POSTS + ' ' + SELECTORS.FORM_REPLY_WRAPPER).each(function(node) {
+                // Don't removing forms for editing, for safety.
+                if (!node.ancestor(SELECTORS.DISCUSSION_EDIT) && !node.ancestor(SELECTORS.POST_EDIT)) {
+                    node.remove(true);
+                }
+            });
+
+            var node = Y.one(SELECTORS.ADD_DISCUSSION_TARGET);
+            if (node !== null) {
+                node.empty();
+            }
         },
 
         /**
@@ -1452,6 +1468,17 @@ M.mod_hsuforum.restoreEditor = function() {
                 contentEditable.setContent(editArea.getContent());
             }
         }
+
+
+
+        // Switch all editor links to hide mode.
+        M.mod_hsuforum.toggleAdvancedEditor(false, true);
+
+        // Put editor back in its correct place.
+        Y.one('#hiddenadvancededitorcont').show();
+        Y.one('#hiddenadvancededitorcont')._node.style.display='block';
+        editCont.appendChild(editor);
+        editCont.appendChild(Y.one('#hiddenadvancededitor'));
     }
 };
 
