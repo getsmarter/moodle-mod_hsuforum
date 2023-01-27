@@ -360,7 +360,10 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
         var ta = el.get('href').split('#');
         // Without this timeout it doesn't always focus on the desired element.
         setTimeout(function(){
-            Y.one('#'+ta[1]).ancestor('li').focus();
+            try {
+                Y.one('#' + ta[1]).ancestor('li').focus();
+            } catch (err) {
+            }
         },300);
     },
 
@@ -371,6 +374,13 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
      * @param e
      */
     handleRoute: function(e) {
+        // Don't allow atto menu editor dropdown menu do any routing (else the editor gets toggled and form hidden).
+        if (e.currentTarget.getAttribute('role') == 'menuitem') {
+            if (e.currentTarget.get('href').indexOf('#') >-1){
+                return;
+            }
+        }
+
         // Allow the native behavior on middle/right-click, or when Ctrl or Command are pressed.
         if (e.button !== 1 || e.ctrlKey || e.metaKey
             || e.currentTarget.hasClass('disable-router')
@@ -788,11 +798,12 @@ Y.extend(FORM, Y.Base,
         attachFormWarnings: function() {
             Y.all(SELECTORS.ALL_FORMS).each(function(formNode) {
                 if (!formNode.hasClass('form-checker-added')) {
-                    var checker = M.core_formchangechecker.init({ formid: formNode.generateID() });
+                    var ChangeChecker = require('core_form/changechecker');
+                    var checker = ChangeChecker.watchFormById(formNode.generateID());
                     formNode.addClass('form-checker-added');
 
                     // On edit of content editable, trigger form change checker.
-                    formNode.one(SELECTORS.EDITABLE_MESSAGE).on('keypress', M.core_formchangechecker.set_form_changed, checker);
+                    formNode.one(SELECTORS.EDITABLE_MESSAGE).on('keypress', ChangeChecker.markAllFormsAsDirty, checker);
                 }
             });
         },
@@ -1425,8 +1436,8 @@ M.mod_hsuforum.restoreEditor = function() {
             return;
         }
         var editor = editArea.ancestor('.editor_atto'),
-        advancedEditLink = M.mod_hsuforum.Article.currentEditLink,
-        contentEditable = false;
+            advancedEditLink = M.mod_hsuforum.Article.currentEditLink,
+            contentEditable = false;
 
         if (advancedEditLink) {
             contentEditable = advancedEditLink.previous('.hsuforum-textarea');

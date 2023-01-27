@@ -59,7 +59,10 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
         var ta = el.get('href').split('#');
         // Without this timeout it doesn't always focus on the desired element.
         setTimeout(function(){
-            Y.one('#'+ta[1]).ancestor('li').focus();
+            try {
+                Y.one('#' + ta[1]).ancestor('li').focus();
+            } catch (err) {
+            }
         },300);
     },
 
@@ -70,6 +73,13 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
      * @param e
      */
     handleRoute: function(e) {
+        // Don't allow atto menu editor dropdown menu do any routing (else the editor gets toggled and form hidden).
+        if (e.currentTarget.getAttribute('role') == 'menuitem') {
+            if (e.currentTarget.get('href').indexOf('#') >-1){
+                return;
+            }
+        }
+
         // Allow the native behavior on middle/right-click, or when Ctrl or Command are pressed.
         if (e.button !== 1 || e.ctrlKey || e.metaKey
             || e.currentTarget.hasClass('disable-router')
