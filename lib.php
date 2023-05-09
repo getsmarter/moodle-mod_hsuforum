@@ -5717,10 +5717,18 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $ca
     require_once($CFG->dirroot.'/rating/lib.php');
 
     $modcontext = context_module::instance($cm->id);
+
     if ($canreply === NULL) {
         $reply = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
     } else {
         $reply = $canreply;
+    }
+
+    // Add a check that user should be able to reply ...
+    // ...to posts that has passed expectedcompletion date...
+    // ...if the expectedcompletion date is enable.
+    if ($cm->completionexpected && $cm->completionexpected < time()) {
+        $reply = false;
     }
 
     $posters = array();
