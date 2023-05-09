@@ -5712,11 +5712,12 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
  * @param bool $canrate
  */
 function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $canreply=NULL, $canrate=false) {
-    global $USER, $CFG, $OUTPUT, $PAGE;
+    global $USER, $CFG, $OUTPUT, $PAGE, $DB;
 
     require_once($CFG->dirroot.'/rating/lib.php');
 
     $modcontext = context_module::instance($cm->id);
+
     if ($canreply === NULL) {
         $reply = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
     } else {
@@ -5726,8 +5727,10 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $ca
     // Add a check that user should be able to reply ...
     // ...to posts that has passed expected completion date...
     // ...if the expected completion date is enabled.
-    if ($cm->completionexpected && $cm->completionexpected < time()
-        && !has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
+    $studentrole = $DB->get_field('role', 'id', array('shortname' => 'student'));
+    $student = get_role_users($studentrole, $modcontext, true, "u.id", "", "", "", "", "", "u.id=".$USER->id);
+
+    if ($cm->completionexpected && $cm->completionexpected < time() && !empty($student)) {
         $reply = false;
     }
 
