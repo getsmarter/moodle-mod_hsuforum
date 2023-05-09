@@ -5726,7 +5726,8 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $ca
     // Add a check that user should be able to reply ...
     // ...to posts that has passed expected completion date...
     // ...if the expected completion date is enabled.
-    if ($cm->completionexpected && $cm->completionexpected < time()) {
+    if ($cm->completionexpected && $cm->completionexpected < time()
+        && !has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
         $reply = false;
     }
 
