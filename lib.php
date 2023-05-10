@@ -5712,7 +5712,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
  * @param bool $canrate
  */
 function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $canreply=NULL, $canrate=false) {
-    global $USER, $CFG, $OUTPUT, $PAGE;
+    global $USER, $CFG, $OUTPUT, $PAGE, $DB;
 
     require_once($CFG->dirroot.'/rating/lib.php');
 
@@ -5721,6 +5721,16 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $ca
         $reply = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
     } else {
         $reply = $canreply;
+    }
+
+    // Add a check that user should be able to reply ...
+    // ...to posts that has passed expected completion date...
+    // ...if the expected completion date is enabled.
+    $studentrole = $DB->get_field('role', 'id', array('shortname' => 'student'));
+    $student = get_role_users($studentrole, $modcontext, true, "u.id", "", "", "", "", "", "u.id=".$USER->id);
+
+    if ($cm->completionexpected && $cm->completionexpected < time() && !empty($student)) {
+        $reply = false;
     }
 
     $posters = array();
