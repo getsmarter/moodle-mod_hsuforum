@@ -824,12 +824,6 @@ function hsuforum_cron() {
                     $userfrom->customheaders[] = 'References: ' . hsuforum_get_email_message_id($post->parent, $userto->id, $hostname);
                 }
 
-                if ($post->parent) {
-                    // This post is a reply, so add headers for threading (see MDL-22551).
-                    $userfrom->customheaders[] = 'In-Reply-To: ' . hsuforum_get_email_message_id($post->parent, $userto->id, $hostname);
-                    $userfrom->customheaders[] = 'References: '  . hsuforum_get_email_message_id($post->parent, $userto->id, $hostname);
-                }
-
                 $shortname = format_string($course->shortname, true, array('context' => context_course::instance($course->id)));
 
                 // Generate a reply-to address from using the Inbound Message handler.
