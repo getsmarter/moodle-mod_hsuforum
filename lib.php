@@ -7297,7 +7297,8 @@ class hsuforum_existing_subscriber_selector extends hsuforum_subscriber_selector
  * @param cm_info $cm Course-module object
  */
 function hsuforum_cm_info_view(cm_info $cm) {
-    if (!$cm->uservisible) {
+//    $ccm = new cached_cm_info();
+    if (!$cm->get_user_visible) {
         return;
     }
 
@@ -7311,7 +7312,7 @@ function hsuforum_cm_info_view(cm_info $cm) {
     }
 
     if ($unread = hsuforum_count_forum_unread_posts($cm, $cm->get_course())) {
-        $out .= '<a class="unread" href="' . $cm->url . '">';
+        $out .= '<a class="unread" href="' . $cm->get_url . '">';
         if ($unread == 1) {
             $out .= get_string('unreadpostsone', 'hsuforum');
         } else {
@@ -7319,9 +7320,11 @@ function hsuforum_cm_info_view(cm_info $cm) {
         }
         $out .= '</a>';
     }
+    $cachedcminfo = new cached_cm_info();
+    $cachedcminfo->content = $cm->get_formatted_content(array('overflowdiv' => true, 'noclean' => true));;
 
-    if(property_exists($cm, 'content') && strlen($cm->content) > 0) {
-        $out = $cm->content . $out;
+    if(property_exists($cm, 'content') && strlen($cachedcminfo->content) > 0) {
+        $out = $cachedcminfo->content . $out;
     }
     $cm->set_content($out); // append the unreadpost section to existing content
 }
