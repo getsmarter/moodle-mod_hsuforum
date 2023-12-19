@@ -7297,7 +7297,7 @@ class hsuforum_existing_subscriber_selector extends hsuforum_subscriber_selector
  * @param cm_info $cm Course-module object
  */
 function hsuforum_cm_info_view(cm_info $cm) {
-//    $ccm = new cached_cm_info();
+
     if (!$cm->get_user_visible) {
         return;
     }
