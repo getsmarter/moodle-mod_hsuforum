@@ -171,7 +171,8 @@
 }
 
 #page-mod-hsuforum-view #selectgroup label {
-    display: none;
+    display: block;
+    padding: 0 0.313rem;
 }
 
 #newdiscussionform div, #newdiscussionform input[type=submit] {
