@@ -845,6 +845,10 @@ FUN WITH FORMS
     float: left;
 }
 
+.path-mod-hsuforum #discussionsview .managesubslink {
+    text-decoration: underline;
+}
+
 .path-mod-hsuforum #id_displayperiod {
     margin-bottom: 1em;
 }

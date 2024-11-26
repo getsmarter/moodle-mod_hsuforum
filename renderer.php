@@ -205,7 +205,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         if (isloggedin() && !isguestuser()) {
             $url = new \moodle_url('/mod/hsuforum/index.php', ['id' => $course->id]);
             $manageforumsubscriptions = get_string('manageforumsubscriptions', 'mod_hsuforum');
-            $output .= \html_writer::link($url, $manageforumsubscriptions);
+            $output .= \html_writer::link($url, $manageforumsubscriptions, array ('class' => 'managesubslink'));
         }
 
         $output = ob_get_contents().$output;
